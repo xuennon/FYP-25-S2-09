@@ -40,7 +40,7 @@ class MyApp extends StatelessWidget {
               onPressed: () => subject = 'Science',
               child: const Text('Science'),
             ),
-            Text('change ni ma ma' + subject),
+            Text('change liao' + subject),
           ],
         ),
       ),
