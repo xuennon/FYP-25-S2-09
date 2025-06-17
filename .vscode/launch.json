@@ -1,0 +1,28 @@
+{
+    // Use IntelliSense to learn about possible attributes.
+    // Hover to view descriptions of existing attributes.
+    // For more information, visit: https://go.microsoft.com/fwlink/?linkid=830387
+    "version": "0.2.0",
+    "configurations": [
+        {
+            "name": "wise_workout_app",
+            "cwd": "wise_workout_app",
+            "request": "launch",
+            "type": "dart"
+        },
+        {
+            "name": "wise_workout_app (profile mode)",
+            "cwd": "wise_workout_app",
+            "request": "launch",
+            "type": "dart",
+            "flutterMode": "profile"
+        },
+        {
+            "name": "wise_workout_app (release mode)",
+            "cwd": "wise_workout_app",
+            "request": "launch",
+            "type": "dart",
+            "flutterMode": "release"
+        }
+    ]
+}
