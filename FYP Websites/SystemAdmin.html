@@ -138,6 +138,7 @@
     .header span {
       font-size: 22px;
       font-weight: 600;
+      user-select: none;
     }
 
     .toggle-mode {
@@ -260,12 +261,13 @@
     <button>Settings</button>
     <button>Categories</button>
     <button onclick="location.href='SystemAdmin.html'">Dashboard</button>
+    <button onclick="sendPasswordReset()">Reset Password</button>
     <button onclick="logout()">Logout</button>
   </div>
 
   <div class="container">
     <div class="header">
-      <span>👤 Admin</span>
+      <span id="adminName">👤 Admin</span>
       <div>
         <button class="toggle-mode" id="modeToggle">🌙</button>
         <span class="menu-icon" id="menuBtn">☰</span>
@@ -282,10 +284,9 @@
         <div><strong id="suspendedUsers">...</strong></div>
       </div>
       <div class="card" onclick="location.href='pendingApplications.html'" style="cursor: pointer;">
-  <div>Pending Applications <span class="badge" id="pendingCount">...</span></div>
-  <div><strong id="pendingAppsMain">...</strong></div>
-</div>
-
+        <div>Pending Applications <span class="badge" id="pendingCount">...</span></div>
+        <div><strong id="pendingAppsMain">...</strong></div>
+      </div>
       <div class="card">
         <div>Feedback</div>
         <div><strong id="feedbackCount">...</strong></div>
@@ -295,13 +296,11 @@
     <button class="nav-btn" onclick="location.href='manageUsers.html'">👥 Manage User Account</button>
     <button class="nav-btn" onclick="location.href='manageBusiness.html'">🏢 Manage Business Account</button>
     <button class="nav-btn" onclick="location.href='reports.html'">📊 Reports</button>
-
-
   </div>
 
 <script type="module">
   import { initializeApp } from "https://www.gstatic.com/firebasejs/9.23.0/firebase-app.js";
-  import { getAuth, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/9.23.0/firebase-auth.js";
+  import { getAuth, onAuthStateChanged, signOut, sendPasswordResetEmail } from "https://www.gstatic.com/firebasejs/9.23.0/firebase-auth.js";
   import { getFirestore, collection, getDocs, query, where, doc, getDoc } from "https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore.js";
 
   const firebaseConfig = {
@@ -342,15 +341,20 @@
     modeToggle.textContent = "☀️";
   }
 
-  // Auth check
+  // Auth check and load admin name + stats
   onAuthStateChanged(auth, async (user) => {
     if (user) {
-      const adminDoc = await getDoc(doc(db, "admins", user.uid));
+      const adminDocRef = doc(db, "admins", user.uid);
+      const adminDoc = await getDoc(adminDocRef);
       if (!adminDoc.exists()) {
         alert("Access denied. Not an admin.");
         await signOut(auth);
         window.location.href = "Login.html";
       } else {
+        const adminData = adminDoc.data();
+        const adminName = adminData.name || "Admin";
+        document.getElementById("adminName").textContent = `${adminName}`;
+
         loadDashboardStats();
       }
     } else {
@@ -362,6 +366,23 @@
   window.logout = async function () {
     await signOut(auth);
     window.location.href = "Login.html";
+  };
+
+  // Password reset function
+  window.sendPasswordReset = async function () {
+    const user = auth.currentUser;
+    if (!user) {
+      alert("No logged in user.");
+      return;
+    }
+
+    try {
+      await sendPasswordResetEmail(auth, user.email);
+      alert(`Password reset email sent to ${user.email}. Please check your inbox.`);
+    } catch (error) {
+      console.error("Error sending password reset email:", error);
+      alert("Failed to send password reset email: " + error.message);
+    }
   };
 
   // Helper: get count of all docs in a collection
@@ -398,7 +419,7 @@
       ]);
       document.getElementById("suspendedUsers").textContent = suspendedUsersCount + suspendedBusinessCount;
 
-      // Pending applications = businessUsers with approvalStatus == "pending"
+      // Pending applications = businessUsers with verified == false
       const pendingAppsCount = await getFilteredCount(businessCol, "verified", false);
       document.getElementById("pendingCount").textContent = pendingAppsCount;
       document.getElementById("pendingAppsMain").textContent = pendingAppsCount;

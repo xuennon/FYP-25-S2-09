@@ -75,7 +75,7 @@
     <div id="errorMessage" class="error"></div>
   </form>
   <div class="links">
-    <a href="LandingPage.html">Don't have an account? Register</a>
+    <a href="index.html">Don't have an account? Register</a>
   </div>
 </div>
 
@@ -135,7 +135,7 @@
         const data = businessDoc.data();
         if (data.verified) {
           console.log("User is verified business user");
-          window.location.href = "businessDashboard.html";
+          window.location.href = "BusinessUser.html";
         } else {
           errorMessage.textContent = "Your business account is pending approval by admin.";
         }
