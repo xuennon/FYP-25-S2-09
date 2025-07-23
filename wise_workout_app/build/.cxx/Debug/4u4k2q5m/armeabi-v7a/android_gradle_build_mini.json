@@ -1,0 +1,20 @@
+{
+  "buildFiles": [
+    "C:\\Users\\lenovo\\Program\\flutter\\packages\\flutter_tools\\gradle\\src\\main\\scripts\\CMakeLists.txt"
+  ],
+  "cleanCommandsComponents": [
+    [
+      "C:\\Users\\lenovo\\AppData\\Local\\Android\\sdk\\cmake\\3.22.1\\bin\\ninja.exe",
+      "-C",
+      "C:\\Users\\lenovo\\Program\\FYP-25-S2-09-main\\wise_workout_app\\build\\.cxx\\Debug\\4u4k2q5m\\armeabi-v7a",
+      "clean"
+    ]
+  ],
+  "buildTargetsCommandComponents": [
+    "C:\\Users\\lenovo\\AppData\\Local\\Android\\sdk\\cmake\\3.22.1\\bin\\ninja.exe",
+    "-C",
+    "C:\\Users\\lenovo\\Program\\FYP-25-S2-09-main\\wise_workout_app\\build\\.cxx\\Debug\\4u4k2q5m\\armeabi-v7a",
+    "{LIST_OF_TARGETS_TO_BUILD}"
+  ],
+  "libraries": {}
+}
