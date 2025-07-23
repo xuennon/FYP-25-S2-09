@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "838641447649",
+    "project_id": "fyp-25-s2-09",
+    "storage_bucket": "fyp-25-s2-09.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:838641447649:android:5607a3443012e4946dbda0",
+        "android_client_info": {
+          "package_name": "com.example.wise_workout_app"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyCZmBzUtEqOp3sC7RemrTOQOcDQCk_iEOA"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
