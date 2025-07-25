@@ -320,6 +320,21 @@
     firebase.initializeApp(firebaseConfig);
     const db = firebase.firestore();
 
+    // Dynamically update landing page content from Firestore
+    const landingPageRef = db.collection("landingPage").doc("main");
+    landingPageRef.get().then(doc => {
+      if (doc.exists) {
+        const data = doc.data();
+        // About section
+        document.querySelector("#about h1").textContent = data.welcomeText || "Welcome to Wise Fitness";
+        document.querySelector("#about p:nth-of-type(1)").textContent = data.slogan || "🌿 Make Healthier Choices with Wise Fitness";
+        document.querySelector("#about p:nth-of-type(2)").textContent = data.aboutSection || "Wise Fitness is more than just a fitness app — it’s your all-in-one guide to living well.";
+        document.querySelector("#about p:nth-of-type(3)").textContent = data.extraText || "Whether you're training at the gym, exercising at home, or just starting your journey, Wise Fitness supports your goals with the tools and guidance you need to thrive.";
+      }
+    }).catch(error => {
+      console.error("Error loading landing page content:", error);
+    });
+
 
     const testimonialsRef = db.collection("testimonials");
     let testimonials = [];
