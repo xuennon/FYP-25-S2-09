@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
@@ -24,7 +25,8 @@
       padding: 0;
     }
 
-    html, body {
+    html,
+    body {
       width: 100%;
       height: 100%;
       font-family: 'Segoe UI', sans-serif;
@@ -230,7 +232,8 @@
         transform: translateX(0);
       }
 
-      .header, .sidebar-active .header {
+      .header,
+      .sidebar-active .header {
         right: 0 !important;
         width: 100% !important;
       }
@@ -366,6 +369,15 @@
       }
     };
 
+    // Password reset function
+    window.sendPasswordReset = async function () {
+      const user = auth.currentUser;
+      if (!user) {
+        alert("No logged in user.");
+        return;
+      }
+    }
+
     window.goProfile = () => alert("Go to Profile page (not implemented)");
     window.goSettings = () => alert("Go to Settings page (not implemented)");
 
@@ -390,6 +402,5 @@
     window.goEvent = () => window.location.href = "events.html";
   </script>
 </body>
+
 </html>
-
-

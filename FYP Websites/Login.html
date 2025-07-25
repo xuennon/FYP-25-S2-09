@@ -116,41 +116,44 @@
 
     try {
       const userCredential = await signInWithEmailAndPassword(auth, email, password);
-      const user = userCredential.user;
-      const uid = user.uid;
+const user = userCredential.user;
+const uid = user.uid;
 
-      console.log("Logged in user UID:", uid);
+// 1. Check if user is an admin
+const adminDoc = await getDoc(doc(db, "admins", uid));
+if (adminDoc.exists()) {
+  console.log("User is admin");
+  window.location.href = "SystemAdmin.html";
+  return;
+}
 
-      // Check admin
-      const adminDoc = await getDoc(doc(db, "admins", uid));
-      if (adminDoc.exists()) {
-        console.log("User is admin");
-        window.location.href = "SystemAdmin.html";
-        return;
-      }
+// 2. Check if user is a business user
+const businessDoc = await getDoc(doc(db, "businessUsers", uid));
+if (businessDoc.exists()) {
+  const data = businessDoc.data();
+  if (data.verified) {
+    console.log("User is verified business user");
+    window.location.href = "BusinessUser.html";
+  } else {
+    errorMessage.textContent = "Your business account is pending approval by admin.";
+  }
+  return;
+}
 
-      // Check business user
-      const businessDoc = await getDoc(doc(db, "businessUsers", uid));
-      if (businessDoc.exists()) {
-        const data = businessDoc.data();
-        if (data.verified) {
-          console.log("User is verified business user");
-          window.location.href = "BusinessUser.html";
-        } else {
-          errorMessage.textContent = "Your business account is pending approval by admin.";
-        }
-        return;
-      }
+// 3. Check if user is a regular user and MUST be verified
+const userDoc = await getDoc(doc(db, "users", uid));
+if (userDoc.exists()) {
+  if (!user.emailVerified) {
+    errorMessage.textContent = "Please verify your email before logging in.";
+    return;
+  }
+  console.log("User is normal user");
+  window.location.href = "userDashboard.html";
+  return;
+}
 
-      // Check normal user
-      const userDoc = await getDoc(doc(db, "users", uid));
-      if (userDoc.exists()) {
-        console.log("User is normal user");
-        window.location.href = "userDashboard.html";
-        return;
-      }
-
-      errorMessage.textContent = "Account exists but not properly registered. Contact support.";
+// If no match
+errorMessage.textContent = "Account exists but not properly registered. Contact support.";
 
     } catch (error) {
       console.error("Login error:", error);
