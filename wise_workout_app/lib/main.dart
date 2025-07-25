@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:firebase_core/firebase_core.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'firebase_options.dart';
 import 'business_verification_page.dart';
 import 'admin_home_page.dart';
@@ -96,11 +97,25 @@ class _LoginPageState extends State<LoginPage> {
       return;
     }
 
-    // Use Firebase authentication
     try {
       print('Starting Firebase authentication...');
       Map<String, dynamic> result = await _authService.signInWithEmailPassword(email, password);
-      
+
+      User? firebaseUser = FirebaseAuth.instance.currentUser;
+
+      if (firebaseUser != null && !firebaseUser.emailVerified) {
+        setState(() {
+          _isLoading = false;
+        });
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('Please verify your email before logging in.'),
+            backgroundColor: Colors.red,
+          ),
+        );
+        return;
+      }
+
       setState(() {
         _isLoading = false;
       });
@@ -110,8 +125,7 @@ class _LoginPageState extends State<LoginPage> {
       if (result['success']) {
         String role = result['role'] ?? 'user';
         print('User role: $role');
-        
-        // Navigate based on user role
+
         switch (role) {
           case 'admin':
             Navigator.pushReplacement(
@@ -243,19 +257,19 @@ class _LoginPageState extends State<LoginPage> {
                         borderRadius: BorderRadius.circular(12),
                       ),
                     ),
-                    child: _isLoading 
-                      ? const CircularProgressIndicator(
-                          color: Colors.white,
-                          strokeWidth: 2,
-                        )
-                      : const Text(
-                          'Login',
-                          style: TextStyle(
-                            fontSize: 16,
-                            fontWeight: FontWeight.bold,
+                    child: _isLoading
+                        ? const CircularProgressIndicator(
                             color: Colors.white,
+                            strokeWidth: 2,
+                          )
+                        : const Text(
+                            'Login',
+                            style: TextStyle(
+                              fontSize: 16,
+                              fontWeight: FontWeight.bold,
+                              color: Colors.white,
+                            ),
                           ),
-                        ),
                   ),
                 ),
                 const SizedBox(height: 24),
