@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'firebase_options.dart';
 import 'business_verification_page.dart';
 import 'admin_home_page.dart';
@@ -103,17 +104,29 @@ class _LoginPageState extends State<LoginPage> {
 
       User? firebaseUser = FirebaseAuth.instance.currentUser;
 
-      if (firebaseUser != null && !firebaseUser.emailVerified) {
-        setState(() {
-          _isLoading = false;
-        });
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text('Please verify your email before logging in.'),
-            backgroundColor: Colors.red,
-          ),
-        );
-        return;
+      if (firebaseUser != null) {
+        await firebaseUser.reload(); // refresh user info
+        firebaseUser = FirebaseAuth.instance.currentUser;
+
+        if (firebaseUser != null && firebaseUser.emailVerified) {
+          // Update Firestore with verified email status
+          await FirebaseFirestore.instance
+              .collection('users')
+              .doc(firebaseUser.uid)
+              .update({'emailVerified': true});
+          print('Firestore emailVerified updated for user ${firebaseUser.uid}');
+        } else if (firebaseUser != null && !firebaseUser.emailVerified) {
+          setState(() {
+            _isLoading = false;
+          });
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(
+              content: Text('Please verify your email before logging in.'),
+              backgroundColor: Colors.red,
+            ),
+          );
+          return;
+        }
       }
 
       setState(() {
