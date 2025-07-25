@@ -292,29 +292,86 @@
     <button onclick="location.href='BusinessUserSignup.html'">Business User</button>
   </section>
 
-  <section id="testimonials" aria-label="User testimonials">
-    <div class="section-content">
-      <h2>Testimonials</h2>
-      <div class="testimonials-grid">
-        <div class="testimonial-item">
-          <p>"Wise Fitness helped me transform my body and my life. I highly recommend their services!"</p>
-          <p><strong>- Jane Doe</strong></p>
-        </div>
-        <div class="testimonial-item">
-          <p>"The group fitness classes are so much fun and I've seen amazing results. I've never felt so motivated!"</p>
-          <p><strong>- John Smith</strong></p>
-        </div>
-        <div class="testimonial-item">
-          <p>"The personalized nutrition plan was exactly what I needed to finally reach my weight loss goals."</p>
-          <p><strong>- Emily Brown</strong></p>
-        </div>
-      </div>
+  <section id="testimonials">
+  <div class="section-content">
+    <h2>Testimonials</h2>
+    <div id="testimonial-display" class="testimonial-item" style="transition: opacity 0.5s ease;">
+      <p id="testimonial-text">Loading testimonials...</p>
+      <p id="testimonial-author"><strong></strong></p>
     </div>
-  </section>
+  </div>
+</section>
 
   <footer>
     <p>&copy; FYP-25-S2-09 Wise Fitness</p>
   </footer>
+
+  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
+  <script>
+    const firebaseConfig = {
+      apiKey: "AIzaSyAIFV7ynXUzA0p-CrmVOE2lFRgaf_9g_k4",
+      authDomain: "fyp-25-s2-09.firebaseapp.com",
+      projectId: "fyp-25-s2-09",
+      storageBucket: "fyp-25-s2-09.firebasestorage.app",
+      messagingSenderId: "838641447649",
+      appId: "1:838641447649:web:6ddfb234b3d445f16dbda0",
+    };
+    firebase.initializeApp(firebaseConfig);
+    const db = firebase.firestore();
+
+
+    const testimonialsRef = db.collection("testimonials");
+    let testimonials = [];
+    let currentIndex = 0;
+
+
+    function showStars(rating) {
+      return '★'.repeat(rating) + '☆'.repeat(5 - rating);
+    }
+
+
+    function showTestimonial(index) {
+      const t = testimonials[index];
+      document.getElementById("testimonial-text").textContent = `"${t.text}"`;
+      document.getElementById("testimonial-author").innerHTML = `- ${t.author}<br><span style="color: gold;">${showStars(t.rating)}</span>`;
+    }
+
+
+    function rotateTestimonials() {
+      const container = document.getElementById("testimonial-display");
+      container.classList.add("fade-out");
+      setTimeout(() => {
+        showTestimonial(currentIndex);
+        container.classList.remove("fade-out");
+        currentIndex = (currentIndex + 1) % testimonials.length;
+      }, 500);
+    }
+
+
+   testimonialsRef.where("rating", ">=", 4).get()
+  .then(snapshot => {
+    if (snapshot.empty) {
+      console.log("No testimonials found with rating >= 4");
+    }
+    snapshot.forEach(doc => {
+      console.log("Fetched testimonial:", doc.data()); // Debugging line
+      testimonials.push(doc.data());
+    });
+    if (testimonials.length > 0) {
+      showTestimonial(0);
+      setInterval(rotateTestimonials, 5000);
+    } else {
+      document.getElementById("testimonial-text").textContent = "No top-rated testimonials available.";
+    }
+  })
+  .catch(error => {
+    console.error("Error fetching testimonials:", error);
+    document.getElementById("testimonial-text").textContent = "Error loading testimonials.";
+  });
+
+
+  </script>
 
   <script>
     // Smooth scroll to registration section on nav click
