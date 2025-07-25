@@ -178,7 +178,7 @@
 
     .user-info {
       display: grid;
-      grid-template-columns: 120px 1fr;
+      grid-template-columns: 140px 1fr;
       row-gap: 6px;
       column-gap: 12px;
       font-size: 15px;
@@ -229,6 +229,22 @@
       background: #28a745;
     }
 
+    /* View More Button */
+    .btn-viewmore {
+      background: var(--primary);
+      color: white;
+      padding: 8px 14px;
+      border: none;
+      border-radius: 10px;
+      cursor: pointer;
+      font-weight: 600;
+      transition: background 0.3s ease;
+    }
+
+    .btn-viewmore:hover {
+      background: #0056b3;
+    }
+
     .back-button {
       background: none;
       border: none;
@@ -244,6 +260,69 @@
 
     .back-button:hover {
       background: rgba(255, 255, 255, 0.15);
+    }
+
+    /* Modal styles */
+    .modal-overlay {
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background: rgba(0, 0, 0, 0.5);
+      display: none;
+      justify-content: center;
+      align-items: center;
+      z-index: 100;
+    }
+
+    .modal-overlay.active {
+      display: flex;
+    }
+
+    .modal {
+      background: var(--card-bg);
+      color: var(--text-light);
+      padding: 24px;
+      border-radius: var(--radius);
+      max-width: 450px;
+      width: 90%;
+      box-shadow: var(--shadow);
+      position: relative;
+      max-height: 90vh;
+      overflow-y: auto;
+    }
+
+    body.dark .modal {
+      background: var(--card-dark);
+      color: var(--text-dark);
+    }
+
+    .modal h2 {
+      margin-bottom: 12px;
+    }
+
+    .modal .modal-row {
+      margin-bottom: 8px;
+    }
+
+    .modal .label {
+      font-weight: 600;
+    }
+
+    .modal .close-btn {
+      position: absolute;
+      top: 10px;
+      right: 10px;
+      background: transparent;
+      border: none;
+      font-size: 22px;
+      cursor: pointer;
+      color: var(--text-light);
+    }
+
+    body.dark .modal .close-btn {
+      color: var(--text-dark);
     }
   </style>
 </head>
@@ -295,6 +374,17 @@
     </div>
 
     <div id="userList" class="user-list">Loading business accounts...</div>
+  </div>
+
+  <!-- Modal for View More -->
+  <div id="modalOverlay" class="modal-overlay" tabindex="-1" role="dialog" aria-modal="true" aria-labelledby="modalTitle" aria-describedby="modalDesc">
+    <div class="modal" role="document">
+      <button class="close-btn" aria-label="Close modal" onclick="closeModal()">×</button>
+      <h2 id="modalTitle">Business Details</h2>
+      <div id="modalDesc">
+        <!-- details will be inserted here -->
+      </div>
+    </div>
   </div>
 
   <script type="module">
@@ -381,7 +471,7 @@
         allBusinesses.push(data);
       });
 
-      renderBusinessList(allBusinesses);
+      applyFilters();
     }
 
     function renderBusinessList(businessArray) {
@@ -393,26 +483,20 @@
       businessArray.forEach(b => {
         html += `
           <div class="user-card">
-            <div class="user-info">
+            <div class="user-info" style="grid-template-columns: 140px 1fr;">
               <span class="label">Business Name:</span><span class="value">${b.businessName || "—"}</span>
-              <span class="label">UEN:</span><span class="value">${b.uen || "—"}</span>
-              <span class="label">Email:</span><span class="value">${b.email || "—"}</span>
-              <span class="label">Phone:</span><span class="value">${b.phone || "—"}</span>
-              <span class="label">Services:</span><span class="value">${(b.servicesOffered || []).join(", ")}</span>
-              <span class="label">Status:</span>
-              <span class="value">${b.suspensionStatus === "yes" ? "<strong style='color:red'>Suspended</strong>" : "Active"}</span>
-              <span class="label">Verified:</span>
-              <span class="value" style="color: ${b.verified ? 'green' : 'red'};">
-                ${b.verified ? "✔ Verified" : "✘ Not Verified"}
-              </span>
+              <span class="label">Services:</span><span class="value">${(b.servicesOffered || []).join(", ") || "—"}</span>
+              <span class="label">Verified:</span><span class="value" style="color: ${b.verified ? 'green' : 'red'};">${b.verified ? "✔ Verified" : "✘ Not Verified"}</span>
+             
             </div>
-            <div class="btn-group">
+            <div class="btn-group" style="margin-left: 16px; display:flex; align-items:center;">
               <button class="btn-remove" onclick="removeBusiness('${b.id}')">Remove</button>
               <button 
                 class="${b.suspensionStatus === "yes" ? "btn-unsuspend" : "btn-suspend"}"
                 onclick="toggleSuspend('${b.id}', '${b.suspensionStatus}')">
                 ${b.suspensionStatus === "yes" ? "Unsuspend" : "Suspend"}
               </button>
+              <button class="btn-viewmore" style="margin-left:8px;" onclick="showBusinessDetails('${b.id}')">View More</button>
             </div>
           </div>
         `;
@@ -457,10 +541,43 @@
       renderBusinessList(filtered);
     }
 
-    searchInput.addEventListener("input", applyFilters);
-    sortSelect.addEventListener("change", applyFilters);
-    serviceFilter.addEventListener("change", applyFilters);
-    verifiedFilter.addEventListener("change", applyFilters);
+    // Modal related code
+    const modalOverlay = document.getElementById("modalOverlay");
+    const modalDesc = document.getElementById("modalDesc");
+
+    window.showBusinessDetails = (id) => {
+      const business = allBusinesses.find(b => b.id === id);
+      if (!business) return;
+
+      modalDesc.innerHTML = `
+        <div class="modal-row"><span class="label">Business Name:</span> ${business.businessName || "—"}</div>
+        <div class="modal-row"><span class="label">UEN:</span> ${business.uen || "—"}</div>
+        <div class="modal-row"><span class="label">Email:</span> ${business.email || "—"}</div>
+        <div class="modal-row"><span class="label">Phone:</span> ${business.phone || "—"}</div>
+        <div class="modal-row"><span class="label">Services:</span> ${(business.servicesOffered || []).join(", ") || "—"}</div>
+        <div class="modal-row"><span class="label">Status:</span> ${business.suspensionStatus === "yes" ? "<strong style='color:red'>Suspended</strong>" : "Active"}</div>
+        <div class="modal-row"><span class="label">Verified:</span> <span style="color: ${business.verified ? 'green' : 'red'};">${business.verified ? "✔ Verified" : "✘ Not Verified"}</span></div>
+      `;
+
+      modalOverlay.classList.add("active");
+      modalOverlay.focus();
+    };
+
+    window.closeModal = () => {
+      modalOverlay.classList.remove("active");
+    };
+
+    modalOverlay.addEventListener("click", (e) => {
+      if (e.target === modalOverlay) {
+        closeModal();
+      }
+    });
+
+    window.addEventListener("keydown", (e) => {
+      if (e.key === "Escape" && modalOverlay.classList.contains("active")) {
+        closeModal();
+      }
+    });
 
     window.toggleSuspend = async (id, currentStatus) => {
       const newStatus = currentStatus === "yes" ? "no" : "yes";
@@ -472,7 +589,6 @@
           });
           alert(`Business ${newStatus === "yes" ? "suspended" : "unsuspended"} successfully.`);
           await loadBusinesses();
-          applyFilters();
         } catch (error) {
           alert("Failed to update suspension status: " + error.message);
         }
@@ -485,7 +601,6 @@
           await deleteDoc(doc(db, "businessUsers", id));
           alert("Business removed.");
           await loadBusinesses();
-          applyFilters();
         } catch (error) {
           alert("Failed to remove business: " + error.message);
         }
@@ -496,6 +611,12 @@
       await signOut(auth);
       location.href = "Login.html";
     };
+
+    // Apply filters on input/select change
+    searchInput.addEventListener("input", applyFilters);
+    sortSelect.addEventListener("change", applyFilters);
+    serviceFilter.addEventListener("change", applyFilters);
+    verifiedFilter.addEventListener("change", applyFilters);
   </script>
 </body>
 

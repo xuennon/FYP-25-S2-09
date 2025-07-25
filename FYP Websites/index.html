@@ -64,6 +64,8 @@
       background-position: center;
       background-repeat: no-repeat;
       color: white;
+      position: relative;
+      min-height: 320px;
     }
 
     #about {
@@ -213,7 +215,7 @@
     </nav>
   </header>
 
-  <section id="about">
+  <section id="about" aria-label="About Wise Fitness">
     <div class="section-content">
       <h1>Welcome to Wise Fitness</h1>
       <p>🌿 Make Healthier Choices with Wise Fitness</p>
@@ -222,7 +224,7 @@
     </div>
   </section>
 
-  <section id="slogan">
+  <section id="slogan" aria-label="Motivational slogan">
     <div class="section-content">
       <h2>Unlock Your Potential with Wise Fitness</h2>
       <p style="text-align: center; font-size: 1.2em; font-style: italic;">
@@ -230,12 +232,12 @@
       </p>
       <p style="text-align: center;">Download the Wise Fitness app today and start your journey to a better you!</p>
       <div style="text-align: center;">
-        <a href="https://ddevmetal.itch.io/wise-fitness-app" class="button">Get it on Google Play</a>
+        <a href="https://ddevmetal.itch.io/wise-fitness-app" class="button" target="_blank" rel="noopener noreferrer">Get it on Google Play</a>
       </div>
     </div>
   </section>
 
-  <section id="services">
+  <section id="services" aria-label="Our services">
     <div class="section-content">
       <h2>Our Services</h2>
       <div class="services-grid">
@@ -255,28 +257,28 @@
     </div>
   </section>
 
-  <section id="plans">
+  <section id="plans" aria-label="Subscription plans">
     <div class="section-content">
       <h2>Choose a Plan</h2>
       <div class="plans-grid">
         <div class="plan-box free">
           <h3>Free</h3>
           <p>
-            ✔ Access to basic workouts<br>
-            ✔ Limited exercise tracking<br>
-            ✔ Daily reminders<br>
-            ✖ Personalized training<br>
+            ✔ Access to basic workouts<br />
+            ✔ Limited exercise tracking<br />
+            ✔ Daily reminders<br />
+            ✖ Personalized training<br />
             ✖ Nutrition planning
           </p>
         </div>
         <div class="plan-box premium">
           <h3>Premium</h3>
           <p>
-            ✔ All Free features<br>
-            ✔ Personalized fitness plans<br>
-            ✔ Full workout library<br>
-            ✔ Nutrition and meal guidance<br>
-            ✔ Progress tracking and analytics<br>
+            ✔ All Free features<br />
+            ✔ Personalized fitness plans<br />
+            ✔ Full workout library<br />
+            ✔ Nutrition and meal guidance<br />
+            ✔ Progress tracking and analytics<br />
             $10/Month
           </p>
         </div>
@@ -284,14 +286,13 @@
     </div>
   </section>
 
-  <!-- Register as User or Business -->
-  <section id="register" class="register-buttons">
+  <section id="register" class="register-buttons" aria-label="Registration options">
     <h2>Register as:</h2>
     <button onclick="location.href='signup.html'">User</button>
     <button onclick="location.href='BusinessUserSignup.html'">Business User</button>
   </section>
 
-  <section id="testimonials">
+  <section id="testimonials" aria-label="User testimonials">
     <div class="section-content">
       <h2>Testimonials</h2>
       <div class="testimonials-grid">
@@ -316,10 +317,12 @@
   </footer>
 
   <script>
+    // Smooth scroll to registration section on nav click
     document.querySelector('a[href="#register"]').addEventListener('click', function(event) {
       event.preventDefault();
       document.querySelector('#register').scrollIntoView({ behavior: 'smooth' });
     });
   </script>
+
 </body>
 </html>
