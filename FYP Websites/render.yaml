@@ -1,8 +1,8 @@
 services:
   - type: web
-    name: fyp-website
-    env: docker
+    name: my-node-app
+    env: node
+    buildCommand: npm install
+    startCommand: npm start
     plan: free
     branch: main
-    dockerfilePath: ./Dockerfile
-    dockerContext: ./
