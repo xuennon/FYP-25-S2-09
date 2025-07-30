@@ -299,11 +299,11 @@
         <label for="category">Category</label>
         <select id="category" name="category" required>
           <option value="">Select category</option>
-          <option value="Gym">Gym - Flexibility and Mobility (Yoga)</option>
-          <option value="Crossfit">Crossfit - HIIT</option>
+          <option value="Gym - Flexibility and Mobility (Yoga)">Gym - Flexibility and Mobility (Yoga)</option>
+          <option value="Crossfit - HIIT">Crossfit - HIIT</option>
            <option value="Crossfit">Crossfit - Metabolic Conditioning</option>
-          <option value="Dance Studio">Dance - Zumba</option>
-          <option value="Dance Studio">Dance - Body Combat</option>
+          <option value="Dance - Zumba">Dance - Zumba</option>
+          <option value="Dance - Body Combat">Dance - Body Combat</option>
           <option value="Physiotherapy">Physiotherapy</option>
           <option value="Martial Arts">Martial Arts</option>
         </select>
@@ -414,7 +414,9 @@
         return;
       }
 
-      const data = { name, description, duration, category };
+
+      // Attach createdBy field for ownership
+      const data = { name, description, duration, category, createdBy: currentUser.uid };
 
       try {
         if (!currentUser) {
@@ -445,7 +447,11 @@
       }
 
       try {
-        const querySnapshot = await getDocs(collection(db, "services"));
+        // Only show services created by the current user
+        const q = await import('https://www.gstatic.com/firebasejs/10.6.0/firebase-firestore.js');
+        const { query, where, getDocs, collection } = q;
+        const servicesQuery = query(collection(db, "services"), where("createdBy", "==", currentUser.uid));
+        const querySnapshot = await getDocs(servicesQuery);
         if (querySnapshot.empty) {
           servicesTable.innerHTML = `<tr><td colspan="5" style="text-align:center;">No services found.</td></tr>`;
           return;
@@ -453,7 +459,6 @@
         querySnapshot.forEach((docSnap) => {
           const data = docSnap.data();
           const tr = document.createElement("tr");
-
           tr.innerHTML = `
             <td>${data.name}</td>
             <td>${data.description}</td>
@@ -464,10 +469,8 @@
               <button class="delete" data-id="${docSnap.id}">Delete</button>
             </td>
           `;
-
           tr.querySelector(".edit").onclick = () => editService(docSnap.id, data);
           tr.querySelector(".delete").onclick = () => deleteService(docSnap.id);
-
           servicesTable.appendChild(tr);
         });
       } catch (error) {
@@ -541,6 +544,7 @@
         await signOut(auth);
         alert("Logged out successfully.");
         closeMenu();
+        window.location.href = "Login.html";
       } catch (error) {
         alert("Logout failed: " + error.message);
         console.error(error);

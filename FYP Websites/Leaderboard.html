@@ -5,6 +5,93 @@
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>Leaderboard Management - Wise Fitness</title>
   <style>
+    /* Ensure all challenge type widgets are the same size */
+    .challenge-type-btn {
+      width: 95%;
+      height: 140px;
+      min-width: 340px;
+      min-height: 140px;
+      max-width: 440px;
+      max-height: 180px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: flex-start;
+      background: linear-gradient(135deg, #f7f9fb 80%, #eaf3fb 100%);
+      color: #222;
+      border: 2.5px solid #e0e0e0;
+      border-radius: 22px;
+      padding: 24px 16px 16px 16px;
+      font-size: 18px;
+      font-weight: 700;
+      cursor: pointer;
+      outline: none;
+      box-shadow: 0 4px 18px rgba(0,0,0,0.08);
+      text-align: center;
+      margin-bottom: 0;
+      transition: box-shadow 0.22s, background 0.22s, color 0.22s, border 0.22s, transform 0.18s;
+      user-select: none;
+      position: relative;
+    }
+    .challenge-type-btn.selected, .challenge-type-btn:focus {
+      background: var(--primary);
+      color: #fff;
+      border: 2.5px solid #005bb5;
+      box-shadow: 0 8px 28px rgba(0,123,255,0.22);
+      outline: 2.5px solid #fff;
+      transform: scale(1.01);
+      z-index: 1;
+    }
+    .challenge-type-btn.selected .ct-title,
+    .challenge-type-btn.selected .ct-desc,
+    .challenge-type-btn.selected .ct-icon {
+      color: #fff !important;
+    }
+    .challenge-type-btn.selected .ct-icon {
+      text-shadow: 0 2px 8px #005bb5;
+    }
+    .challenge-type-btn.selected::after {
+      content: '\2714';
+      position: absolute;
+      top: 16px;
+      right: 32px;
+      font-size: 22px;
+      color: #fff;
+      background: #007bff;
+      border-radius: 50%;
+      width: 28px;
+      height: 28px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      box-shadow: 0 1px 6px rgba(0,0,0,0.14);
+      border: 2.5px solid #fff;
+      animation: popIn 0.25s cubic-bezier(.4,2,.6,1);
+    }
+    .challenge-type-btn:hover:not(.selected) {
+      background: #e6f0fa;
+      color: var(--primary);
+      border: 2.5px solid #b3d4fc;
+      box-shadow: 0 6px 18px rgba(0,123,255,0.13);
+      transform: translateY(-2px) scale(1.01);
+    }
+    .ct-widget {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: flex-start;
+      height: 100%;
+      width: 100%;
+    }
+    .ct-widget-text {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: flex-start;
+      flex: 1 1 auto;
+      width: 100%;
+      min-height: 80px;
+    }
     :root {
       --primary: #007bff;
       --light-bg: #f9f9f9;
@@ -316,43 +403,59 @@
 
     .leaderboard-actions {
       display: flex;
-      gap: 8px;
+      gap: 6px;
+      justify-content: center;
+      align-items: center;
     }
-
     .action-btn {
-      padding: 6px 12px;
-      border-radius: var(--radius);
+      padding: 7px 13px;
+      border-radius: 8px;
       border: none;
       font-weight: 600;
       cursor: pointer;
-      transition: background-color 0.2s ease;
+      font-size: 16px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: background 0.18s, box-shadow 0.18s, transform 0.13s;
+      box-shadow: 0 1px 4px rgba(0,0,0,0.06);
+      outline: none;
+    }
+    .action-btn:active {
+      transform: scale(0.97);
     }
 
     .view-btn {
-      background: #17a2b8;
-      color: white;
+      background: #28a745;
+      color: #fff;
+      border: 1.5px solid #28a745;
     }
-
     .view-btn:hover {
-      background: #138496;
+      background: #218838;
+      color: #fff;
+      border-color: #218838;
     }
 
     .edit-btn {
       background: #ffc107;
       color: #111;
+      border: 1.5px solid #ffc107;
     }
-
     .edit-btn:hover {
       background: #e0a800;
+      color: #111;
+      border-color: #e0a800;
     }
 
     .delete-btn {
       background: #dc3545;
-      color: white;
+      color: white !important;
+      border: 1.5px solid #f5b7b7;
     }
-
     .delete-btn:hover {
       background: #c82333;
+      color: white !important;
+      border-color: #dc3545;
     }
 
     /* Modal styles */
@@ -406,52 +509,150 @@
       color: var(--text-dark);
     }
 
-    .form-group {
-      margin-bottom: 16px;
-    }
 
+    /* Improved form group styles for neater look */
+    .form-group {
+      margin-bottom: 20px;
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+    }
     .form-group label {
       display: block;
-      margin-bottom: 8px;
+      margin-bottom: 4px;
       font-weight: 600;
+      font-size: 15.5px;
+      color: #222;
+      letter-spacing: 0.01em;
     }
-
+    body.dark .form-group label {
+      color: #f1f1f1;
+    }
     .form-group input,
     .form-group textarea {
       width: 100%;
-      padding: 10px;
-      border-radius: var(--radius);
-      border: 1px solid #ddd;
+      padding: 12px 14px;
+      border-radius: 10px;
+      border: 1.5px solid #cfd8dc;
       font-family: inherit;
+      font-size: 16px;
+      background: #f7f9fb;
+      color: #222;
+      transition: border 0.2s, box-shadow 0.2s;
+      box-shadow: 0 1px 4px rgba(0,0,0,0.04);
     }
-
+    .form-group input:focus,
+    .form-group textarea:focus {
+      border: 1.5px solid var(--primary);
+      outline: none;
+      box-shadow: 0 2px 8px rgba(0,123,255,0.10);
+      background: #eaf3fb;
+    }
     body.dark .form-group input,
     body.dark .form-group textarea {
-      background: var(--dark-bg);
-      color: var(--text-dark);
+      background: #23272b;
+      color: #f1f1f1;
       border-color: #444;
     }
-
+    body.dark .form-group input:focus,
+    body.dark .form-group textarea:focus {
+      background: #1f2327;
+      border-color: var(--primary);
+    }
     .form-group textarea {
-      min-height: 100px;
+      min-height: 90px;
       resize: vertical;
     }
 
+    /* Improved submit button styles */
     .submit-btn {
-      background: var(--primary);
+      background: linear-gradient(90deg, var(--primary) 80%, #005bb5 100%);
       color: white;
       border: none;
-      border-radius: var(--radius);
-      padding: 12px 24px;
-      font-size: 16px;
-      font-weight: 600;
+      border-radius: 10px;
+      padding: 12px 0;
+      font-size: 16.5px;
+      font-weight: 700;
       cursor: pointer;
-      margin-top: 8px;
+      margin-top: 0;
       width: 100%;
+      box-shadow: 0 2px 8px rgba(0,123,255,0.08);
+      letter-spacing: 0.01em;
+      transition: background 0.2s, box-shadow 0.2s, filter 0.2s;
+      outline: none;
+    }
+    .submit-btn:active {
+      filter: brightness(0.93);
+    }
+    .submit-btn:disabled {
+      background: #b3d4fc;
+      color: #fff;
+      cursor: not-allowed;
+      opacity: 0.7;
+    }
+    .submit-btn:hover:not(:disabled) {
+      background: linear-gradient(90deg, #005bb5 80%, var(--primary) 100%);
+      box-shadow: 0 4px 16px rgba(0,123,255,0.13);
     }
 
-    .submit-btn:hover {
-      opacity: 0.9;
+    /* Modal step label improvements */
+  
+
+    .modal-step > label {
+      font-size: 17px !important;
+      font-weight: 700 !important;
+      margin-bottom: 16px !important;
+      color: #111 !important;
+      letter-spacing: 0.01em;
+    }
+    body.dark .modal-step > label {
+      color: #f1f1f1 !important;
+    }
+
+    /* Modal step button row improvements */
+    .modal-step > div[style*="display:flex"] {
+      gap: 12px;
+    }
+
+    /* Metrics and sports options improvements */
+    .metrics-options label, .sports-options label {
+      font-size: 15.5px;
+      margin-bottom: 4px;
+      padding: 7px 0 7px 2px;
+      border-radius: 7px;
+      transition: background 0.18s;
+      display: flex;
+      align-items: center;
+      gap: 7px;
+      cursor: pointer;
+    }
+    .metrics-options label:hover, .sports-options label:hover {
+      background: #eaf3fb;
+    }
+    body.dark .metrics-options label:hover, body.dark .sports-options label:hover {
+      background: #23272b;
+    }
+    .metrics-options input[type="checkbox"], .sports-options input[type="checkbox"] {
+      accent-color: var(--primary);
+      margin-right: 8px;
+      width: 18px;
+      height: 18px;
+    }
+
+    /* Modal content padding for mobile */
+    @media (max-width: 600px) {
+      .modal-content {
+        padding: 14px 6px 18px 6px;
+        max-width: 99vw;
+      }
+      .form-group input, .form-group textarea {
+        font-size: 15px;
+        padding: 10px 8px;
+      }
+      .submit-btn {
+        font-size: 15px;
+        padding: 10px 0;
+      }
     }
 
     @media (max-width: 900px) {
@@ -511,7 +712,6 @@
     <div class="content">
       <div class="leaderboard-container">
         <div class="leaderboard-header">
-          <h2>Leaderboards</h2>
           <button class="create-leaderboard-btn" onclick="openCreateModal()">
             <span>+</span> Create Leaderboard
           </button>
@@ -520,39 +720,18 @@
         <table class="leaderboard-table">
           <thead>
             <tr>
+              <th>Challenge Type</th>
+              <th>Metrics</th>
+              <th>Sports</th>
+              <th>Start Date</th>
+              <th>End Date</th>
               <th>Name</th>
               <th>Description</th>
               <th>Actions</th>
             </tr>
           </thead>
-          <tbody>
-            <tr>
-              <td>Monthly Fitness Challenge</td>
-              <td>Track your monthly fitness progress and compete with others</td>
-              <td class="leaderboard-actions">
-                <button class="action-btn view-btn" onclick="viewLeaderboard('Monthly Fitness Challenge')">View</button>
-                <button class="action-btn edit-btn" onclick="editLeaderboard('Monthly Fitness Challenge', 'Track your monthly fitness progress and compete with others')">Edit</button>
-                <button class="action-btn delete-btn" onclick="deleteLeaderboard('Monthly Fitness Challenge')">Delete</button>
-              </td>
-            </tr>
-            <tr>
-              <td>Step Count Leaderboard</td>
-              <td>Daily step count competition for all members</td>
-              <td class="leaderboard-actions">
-                <button class="action-btn view-btn" onclick="viewLeaderboard('Step Count Leaderboard')">View</button>
-                <button class="action-btn edit-btn" onclick="editLeaderboard('Step Count Leaderboard', 'Daily step count competition for all members')">Edit</button>
-                <button class="action-btn delete-btn" onclick="deleteLeaderboard('Step Count Leaderboard')">Delete</button>
-              </td>
-            </tr>
-            <tr>
-              <td>Weight Loss Challenge</td>
-              <td>12-week weight loss transformation challenge</td>
-              <td class="leaderboard-actions">
-                <button class="action-btn view-btn" onclick="viewLeaderboard('Weight Loss Challenge')">View</button>
-                <button class="action-btn edit-btn" onclick="editLeaderboard('Weight Loss Challenge', '12-week weight loss transformation challenge')">Edit</button>
-                <button class="action-btn delete-btn" onclick="deleteLeaderboard('Weight Loss Challenge')">Delete</button>
-              </td>
-            </tr>
+          <tbody id="leaderboardTableBody">
+            <!-- Leaderboard rows will be rendered here -->
           </tbody>
         </table>
       </div>
@@ -561,40 +740,270 @@
 
   <!-- Create Leaderboard Modal -->
   <div class="modal" id="createModal">
-    <div class="modal-content">
+    <div class="modal-content" id="createModalContent">
       <div class="modal-header">
-        <h3>Create Leaderboard</h3>
-        <button class="close-btn" onclick="closeCreateModal()">&times;</button>
+        <h3 id="createModalTitle">Challenge Type</h3>
+        <button class="close-btn" id="createModalCloseBtn">&times;</button>
       </div>
-      <form id="createLeaderboardForm">
-        <div class="form-group">
-          <label for="leaderboardName">Name</label>
-          <input type="text" id="leaderboardName" required>
+      <div class="modal-steps">
+        <!-- Step 1: Challenge Type -->
+        <div class="modal-step" id="step1">
+          <label style="font-weight:600; font-size:16px; margin-bottom:10px; display:block;">Let's get started. Pick your challenge type.</label>
+          <div class="challenge-type-options">
+            <button type="button" class="challenge-type-btn" data-type="group_goal">
+              <div class="ct-widget">
+                <span class="ct-icon">🤝</span>
+                <div class="ct-widget-text">
+                  <div class="ct-title" style="font-weight: bold; font-size: 20px; margin-bottom: 6px;">Group Goal</div>
+                  <div class="ct-desc" style="font-weight: normal; font-size: 15px;">Chase a goal as a group. All activities will count towards a single goal.</div>
+                </div>
+              </div>
+            </button>
+            <button type="button" class="challenge-type-btn" data-type="most_activity">
+              <div class="ct-widget">
+                <span class="ct-icon">🔥</span>
+                <div class="ct-widget-text">
+                  <div class="ct-title" style="font-weight: bold; font-size: 20px; margin-bottom: 6px;">Most Activity</div>
+                  <div class="ct-desc" style="font-weight: normal; font-size: 15px;">Log as much distance, time, elevation or steps as you can during the challenge period.</div>
+                </div>
+              </div>
+            </button>
+            <button type="button" class="challenge-type-btn" data-type="fastest_effort">
+              <div class="ct-widget">
+                <span class="ct-icon">⚡</span>
+                <div class="ct-widget-text">
+                  <div class="ct-title" style="font-weight: bold; font-size: 20px; margin-bottom: 6px;">Fastest Effort</div>
+                  <div class="ct-desc" style="font-weight: normal; font-size: 15px;">Upload the fastest run over a set distance.</div>
+                </div>
+              </div>
+            </button>
+            <button type="button" class="challenge-type-btn" data-type="longest_single_activity">
+              <div class="ct-widget">
+                <span class="ct-icon">🏆</span>
+                <div class="ct-widget-text">
+                  <div class="ct-title" style="font-weight: bold; font-size: 20px; margin-bottom: 6px;">Longest Single Activity</div>
+                  <div class="ct-desc" style="font-weight: normal; font-size: 15px;">Log the most distance in one activity.</div>
+                </div>
+              </div>
+            </button>
+          </div>
+          <div style="margin-top:18px; text-align:right;">
+            <button type="button" class="submit-btn" id="toStep2Btn" disabled>Next</button>
+          </div>
         </div>
-        <div class="form-group">
-          <label for="leaderboardDescription">Description</label>
-          <textarea id="leaderboardDescription" required></textarea>
+        <!-- Step 2: Metrics -->
+        <div class="modal-step" id="step2" style="display:none;">
+          <label style="font-weight:600; font-size:16px; margin-bottom:10px; display:block;">What do you want to track?</label>
+          <div class="metrics-options">
+            <label><input type="checkbox" class="metric-checkbox" value="distance"> Distance</label><br>
+            <label><input type="checkbox" class="metric-checkbox" value="time"> Time</label><br>
+            <label><input type="checkbox" class="metric-checkbox" value="elevation"> Elevation</label><br>
+            <label><input type="checkbox" class="metric-checkbox" value="steps"> Steps</label>
+          </div>
+          <div style="margin-top:18px; display:flex; justify-content:space-between;">
+            <button type="button" class="submit-btn" id="backToStep1Btn">Back</button>
+            <button type="button" class="submit-btn" id="toStep3Btn">Next</button>
+          </div>
         </div>
-        <button type="submit" class="submit-btn">Create</button>
-      </form>
+        <!-- Step 3: Sports -->
+        <div class="modal-step" id="step3" style="display:none;">
+          <label style="font-weight:600; font-size:16px; margin-bottom:10px; display:block;">Which sports will count towards your challenge?</label>
+          <div class="sports-options">
+            <label><input type="checkbox" class="sport-checkbox" value="ride" id="sportRide"> Ride</label>
+            <label><input type="checkbox" class="sport-checkbox" value="run" id="sportRun"> Run</label>
+            <label><input type="checkbox" class="sport-checkbox" value="swim" id="sportSwim"> Swim</label>
+            <label><input type="checkbox" class="sport-checkbox" value="hike" id="sportHike"> Hike</label>
+            <label><input type="checkbox" class="sport-checkbox" value="walk" id="sportWalk"> Walk</label>
+          </div>
+          <div style="margin:10px 0 0 0;">
+            <label><input type="checkbox" id="selectAllSports"> Select All</label>
+          </div>
+          <div style="margin-top:18px; display:flex; justify-content:space-between;">
+            <button type="button" class="submit-btn" id="backToStep2Btn">Back</button>
+            <button type="button" class="submit-btn" id="toStep4Btn">Next</button>
+          </div>
+        </div>
+        <!-- Step 4: Dates -->
+        <div class="modal-step" id="step4" style="display:none;">
+          <label style="font-weight:600; font-size:16px; margin-bottom:10px; display:block;">Choose when to kick off your challenge</label>
+          <div class="form-group">
+            <label for="challengeStartDate">Start Date</label>
+            <input type="date" id="challengeStartDate" required>
+          </div>
+          <div class="form-group">
+            <label for="challengeEndDate">End Date</label>
+            <input type="date" id="challengeEndDate" required>
+          </div>
+          <div style="margin-top:18px; display:flex; justify-content:space-between;">
+            <button type="button" class="submit-btn" id="backToStep3Btn">Back</button>
+            <button type="button" class="submit-btn" id="toStep5Btn">Next</button>
+          </div>
+        </div>
+        <!-- Step 5: Name/Description -->
+        <div class="modal-step" id="step5" style="display:none;">
+          <label style="font-weight:600; font-size:16px; margin-bottom:10px; display:block;">Give your challenge a name and description (optional)</label>
+          <div class="form-group">
+            <label for="challengeName">Name</label>
+            <input type="text" id="challengeName" maxlength="50" placeholder="e.g. Summer Step Challenge">
+          </div>
+          <div class="form-group">
+            <label for="challengeDesc">Description</label>
+            <textarea id="challengeDesc" maxlength="200" placeholder="Describe your challenge (optional)"></textarea>
+          </div>
+          <div style="margin-top:18px; display:flex; justify-content:space-between;">
+            <button type="button" class="submit-btn" id="backToStep4Btn">Back</button>
+            <button type="button" class="submit-btn" id="finishCreateBtn">Finish</button>
+          </div>
+        </div>
+      </div>
     </div>
   </div>
+    /* Multi-step modal styles */
+    .sports-options {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 12px;
+      margin-bottom: 8px;
+    }
+    .sports-options label {
+      font-size: 15px;
+      margin-bottom: 6px;
+      display: block;
+      cursor: pointer;
+      min-width: 80px;
+    }
+    .sports-options input[type="checkbox"] {
+      margin-right: 8px;
+      accent-color: var(--primary);
+    }
+    .modal-steps {
+      min-width: 260px;
+      min-height: 180px;
+      position: relative;
+      overflow: hidden;
+    }
+    .modal-step {
+      transition: transform 0.4s cubic-bezier(.4,2,.6,1), opacity 0.3s;
+      will-change: transform, opacity;
+    }
+    .challenge-type-options {
+      display: flex;
+      flex-direction: column;
+      gap: 18px;
+      margin-bottom: 16px;
+      width: 100%;
+      align-items: center;
+      padding-bottom: 8px;
+    }
+    .ct-row {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 12px;
+      margin-bottom: 0;
+      padding-bottom: 0;
+    }
+    .ct-title {
+      font-size: 22px;
+      font-weight: 700;
+      letter-spacing: 0.2px;
+      margin-bottom: 0;
+      margin-top: 0;
+    }
+    .ct-desc {
+      font-size: 15px;
+      color: #222;
+      margin: 16px 0 0 0;
+      text-align: center;
+      font-weight: 400;
+      line-height: 1.5;
+      max-width: 95%;
+      letter-spacing: 0.01em;
+      min-height: 38px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+    body.dark .ct-desc {
+      color: #f1f1f1;
+    }
+    @keyframes popIn {
+      0% { transform: scale(0.5); opacity: 0; }
+      80% { transform: scale(1.1); opacity: 1; }
+      100% { transform: scale(1); opacity: 1; }
+    }
+    /* removed duplicate .challenge-type-btn and .challenge-type-btn:hover:not(.selected) for redesign */
+    .metrics-options label {
+      font-size: 15px;
+      margin-bottom: 6px;
+      display: block;
+      cursor: pointer;
+    }
+    .metrics-options input[type="checkbox"] {
+      margin-right: 8px;
+      accent-color: var(--primary);
+    }
 
   <!-- Edit Leaderboard Modal -->
   <div class="modal" id="editModal">
     <div class="modal-content">
       <div class="modal-header">
         <h3>Edit Leaderboard</h3>
-        <button class="close-btn" onclick="closeEditModal()">&times;</button>
+        <button class="close-btn" id="editModalCloseBtn">&times;</button>
       </div>
       <form id="editLeaderboardForm">
-        <div class="form-group">
-          <label for="editLeaderboardName">Name</label>
-          <input type="text" id="editLeaderboardName" required>
+        <div style="margin-bottom:18px;">
+          <h4 style="margin-bottom:8px; color:#007bff;">Challenge Info</h4>
+          <div class="form-group">
+            <label for="editChallengeType">Challenge Type</label>
+            <select id="editChallengeType" required>
+              <option value="Group Goal">Group Goal</option>
+              <option value="Most Activity">Most Activity</option>
+              <option value="Fastest Effort">Fastest Effort</option>
+              <option value="Longest Single Activity">Longest Single Activity</option>
+            </select>
+          </div>
         </div>
-        <div class="form-group">
-          <label for="editLeaderboardDescription">Description</label>
-          <textarea id="editLeaderboardDescription" required></textarea>
+        <div style="margin-bottom:18px;">
+          <h4 style="margin-bottom:8px; color:#007bff;">Metrics</h4>
+          <div class="form-group" style="flex-direction:row; flex-wrap:wrap; gap:18px;">
+            <label><input type="checkbox" class="edit-metric-checkbox" value="distance"> Distance</label>
+            <label><input type="checkbox" class="edit-metric-checkbox" value="time"> Time</label>
+            <label><input type="checkbox" class="edit-metric-checkbox" value="elevation"> Elevation</label>
+            <label><input type="checkbox" class="edit-metric-checkbox" value="steps"> Steps</label>
+          </div>
+        </div>
+        <div style="margin-bottom:18px;">
+          <h4 style="margin-bottom:8px; color:#007bff;">Sports</h4>
+          <div class="form-group" style="flex-direction:row; flex-wrap:wrap; gap:18px;">
+            <label><input type="checkbox" class="edit-sport-checkbox" value="ride"> Ride</label>
+            <label><input type="checkbox" class="edit-sport-checkbox" value="run"> Run</label>
+            <label><input type="checkbox" class="edit-sport-checkbox" value="swim"> Swim</label>
+            <label><input type="checkbox" class="edit-sport-checkbox" value="hike"> Hike</label>
+            <label><input type="checkbox" class="edit-sport-checkbox" value="walk"> Walk</label>
+          </div>
+        </div>
+        <div style="margin-bottom:18px;">
+          <h4 style="margin-bottom:8px; color:#007bff;">Dates</h4>
+          <div class="form-group">
+            <label for="editStartDate">Start Date</label>
+            <input type="date" id="editStartDate" required>
+          </div>
+          <div class="form-group">
+            <label for="editEndDate">End Date</label>
+            <input type="date" id="editEndDate" required>
+          </div>
+        </div>
+        <div style="margin-bottom:18px;">
+          <h4 style="margin-bottom:8px; color:#007bff;">Details</h4>
+          <div class="form-group">
+            <label for="editLeaderboardName">Name</label>
+            <input type="text" id="editLeaderboardName" required>
+          </div>
+          <div class="form-group">
+            <label for="editLeaderboardDescription">Description</label>
+            <textarea id="editLeaderboardDescription" required></textarea>
+          </div>
         </div>
         <button type="submit" class="submit-btn">Update</button>
       </form>
@@ -616,7 +1025,7 @@
 
     import { initializeApp } from "https://www.gstatic.com/firebasejs/9.23.0/firebase-app.js";
     import { getAuth, onAuthStateChanged, signOut, sendPasswordResetEmail } from "https://www.gstatic.com/firebasejs/9.23.0/firebase-auth.js";
-    import { getFirestore, doc, getDoc } from "https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore.js";
+import { getFirestore, doc, getDoc, updateDoc } from "https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore.js";
 
     const firebaseConfig = {
       apiKey: "AIzaSyAIFV7ynXUzA0p-CrmVOE2lFRgaf_9g_k4",
@@ -703,36 +1112,357 @@
       }
     });
 
-    // Leaderboard modal functions
+    // Firebase imports for Firestore
+    import { collection, addDoc, getDocs, deleteDoc, doc as firestoreDoc } from "https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore.js";
+
+    // Render leaderboard table from Firestore
+    async function renderLeaderboardTable() {
+      const tbody = document.getElementById('leaderboardTableBody');
+      tbody.innerHTML = '<tr><td colspan="8" style="text-align:center; color:#888;">Loading...</td></tr>';
+      try {
+        const querySnapshot = await getDocs(collection(db, "leaderboard"));
+        let rows = '';
+        function formatDate(iso) {
+          if (!iso) return '';
+          const [y, m, d] = iso.split('-');
+          if (!y || !m || !d) return iso;
+          return `${d}/${m}/${y}`;
+        }
+        querySnapshot.forEach((docSnap) => {
+          const data = docSnap.data();
+          rows += `
+            <tr>
+              <td>${data.challengeType || ''}</td>
+              <td>${(data.metrics || []).map(m => m.charAt(0).toUpperCase() + m.slice(1)).join(', ')}</td>
+              <td>${(data.sports || []).map(s => s.charAt(0).toUpperCase() + s.slice(1)).join(', ')}</td>
+              <td>${formatDate(data.startDate)}</td>
+              <td>${formatDate(data.endDate)}</td>
+              <td>${data.name ? data.name.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;') : ''}</td>
+              <td>${data.description ? data.description.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;') : ''}</td>
+              <td class="leaderboard-actions">
+                <button class="action-btn view-btn" title="View" onclick="viewLeaderboard('${docSnap.id}')">View</button>
+                <button class="action-btn edit-btn" title="Edit" onclick="editLeaderboard('${docSnap.id}')">Edit</button>
+                <button class="action-btn delete-btn" title="Delete" onclick="deleteLeaderboard('${docSnap.id}')">Delete</button>
+              </td>
+            </tr>
+          `;
+        });
+        tbody.innerHTML = rows || '<tr><td colspan="8" style="text-align:center; color:#888;">No leaderboards found.</td></tr>';
+      } catch (err) {
+        tbody.innerHTML = `<tr><td colspan="8" style="text-align:center; color:#c00;">Failed to load: ${err.message}</td></tr>`;
+      }
+    }
+
+    // Call on page load
+    renderLeaderboardTable();
+    let selectedChallengeType = null;
+    let selectedMetrics = [];
+    let selectedSports = [];
+    let selectedStartDate = '';
+    let selectedEndDate = '';
+    let enteredName = '';
+    let enteredDesc = '';
+    const step1 = document.getElementById('step1');
+    const step2 = document.getElementById('step2');
+    const step3 = document.getElementById('step3');
+    const step4 = document.getElementById('step4');
+    const step5 = document.getElementById('step5');
+    const toStep2Btn = document.getElementById('toStep2Btn');
+    const backToStep1Btn = document.getElementById('backToStep1Btn');
+    const toStep3Btn = document.getElementById('toStep3Btn');
+    const backToStep2Btn = document.getElementById('backToStep2Btn');
+    const toStep4Btn = document.getElementById('toStep4Btn');
+    const backToStep3Btn = document.getElementById('backToStep3Btn');
+    const toStep5Btn = document.getElementById('toStep5Btn');
+    const backToStep4Btn = document.getElementById('backToStep4Btn');
+    const finishCreateBtn = document.getElementById('finishCreateBtn');
+    const challengeTypeBtns = document.querySelectorAll('.challenge-type-btn');
+    const metricCheckboxes = document.querySelectorAll('.metric-checkbox');
+    const sportCheckboxes = document.querySelectorAll('.sport-checkbox');
+    const selectAllSports = document.getElementById('selectAllSports');
+    const challengeStartDate = document.getElementById('challengeStartDate');
+    const challengeEndDate = document.getElementById('challengeEndDate');
+    const challengeNameInput = document.getElementById('challengeName');
+    const challengeDescInput = document.getElementById('challengeDesc');
+    const createModalTitle = document.getElementById('createModalTitle');
+
     function openCreateModal() {
       createModal.style.display = "flex";
+      // Reset steps
+      step1.style.display = '';
+      step2.style.display = 'none';
+      step3.style.display = 'none';
+      step4.style.display = 'none';
+      step5.style.display = 'none';
+      createModalTitle.textContent = 'Challenge Type';
+      // Reset selections
+      challengeTypeBtns.forEach(btn => btn.classList.remove('selected'));
+      toStep2Btn.disabled = true;
+      selectedChallengeType = null;
+      metricCheckboxes.forEach(cb => cb.checked = false);
+      selectedMetrics = [];
+      sportCheckboxes.forEach(cb => cb.checked = false);
+      selectAllSports.checked = false;
+      selectedSports = [];
+      challengeStartDate.value = '';
+      challengeEndDate.value = '';
+      challengeNameInput.value = '';
+      challengeDescInput.value = '';
+      enteredName = '';
+      enteredDesc = '';
     }
+
+    // Attach event listener for close button in create modal
+    const createCloseBtn = document.getElementById('createModalCloseBtn');
+    if (createCloseBtn) {
+      createCloseBtn.addEventListener('click', closeCreateModal);
+    }
+    // Expose to global for button onclick
+    window.openCreateModal = openCreateModal;
 
     function closeCreateModal() {
       createModal.style.display = "none";
-      createLeaderboardForm.reset();
     }
 
-    function editLeaderboard(name, description) {
-      document.getElementById("editLeaderboardName").value = name;
-      document.getElementById("editLeaderboardDescription").value = description;
+    // Step 1: Challenge type selection
+    challengeTypeBtns.forEach(btn => {
+      btn.addEventListener('click', () => {
+        challengeTypeBtns.forEach(b => b.classList.remove('selected'));
+        btn.classList.add('selected');
+        selectedChallengeType = btn.getAttribute('data-type');
+        toStep2Btn.disabled = false;
+      });
+    });
+
+    // Step 2: Metrics
+    toStep2Btn.addEventListener('click', () => {
+      step1.style.display = 'none';
+      step2.style.display = '';
+      step3.style.display = 'none';
+      step4.style.display = 'none';
+      step5.style.display = 'none';
+      createModalTitle.textContent = 'Leaderboard Metrics';
+    });
+    backToStep1Btn.addEventListener('click', () => {
+      step2.style.display = 'none';
+      step1.style.display = '';
+      step3.style.display = 'none';
+      step4.style.display = 'none';
+      step5.style.display = 'none';
+      createModalTitle.textContent = 'Create Leaderboard';
+    });
+
+    // Step 3: Sports
+    toStep3Btn.addEventListener('click', () => {
+      // Validate metrics
+      selectedMetrics = Array.from(metricCheckboxes).filter(cb => cb.checked).map(cb => cb.value);
+      if (selectedMetrics.length === 0) {
+        alert('Please select at least one metric to track.');
+        return;
+      }
+      step2.style.display = 'none';
+      step3.style.display = '';
+      step1.style.display = 'none';
+      step4.style.display = 'none';
+      step5.style.display = 'none';
+      createModalTitle.textContent = 'Select Sports';
+    });
+    backToStep2Btn.addEventListener('click', () => {
+      step3.style.display = 'none';
+      step2.style.display = '';
+      step1.style.display = 'none';
+      step4.style.display = 'none';
+      step5.style.display = 'none';
+      createModalTitle.textContent = 'Leaderboard Metrics';
+    });
+    // Select All Sports logic
+    selectAllSports.addEventListener('change', () => {
+      sportCheckboxes.forEach(cb => cb.checked = selectAllSports.checked);
+    });
+    sportCheckboxes.forEach(cb => {
+      cb.addEventListener('change', () => {
+        if (!cb.checked) selectAllSports.checked = false;
+        else if (Array.from(sportCheckboxes).every(c => c.checked)) selectAllSports.checked = true;
+      });
+    });
+
+    // Step 4: Dates
+    toStep4Btn.addEventListener('click', () => {
+      selectedSports = Array.from(sportCheckboxes).filter(cb => cb.checked).map(cb => cb.value);
+      if (selectedSports.length === 0) {
+        alert('Please select at least one sport.');
+        return;
+      }
+      step3.style.display = 'none';
+      step4.style.display = '';
+      step1.style.display = 'none';
+      step2.style.display = 'none';
+      step5.style.display = 'none';
+      createModalTitle.textContent = 'Challenge Dates';
+    });
+    backToStep3Btn.addEventListener('click', () => {
+      step4.style.display = 'none';
+      step3.style.display = '';
+      step1.style.display = 'none';
+      step2.style.display = 'none';
+      step5.style.display = 'none';
+      createModalTitle.textContent = 'Select Sports';
+    });
+
+    // Step 5: Name/Description
+    toStep5Btn.addEventListener('click', () => {
+      selectedStartDate = challengeStartDate.value;
+      selectedEndDate = challengeEndDate.value;
+      if (!selectedStartDate || !selectedEndDate) {
+        alert('Please select both start and end dates.');
+        return;
+      }
+      if (selectedEndDate < selectedStartDate) {
+        alert('End date cannot be before start date.');
+        return;
+      }
+      step4.style.display = 'none';
+      step5.style.display = '';
+      step1.style.display = 'none';
+      step2.style.display = 'none';
+      step3.style.display = 'none';
+      createModalTitle.textContent = 'Challenge Name & Description';
+    });
+    backToStep4Btn.addEventListener('click', () => {
+      step5.style.display = 'none';
+      step4.style.display = '';
+      step1.style.display = 'none';
+      step2.style.display = 'none';
+      step3.style.display = 'none';
+      createModalTitle.textContent = 'Challenge Dates';
+    });
+
+    // Finish
+    finishCreateBtn.addEventListener('click', async () => {
+      enteredName = challengeNameInput.value.trim();
+      enteredDesc = challengeDescInput.value.trim();
+      // Validate all required fields again
+      if (!selectedChallengeType) {
+        alert('Please select a challenge type.');
+        return;
+      }
+      if (selectedMetrics.length === 0) {
+        alert('Please select at least one metric to track.');
+        return;
+      }
+      if (selectedSports.length === 0) {
+        alert('Please select at least one sport.');
+        return;
+      }
+      if (!selectedStartDate || !selectedEndDate) {
+        alert('Please select both start and end dates.');
+        return;
+      }
+      if (selectedEndDate < selectedStartDate) {
+        alert('End date cannot be before start date.');
+        return;
+      }
+      // Compose name/description
+      let challengeTypeLabel = '';
+      switch(selectedChallengeType) {
+        case 'group_goal': challengeTypeLabel = 'Group Goal'; break;
+        case 'most_activity': challengeTypeLabel = 'Most Activity'; break;
+        case 'fastest_effort': challengeTypeLabel = 'Fastest Effort'; break;
+        case 'longest_single_activity': challengeTypeLabel = 'Longest Single Activity'; break;
+        default: challengeTypeLabel = selectedChallengeType;
+      }
+      const name = enteredName || `${challengeTypeLabel} Leaderboard`;
+      const description = enteredDesc;
+
+      // Save to Firestore
+      try {
+        await addDoc(collection(db, "leaderboard"), {
+          challengeType: challengeTypeLabel,
+          metrics: selectedMetrics,
+          sports: selectedSports,
+          startDate: selectedStartDate,
+          endDate: selectedEndDate,
+          name: name,
+          description: description
+        });
+        closeCreateModal();
+        renderLeaderboardTable();
+      } catch (err) {
+        alert('Failed to create leaderboard: ' + err.message);
+      }
+    });
+
+
+// Track which leaderboard is being edited
+let editingLeaderboardId = null;
+// Edit leaderboard: fetch by id and fill modal
+async function editLeaderboard(id) {
+  try {
+    const docRef = doc(db, "leaderboard", id);
+    const docSnap = await getDoc(docRef);
+    if (docSnap.exists()) {
+      const data = docSnap.data();
+      document.getElementById("editChallengeType").value = data.challengeType || '';
+      // Metrics
+      const metricCheckboxes = document.querySelectorAll('.edit-metric-checkbox');
+      (data.metrics || []).forEach(metric => {
+        metricCheckboxes.forEach(cb => {
+          cb.checked = (cb.value === metric);
+        });
+      });
+      // Sports
+      const sportCheckboxes = document.querySelectorAll('.edit-sport-checkbox');
+      (data.sports || []).forEach(sport => {
+        sportCheckboxes.forEach(cb => {
+          cb.checked = (cb.value === sport);
+        });
+      });
+      document.getElementById("editStartDate").value = data.startDate || '';
+      document.getElementById("editEndDate").value = data.endDate || '';
+      document.getElementById("editLeaderboardName").value = data.name || '';
+      document.getElementById("editLeaderboardDescription").value = data.description || '';
       editModal.style.display = "flex";
+      editingLeaderboardId = id;
+    } else {
+      alert("Leaderboard not found.");
     }
+  } catch (err) {
+    alert("Failed to load leaderboard: " + err.message);
+  }
+}
+// Expose for inline onclick
+window.editLeaderboard = editLeaderboard;
+
 
     function closeEditModal() {
       editModal.style.display = "none";
     }
-
-    function viewLeaderboard(name) {
-      alert(`Viewing leaderboard: ${name}\n(Not implemented - would show ranking and points)`);
+    // Attach event listener for close button in edit modal
+    const editCloseBtn = document.getElementById('editModalCloseBtn');
+    if (editCloseBtn) {
+      editCloseBtn.addEventListener('click', closeEditModal);
     }
 
-    function deleteLeaderboard(name) {
-      if (confirm(`Are you sure you want to delete the "${name}" leaderboard?`)) {
-        alert(`Leaderboard "${name}" deleted (not implemented)`);
-        // Here you would typically call a function to delete the leaderboard from your database
+    // View leaderboard (placeholder)
+    function viewLeaderboard(id) {
+      alert(`Viewing leaderboard: ${id}\n(Not implemented - would show ranking and points)`);
+    }
+
+    // Delete leaderboard from Firestore
+    async function deleteLeaderboard(id) {
+      if (confirm(`Are you sure you want to delete this leaderboard?`)) {
+        try {
+          await deleteDoc(firestoreDoc(db, "leaderboard", id));
+          renderLeaderboardTable();
+        } catch (err) {
+          alert('Failed to delete leaderboard: ' + err.message);
+        }
       }
     }
+
+    // Expose for inline onclick
+    window.viewLeaderboard = viewLeaderboard;
+    window.deleteLeaderboard = deleteLeaderboard;
 
     createLeaderboardForm.addEventListener("submit", (e) => {
       e.preventDefault();
@@ -744,15 +1474,42 @@
       // Here you would typically call a function to save the leaderboard to your database
     });
 
-    editLeaderboardForm.addEventListener("submit", (e) => {
-      e.preventDefault();
-      const name = document.getElementById("editLeaderboardName").value;
-      const description = document.getElementById("editLeaderboardDescription").value;
-      
-      alert(`Leaderboard "${name}" updated (not implemented)`);
-      closeEditModal();
-      // Here you would typically call a function to update the leaderboard in your database
-    });
+
+editLeaderboardForm.addEventListener("submit", async (e) => {
+  e.preventDefault();
+  if (!editingLeaderboardId) {
+    alert("No leaderboard selected for editing.");
+    return;
+  }
+  // Gather all fields
+  const challengeType = document.getElementById("editChallengeType").value;
+  const metricCheckboxes = document.querySelectorAll('.edit-metric-checkbox');
+  const metrics = Array.from(metricCheckboxes).filter(cb => cb.checked).map(cb => cb.value);
+  const sportCheckboxes = document.querySelectorAll('.edit-sport-checkbox');
+  const sports = Array.from(sportCheckboxes).filter(cb => cb.checked).map(cb => cb.value);
+  const startDate = document.getElementById("editStartDate").value;
+  const endDate = document.getElementById("editEndDate").value;
+  const name = document.getElementById("editLeaderboardName").value;
+  const description = document.getElementById("editLeaderboardDescription").value;
+  // Validation
+  if (!challengeType || metrics.length === 0 || sports.length === 0 || !startDate || !endDate || !name) {
+    alert("Please fill in all required fields and select at least one metric and sport.");
+    return;
+  }
+  if (endDate < startDate) {
+    alert("End date cannot be before start date.");
+    return;
+  }
+  try {
+    const docRef = doc(db, "leaderboard", editingLeaderboardId);
+    await updateDoc(docRef, { challengeType, metrics, sports, startDate, endDate, name, description });
+    closeEditModal();
+    editingLeaderboardId = null;
+    renderLeaderboardTable();
+  } catch (err) {
+    alert("Failed to update leaderboard: " + err.message);
+  }
+});
 
     // Navigation functions
     window.logout = async () => {
