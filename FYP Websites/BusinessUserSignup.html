@@ -302,7 +302,8 @@
         email,
         phone: phone || null,
         registeredAt: new Date().toISOString(),
-        verified: false  // Admin updates this after manual verification
+        verified: false,  // Admin updates this after manual verification
+        membershipType: "BusinessUser"
       });
 
       alert(`Registration successful! Your account will be reviewed by our admin. You will receive an email once your registration is approved.`);

@@ -41,36 +41,111 @@
       color: var(--text-dark);
     }
 
-    .header {
-      background: var(--primary);
-      color: white;
-      padding: 16px 30px;
+    /* Toolbar styles (from Events.html/SystemAdmin.html) */
+    header.toolbar {
       display: flex;
       align-items: center;
       justify-content: space-between;
-      border-radius: var(--radius) var(--radius) 0 0;
-      box-shadow: var(--shadow);
+      background-color: #0066cc;
+      padding: 8px 16px;
+      color: white;
+      border-radius: 5px;
+      user-select: none;
+      margin-bottom: 20px;
       position: fixed;
       top: 0;
-      right: 0;
       left: 0;
-      height: 56px;
+      right: 0;
       z-index: 20;
+      height: 56px;
     }
-
-    .toggle-mode {
-      cursor: pointer;
-      font-size: 22px;
+    header.toolbar > div {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+    header.toolbar button {
       background: none;
       border: none;
       color: white;
+      cursor: pointer;
       user-select: none;
     }
-
-    .menu-icon {
+    #modeToggle {
+      font-size: 20px;
+    }
+    #menuBtn {
       font-size: 24px;
+    }
+    header.toolbar span.title {
+      font-weight: 600;
+      font-size: 18px;
+    }
+    /* Side Menu styles (from Events.html/SystemAdmin.html) */
+    #sideMenuOverlay {
+      display: none;
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100vw;
+      height: 100vh;
+      background: rgba(0, 0, 0, 0.4);
+      z-index: 1500;
+      transition: opacity 0.3s ease;
+    }
+    #sideMenuOverlay.active {
+      display: block;
+    }
+    #sideMenu {
+      position: fixed;
+      top: 0;
+      right: -280px;
+      left: auto;
+      width: 280px;
+      height: 100vh;
+      background-color: #004a99;
+      color: white;
+      padding: 20px;
+      box-sizing: border-box;
+      box-shadow: -2px 0 8px rgba(0, 0, 0, 0.3);
+      transition: right 0.3s ease;
+      z-index: 1600;
+      display: flex;
+      flex-direction: column;
+    }
+    #sideMenu.active {
+      right: 0;
+      left: auto;
+    }
+    #sideMenu h2 {
+      margin-top: 0;
+      margin-bottom: 20px;
+      font-weight: 700;
+      font-size: 22px;
+    }
+    #sideMenu nav a, #sideMenu button.menu-btn {
+      color: white;
+      text-decoration: none;
+      padding: 10px 0;
+      border-bottom: 1px solid rgba(255,255,255,0.2);
       cursor: pointer;
-      margin-left: 12px;
+      font-size: 16px;
+      display: block;
+      background: none;
+      border: none;
+      text-align: left;
+    }
+    #sideMenu nav a:hover, #sideMenu button.menu-btn:hover {
+      background: rgba(255,255,255,0.1);
+    }
+    #sideMenu button#closeMenuBtn {
+      background: none;
+      border: none;
+      color: white;
+      font-size: 24px;
+      align-self: flex-end;
+      cursor: pointer;
+      margin-bottom: 10px;
     }
 
     .container {
@@ -300,23 +375,36 @@
 
 <body>
 
-  <div class="header">
-    <div style="display: flex; align-items: center; gap: 12px;">
-      <button class="back-button" onclick="history.back()">←</button>
-      <span>Manage Users</span>
+  <div id="sideMenuOverlay" tabindex="-1"></div>
+  <aside id="sideMenu" aria-label="Main menu" role="navigation">
+    <button id="closeMenuBtn" aria-label="Close menu" title="Close menu">×</button>
+    <h2>Menu</h2>
+    <nav>
+      <button class="menu-btn" onclick="location.href='SystemAdmin.html'">Dashboard</button>
+      <button class="menu-btn" onclick="location.href='ManageUsers.html'">Manage User</button>
+      <button class="menu-btn" onclick="location.href='ManageBusiness.html'">Manage Business</button>
+      <button class="menu-btn" onclick="location.href='ManageLandingPage.html'">Manage Landing Page</button>
+      <button class="menu-btn" onclick="sendPasswordReset()">Reset Password</button>
+      <button class="menu-btn" onclick="logout()">Logout</button>
+    </nav>
+  </aside>
+  <header class="toolbar" role="banner" aria-label="Page toolbar">
+    <div style="display: flex; align-items: center; gap: 8px;">
+      <button id="backBtn" aria-label="Back" title="Back" style="background: none; border: none; color: white; font-size: 22px; cursor: pointer;">←</button>
+      <span class="title">Manage Users</span>
     </div>
     <div>
-      <button class="toggle-mode" id="modeToggle">🌙</button>
-      <span class="menu-icon" id="menuBtn">☰</span>
+      <button id="modeToggle" aria-label="Toggle light/dark mode" title="Toggle light/dark mode">🌙</button>
+      <button id="menuBtn" aria-label="Open menu" title="Open menu">☰</button>
     </div>
-  </div>
+  </header>
+    // Back button functionality
+    const backBtn = document.getElementById("backBtn");
+    if (backBtn) {
+      backBtn.onclick = () => window.history.back();
+    }
 
-  <div class="sidebar" id="sidebar">
-    <button onclick="location.href='profile.html'">Profile</button>
-    <button onclick="location.href='settings.html'">Settings</button>
-    <button onclick="location.href='SystemAdmin.html'">Dashboard</button>
-    <button onclick="logout()">Logout</button>
-  </div>
+
 
   <div class="container">
     <div class="filter-bar">
@@ -377,8 +465,30 @@
     const db = getFirestore(app);
     const userListEl = document.getElementById("userList");
 
-    const sidebar = document.getElementById("sidebar");
-    document.getElementById("menuBtn").onclick = () => sidebar.classList.toggle("active");
+
+    // Side menu logic (from SystemAdmin.html)
+    const sideMenu = document.getElementById("sideMenu");
+    const sideMenuOverlay = document.getElementById("sideMenuOverlay");
+    const menuBtn = document.getElementById("menuBtn");
+    const closeMenuBtn = document.getElementById("closeMenuBtn");
+    const body = document.body;
+    function openMenu() {
+      sideMenu.classList.add("active");
+      sideMenuOverlay.classList.add("active");
+    }
+    function closeMenu() {
+      sideMenu.classList.remove("active");
+      sideMenuOverlay.classList.remove("active");
+    }
+    menuBtn.addEventListener("click", openMenu);
+    closeMenuBtn.addEventListener("click", closeMenu);
+    sideMenuOverlay.addEventListener("click", closeMenu);
+
+    // Back button functionality
+    const backBtn = document.getElementById("backBtn");
+    if (backBtn) {
+      backBtn.onclick = () => window.history.back();
+    }
 
     const modeToggle = document.getElementById("modeToggle");
     modeToggle.onclick = () => {
@@ -449,6 +559,7 @@
             <div class="user-info" style="grid-template-columns: 150px 1fr;">
               <span class="label">Full Name:</span><span class="value">${u.fullName || "—"}</span>
               <span class="label">Email:</span><span class="value">${u.email || "—"}</span>
+              <span class="label">Membership:</span><span class="value">${u.membershipType ? u.membershipType.charAt(0).toUpperCase() + u.membershipType.slice(1) : "Basic"}</span>
               <span class="label">Status:</span><span class="value">${suspended ? "Suspended" : "Active"}</span>
             </div>
             <div class="btn-group">
