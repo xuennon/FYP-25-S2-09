@@ -414,7 +414,8 @@
         return;
       }
 
-      const data = { name, description, duration, category };
+      // Add createdBy field for new services
+      let data = { name, description, duration, category };
 
       try {
         if (!currentUser) {
@@ -426,6 +427,8 @@
           await updateDoc(doc(db, "services", id), data);
           alert("Service updated successfully.");
         } else {
+          // Add createdBy field for new service
+          data.createdBy = currentUser.uid;
           await addDoc(collection(db, "services"), data);
           alert("Service created successfully.");
         }

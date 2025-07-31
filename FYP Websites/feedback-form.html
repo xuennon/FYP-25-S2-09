@@ -1,0 +1,787 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Wise Fitness - User Experience Feedback</title>
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap');
+    
+    :root {
+      --primary-orange: #ff6b35;
+      --primary-purple: #6366f1;
+      --dark-bg: #0a0a0a;
+      --card-bg: #1a1a1a;
+      --text-white: #ffffff;
+      --text-gray: #a0a0a0;
+      --text-light-gray: #d1d5db;
+      --accent-green: #10b981;
+      --border-gray: #2a2a2a;
+      --gradient-orange: linear-gradient(135deg, #ff6b35 0%, #ff8659 100%);
+      --gradient-purple: linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%);
+      --shadow: 0 10px 25px rgba(0, 0, 0, 0.3);
+      --shadow-lg: 0 20px 40px rgba(0, 0, 0, 0.4);
+      --border-radius: 16px;
+      --transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+      background: var(--dark-bg);
+      color: var(--text-white);
+      line-height: 1.6;
+      min-height: 100vh;
+      position: relative;
+      overflow-x: hidden;
+    }
+
+    /* Background Effects */
+    body::before {
+      content: '';
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background: 
+        radial-gradient(circle at 20% 80%, rgba(255, 107, 53, 0.15) 0%, transparent 50%),
+        radial-gradient(circle at 80% 20%, rgba(99, 102, 241, 0.15) 0%, transparent 50%);
+      z-index: -1;
+    }
+
+    /* Header */
+    .header {
+      background: rgba(26, 26, 26, 0.95);
+      backdrop-filter: blur(20px);
+      border-bottom: 1px solid var(--border-gray);
+      padding: 1.5rem 2rem;
+      text-align: center;
+      position: sticky;
+      top: 0;
+      z-index: 100;
+    }
+
+    .header h1 {
+      font-size: 1.75rem;
+      font-weight: 800;
+      color: var(--text-white);
+      letter-spacing: -0.5px;
+      margin-bottom: 0.5rem;
+    }
+
+    .header .logo-accent {
+      background: var(--gradient-orange);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+    }
+
+    .header p {
+      color: var(--text-gray);
+      font-size: 0.95rem;
+    }
+
+    /* Main Container */
+    .feedback-container {
+      max-width: 600px;
+      margin: 0 auto;
+      padding: 3rem 2rem;
+      position: relative;
+      z-index: 1;
+    }
+
+    .feedback-card {
+      background: var(--card-bg);
+      border: 1px solid var(--border-gray);
+      border-radius: var(--border-radius);
+      padding: 3rem 2.5rem;
+      box-shadow: var(--shadow-lg);
+      position: relative;
+      overflow: hidden;
+    }
+
+    .feedback-card::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      height: 4px;
+      background: var(--gradient-orange);
+    }
+
+    /* Form Header */
+    .form-header {
+      text-align: center;
+      margin-bottom: 2.5rem;
+    }
+
+    .form-header h2 {
+      font-size: 2rem;
+      font-weight: 700;
+      color: var(--text-white);
+      margin-bottom: 0.75rem;
+      letter-spacing: -0.5px;
+    }
+
+    .form-header p {
+      color: var(--text-gray);
+      font-size: 1.1rem;
+      max-width: 400px;
+      margin: 0 auto;
+    }
+
+    /* Form Styling */
+    .feedback-form {
+      display: flex;
+      flex-direction: column;
+      gap: 2rem;
+    }
+
+    .form-group {
+      position: relative;
+    }
+
+    .form-group label {
+      display: block;
+      color: var(--text-white);
+      font-size: 1rem;
+      font-weight: 600;
+      margin-bottom: 0.75rem;
+      letter-spacing: -0.2px;
+    }
+
+    .form-group .label-accent {
+      color: var(--primary-orange);
+    }
+
+    /* User Type Selection */
+    .user-type-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+      gap: 1rem;
+      margin-top: 0.75rem;
+    }
+
+    .user-type-option {
+      position: relative;
+    }
+
+    .user-type-option input[type="radio"] {
+      position: absolute;
+      opacity: 0;
+      width: 0;
+      height: 0;
+    }
+
+    .user-type-label {
+      display: block;
+      background: rgba(255, 255, 255, 0.05);
+      border: 2px solid var(--border-gray);
+      border-radius: 12px;
+      padding: 1.25rem 1rem;
+      text-align: center;
+      cursor: pointer;
+      transition: var(--transition);
+      position: relative;
+      overflow: hidden;
+    }
+
+    .user-type-label::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: -100%;
+      width: 100%;
+      height: 100%;
+      background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.1), transparent);
+      transition: left 0.5s;
+    }
+
+    .user-type-label:hover::before {
+      left: 100%;
+    }
+
+    .user-type-label:hover {
+      border-color: var(--primary-orange);
+      background: rgba(255, 107, 53, 0.1);
+      transform: translateY(-2px);
+      box-shadow: var(--shadow);
+    }
+
+    .user-type-option input[type="radio"]:checked + .user-type-label {
+      background: var(--gradient-orange);
+      border-color: var(--primary-orange);
+      color: var(--text-white);
+      box-shadow: var(--shadow);
+    }
+
+    .user-type-label .icon {
+      font-size: 1.5rem;
+      margin-bottom: 0.5rem;
+      display: block;
+    }
+
+    .user-type-label .title {
+      font-weight: 600;
+      font-size: 0.95rem;
+    }
+
+    /* Star Rating */
+    .rating-container {
+      text-align: center;
+      margin-top: 0.75rem;
+    }
+
+    .stars {
+      display: inline-flex;
+      gap: 0.5rem;
+      margin-bottom: 1rem;
+    }
+
+    .star-input {
+      position: absolute;
+      opacity: 0;
+      width: 0;
+      height: 0;
+    }
+
+    .star-label {
+      font-size: 2.5rem;
+      color: var(--border-gray);
+      cursor: pointer;
+      transition: var(--transition);
+      display: block;
+      line-height: 1;
+    }
+
+    .star-label:hover {
+      color: #fbbf24;
+      transform: scale(1.1);
+    }
+
+    .rating-text {
+      color: var(--text-gray);
+      font-size: 0.9rem;
+      font-weight: 500;
+      margin-top: 0.5rem;
+    }
+
+    /* Textarea */
+    .feedback-textarea {
+      width: 100%;
+      background: rgba(255, 255, 255, 0.05);
+      border: 2px solid var(--border-gray);
+      border-radius: 12px;
+      padding: 1.25rem;
+      color: var(--text-white);
+      font-size: 1rem;
+      font-family: inherit;
+      line-height: 1.6;
+      resize: vertical;
+      min-height: 120px;
+      transition: var(--transition);
+      margin-top: 0.75rem;
+    }
+
+    .feedback-textarea:focus {
+      outline: none;
+      border-color: var(--primary-orange);
+      background: rgba(255, 255, 255, 0.08);
+      box-shadow: 0 0 0 3px rgba(255, 107, 53, 0.1);
+    }
+
+    .feedback-textarea::placeholder {
+      color: var(--text-gray);
+    }
+
+    /* Input Fields */
+    .input-row {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 1rem;
+    }
+
+    .form-input {
+      width: 100%;
+      background: rgba(255, 255, 255, 0.05);
+      border: 2px solid var(--border-gray);
+      border-radius: 12px;
+      padding: 1rem 1.25rem;
+      color: var(--text-white);
+      font-size: 1rem;
+      font-family: inherit;
+      transition: var(--transition);
+      margin-top: 0.75rem;
+    }
+
+    .form-input:focus {
+      outline: none;
+      border-color: var(--primary-orange);
+      background: rgba(255, 255, 255, 0.08);
+      box-shadow: 0 0 0 3px rgba(255, 107, 53, 0.1);
+    }
+
+    .form-input::placeholder {
+      color: var(--text-gray);
+    }
+
+    /* Submit Button */
+    .submit-section {
+      margin-top: 1rem;
+      text-align: center;
+    }
+
+    .submit-btn {
+      background: var(--gradient-orange);
+      color: var(--text-white);
+      border: none;
+      border-radius: var(--border-radius);
+      padding: 1.25rem 3rem;
+      font-size: 1.1rem;
+      font-weight: 700;
+      font-family: inherit;
+      cursor: pointer;
+      transition: var(--transition);
+      box-shadow: var(--shadow);
+      position: relative;
+      overflow: hidden;
+      min-width: 200px;
+    }
+
+    .submit-btn::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: -100%;
+      width: 100%;
+      height: 100%;
+      background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
+      transition: left 0.5s;
+    }
+
+    .submit-btn:hover::before {
+      left: 100%;
+    }
+
+    .submit-btn:hover {
+      transform: translateY(-3px);
+      box-shadow: var(--shadow-lg);
+    }
+
+    .submit-btn:active {
+      transform: translateY(-1px);
+    }
+
+    /* Success/Error Messages */
+    .message {
+      padding: 1rem 1.25rem;
+      border-radius: 12px;
+      margin-top: 1rem;
+      font-weight: 500;
+      text-align: center;
+      display: none;
+    }
+
+    .message.success {
+      background: rgba(16, 185, 129, 0.1);
+      border: 1px solid var(--accent-green);
+      color: var(--accent-green);
+    }
+
+    .message.error {
+      background: rgba(239, 68, 68, 0.1);
+      border: 1px solid #ef4444;
+      color: #ef4444;
+    }
+
+    /* Footer */
+    .footer {
+      text-align: center;
+      padding: 2rem;
+      margin-top: 2rem;
+      border-top: 1px solid var(--border-gray);
+      background: rgba(26, 26, 26, 0.5);
+    }
+
+    .footer p {
+      color: var(--text-gray);
+      font-size: 0.9rem;
+    }
+
+    .footer a {
+      color: var(--primary-orange);
+      text-decoration: none;
+      font-weight: 500;
+    }
+
+    .footer a:hover {
+      text-decoration: underline;
+    }
+
+    /* Mobile Responsiveness */
+    @media (max-width: 768px) {
+      .feedback-container {
+        padding: 2rem 1rem;
+      }
+
+      .feedback-card {
+        padding: 2rem 1.5rem;
+      }
+
+      .form-header h2 {
+        font-size: 1.75rem;
+      }
+
+      .user-type-grid {
+        grid-template-columns: 1fr;
+        gap: 0.75rem;
+      }
+
+      .input-row {
+        grid-template-columns: 1fr;
+        gap: 0;
+      }
+
+      .stars {
+        gap: 0.25rem;
+      }
+
+      .star-label {
+        font-size: 2rem;
+      }
+
+      .submit-btn {
+        width: 100%;
+        padding: 1.25rem;
+      }
+    }
+
+    @media (max-width: 480px) {
+      .header {
+        padding: 1rem;
+      }
+
+      .header h1 {
+        font-size: 1.5rem;
+      }
+
+      .feedback-card {
+        padding: 1.5rem 1rem;
+      }
+
+      .form-header h2 {
+        font-size: 1.5rem;
+      }
+
+      .star-label {
+        font-size: 1.75rem;
+      }
+    }
+
+    /* Loading Animation */
+    @keyframes fadeInUp {
+      from {
+        opacity: 0;
+        transform: translateY(30px);
+      }
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+
+    .feedback-card {
+      animation: fadeInUp 0.6s ease-out;
+    }
+
+    /* Interactive Feedback */
+    .form-group:focus-within label {
+      color: var(--primary-orange);
+    }
+  </style>
+</head>
+<body>
+  <header class="header">
+    <h1><span class="logo-accent">WISE FITNESS</span> Feedback</h1>
+    <p>Your experience matters to us</p>
+  </header>
+
+  <div class="feedback-container">
+    <div class="feedback-card">
+      <div class="form-header">
+        <h2>Share Your Experience</h2>
+        <p>Help us improve by sharing how you feel about the Wise Fitness platform!</p>
+      </div>
+
+      <form id="uxForm" class="feedback-form">
+        <!-- User Type Selection -->
+        <div class="form-group">
+          <label>I am a <span class="label-accent">*</span></label>
+          <div class="user-type-grid">
+            <div class="user-type-option">
+              <input type="radio" name="userType" id="free" value="freemium" required>
+              <label for="free" class="user-type-label">
+                <span class="icon">🆓</span>
+                <span class="title">Free User</span>
+              </label>
+            </div>
+            <div class="user-type-option">
+              <input type="radio" name="userType" id="premium" value="premium">
+              <label for="premium" class="user-type-label">
+                <span class="icon">⭐</span>
+                <span class="title">Premium User</span>
+              </label>
+            </div>
+            <div class="user-type-option">
+              <input type="radio" name="userType" id="business" value="business">
+              <label for="business" class="user-type-label">
+                <span class="icon">🏢</span>
+                <span class="title">Business User</span>
+              </label>
+            </div>
+          </div>
+        </div>
+
+        <!-- Star Rating -->
+        <div class="form-group">
+          <label>Rate your experience <span class="label-accent">*</span></label>
+          <div class="rating-container">
+            <div class="stars">
+              <input type="radio" name="rating" id="star1" value="1" class="star-input" required>
+              <label for="star1" class="star-label">★</label>
+              <input type="radio" name="rating" id="star2" value="2" class="star-input">
+              <label for="star2" class="star-label">★</label>
+              <input type="radio" name="rating" id="star3" value="3" class="star-input">
+              <label for="star3" class="star-label">★</label>
+              <input type="radio" name="rating" id="star4" value="4" class="star-input">
+              <label for="star4" class="star-label">★</label>
+              <input type="radio" name="rating" id="star5" value="5" class="star-input">
+              <label for="star5" class="star-label">★</label>
+            </div>
+            <div class="rating-text" id="ratingText">Click to rate your experience</div>
+          </div>
+        </div>
+
+        <!-- Feedback Textarea -->
+        <div class="form-group">
+          <label for="feedback">Your Feedback <span class="label-accent">*</span></label>
+          <textarea 
+            id="feedback" 
+            name="feedback" 
+            class="feedback-textarea" 
+            placeholder="Tell us what you loved or what could be better. Your honest feedback helps us create a better experience for everyone..." 
+            required
+          ></textarea>
+        </div>
+
+        <!-- Optional Contact Information -->
+        <div class="form-group">
+          <label>Contact Information <span style="color: var(--text-gray); font-weight: 400;">(Optional)</span></label>
+          <div class="input-row">
+            <input type="text" name="name" class="form-input" placeholder="Your Name">
+            <input type="email" name="email" class="form-input" placeholder="Your Email">
+          </div>
+        </div>
+
+        <!-- Submit Section -->
+        <div class="submit-section">
+          <button type="submit" class="submit-btn">
+            Share Feedback
+          </button>
+          <div id="successMessage" class="message success">
+            Thank you for your feedback! Your input helps us improve.
+          </div>
+          <div id="errorMessage" class="message error">
+            Please fill in all required fields.
+          </div>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <footer class="footer">
+    <p>© 2025 Wise Fitness - Team Feedback Collection | <a href="https://github.com/ddevMetal/cm-fyp-landing-page" target="_blank">View Project</a></p>
+  </footer>
+
+  <script>
+    // Rating interaction
+    const ratingInputs = document.querySelectorAll('.star-input');
+    const ratingLabels = document.querySelectorAll('.star-label');
+    const ratingText = document.getElementById('ratingText');
+    
+    const ratingTexts = {
+      1: '😞 Poor - Needs major improvement',
+      2: '😐 Below Average - Could be better',
+      3: '🙂 Average - It\'s okay',
+      4: '😊 Good - I like it!',
+      5: '🤩 Excellent - Love it!'
+    };
+
+    // Function to highlight stars from left to right
+    function highlightStars(rating, isHover = false) {
+      ratingLabels.forEach((label, index) => {
+        if (index < rating) {
+          label.style.color = '#fbbf24';
+          if (isHover) {
+            label.style.transform = 'scale(1.1)';
+          }
+        } else {
+          label.style.color = 'var(--border-gray)';
+          if (isHover) {
+            label.style.transform = 'scale(1)';
+          }
+        }
+      });
+    }
+
+    // Reset all stars to default
+    function resetStars() {
+      ratingLabels.forEach(label => {
+        label.style.color = 'var(--border-gray)';
+        label.style.transform = 'scale(1)';
+      });
+    }
+
+    // Add hover effects
+    ratingLabels.forEach((label, index) => {
+      label.addEventListener('mouseenter', () => {
+        highlightStars(index + 1, true);
+      });
+      
+      label.addEventListener('mouseleave', () => {
+        // Reset to current selection or default
+        const checkedInput = document.querySelector('.star-input:checked');
+        if (checkedInput) {
+          highlightStars(parseInt(checkedInput.value), false);
+        } else {
+          resetStars();
+        }
+      });
+      
+      label.addEventListener('click', () => {
+        const rating = index + 1;
+        ratingInputs[index].checked = true;
+        highlightStars(rating, false);
+        ratingText.textContent = ratingTexts[rating];
+        ratingText.style.color = 'var(--primary-orange)';
+      });
+    });
+
+    // Handle direct input changes
+    ratingInputs.forEach(input => {
+      input.addEventListener('change', function() {
+        const rating = parseInt(this.value);
+        highlightStars(rating, false);
+        ratingText.textContent = ratingTexts[rating];
+        ratingText.style.color = 'var(--primary-orange)';
+      });
+    });
+
+    // Form submission (placeholder - no backend connection)
+    document.getElementById('uxForm').addEventListener('submit', function(e) {
+      e.preventDefault();
+      
+      const formData = new FormData(this);
+      const data = Object.fromEntries(formData);
+      
+      // Basic validation
+      if (!data.userType || !data.rating || !data.feedback.trim()) {
+        showMessage('error', 'Please fill in all required fields.');
+        return;
+      }
+
+      // Log form data for team review (this would normally go to a backend)
+      console.log('📝 Feedback Submitted:', {
+        userType: data.userType,
+        rating: data.rating,
+        feedback: data.feedback,
+        name: data.name || 'Anonymous',
+        email: data.email || 'Not provided',
+        timestamp: new Date().toISOString(),
+        sessionId: Math.random().toString(36).substr(2, 9)
+      });
+
+      // Simulate form submission
+      const submitBtn = document.querySelector('.submit-btn');
+      const originalText = submitBtn.textContent;
+      
+      submitBtn.textContent = 'Submitting...';
+      submitBtn.disabled = true;
+      
+      setTimeout(() => {
+        showMessage('success', 'Thank you for your feedback! Your input helps us improve. (Data logged to browser console for team review)');
+        this.reset();
+        resetStars(); // Reset star visual state
+        ratingText.textContent = 'Click to rate your experience';
+        ratingText.style.color = 'var(--text-gray)';
+        
+        submitBtn.textContent = originalText;
+        submitBtn.disabled = false;
+      }, 1500);
+    });
+
+    function showMessage(type, message) {
+      const successMsg = document.getElementById('successMessage');
+      const errorMsg = document.getElementById('errorMessage');
+      
+      // Hide all messages first
+      successMsg.style.display = 'none';
+      errorMsg.style.display = 'none';
+      
+      // Show appropriate message
+      if (type === 'success') {
+        successMsg.textContent = message;
+        successMsg.style.display = 'block';
+      } else {
+        errorMsg.textContent = message;
+        errorMsg.style.display = 'block';
+      }
+      
+      // Auto-hide after 7 seconds for better readability
+      setTimeout(() => {
+        successMsg.style.display = 'none';
+        errorMsg.style.display = 'none';
+      }, 7000);
+    }
+
+    // Enhanced interactivity for user type selection
+    const userTypeLabels = document.querySelectorAll('.user-type-label');
+    userTypeLabels.forEach(label => {
+      label.addEventListener('mouseenter', function() {
+        this.style.transform = 'translateY(-2px) scale(1.02)';
+      });
+      
+      label.addEventListener('mouseleave', function() {
+        if (!this.previousElementSibling.checked) {
+          this.style.transform = 'translateY(0) scale(1)';
+        }
+      });
+    });
+
+    // Character counter for feedback
+    const feedbackTextarea = document.getElementById('feedback');
+    feedbackTextarea.addEventListener('input', function() {
+      const remaining = 500 - this.value.length;
+      if (remaining < 50) {
+        this.style.borderColor = remaining < 0 ? '#ef4444' : '#fbbf24';
+      } else {
+        this.style.borderColor = 'var(--border-gray)';
+      }
+    });
+
+    // Add analytics for team insights
+    document.addEventListener('DOMContentLoaded', () => {
+      console.log('🚀 Wise Fitness Feedback Form Loaded');
+      console.log('📊 Form Version: v1.0 - Team Review Build');
+      console.log('🔧 All feedback will be logged to console for team review');
+    });
+  </script>
+</body>
+</html>
