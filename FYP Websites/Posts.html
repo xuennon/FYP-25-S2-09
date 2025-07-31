@@ -381,9 +381,12 @@
   .post-card h3 {
     margin: 0 0 8px 0;
     font-weight: 700;
-    color: var(--primary);
+    color: #000;
     text-align: center;
     user-select: text;
+  }
+  body.dark .post-card h3 {
+    color: #fff;
   }
   .post-card img {
     width: 130px;
@@ -529,6 +532,18 @@
 
   let uploadedImage = null;
   let businessName = "Anonymous";
+  let isBusinessUser = false;
+
+  // Check if user is a business user
+  async function checkBusinessUser(userId) {
+    try {
+      const doc = await db.collection("businessUsers").doc(userId).get();
+      return doc.exists;
+    } catch (err) {
+      console.error("Error checking business user status:", err);
+      return false;
+    }
+  }
 
   // Side menu open/close functions
   function openMenu() {
@@ -609,10 +624,38 @@
   imageInput.addEventListener('change', function () {
     const file = this.files[0];
     if (file) {
+      // Validate file size (max 5MB)
+      if (file.size > 5 * 1024 * 1024) {
+        alert("Image size must be less than 5MB");
+        this.value = ''; // Reset file input
+        return;
+      }
+
+      // Validate file type
+      if (!file.type.startsWith('image/')) {
+        alert("Please select a valid image file");
+        this.value = ''; // Reset file input
+        return;
+      }
+
       const reader = new FileReader();
       reader.onload = function (e) {
-        uploadedImage = e.target.result;
-        imagePreview.innerHTML = `<img src="${uploadedImage}" alt="Uploaded image preview" />`;
+        try {
+          uploadedImage = e.target.result;
+          imagePreview.innerHTML = `<img src="${uploadedImage}" alt="Uploaded image preview" />`;
+          console.log("Image loaded successfully");
+        } catch (err) {
+          console.error("Error loading image preview:", err);
+          alert("Error loading image preview. Please try another image.");
+          uploadedImage = null;
+          imagePreview.innerHTML = `<span>🖼️</span>`;
+        }
+      };
+      reader.onerror = function(err) {
+        console.error("FileReader error:", err);
+        alert("Error reading image file. Please try again.");
+        uploadedImage = null;
+        imagePreview.innerHTML = `<span>🖼️</span>`;
       };
       reader.readAsDataURL(file);
     }
@@ -662,58 +705,99 @@
 
   // Create post
   async function createPost() {
-    const title = document.getElementById('titleInput').value.trim();
-    const description = document.getElementById('descriptionInput').value.trim();
-
-    if (!title) {
-      alert("Please enter a title for your post.");
-      return;
-    }
-
-    const user = auth.currentUser;
-    if (!user) {
-      alert("You must be logged in to create a post.");
-      return;
-    }
-
     try {
-      await db.collection("businesspost").add({
+      const title = document.getElementById('titleInput').value.trim();
+      const description = document.getElementById('descriptionInput').value.trim();
+
+      if (!title) {
+        alert("Please enter a title for your post.");
+        return;
+      }
+
+      const user = auth.currentUser;
+      if (!user) {
+        alert("You must be logged in to create a post.");
+        return;
+      }
+
+      // Check if user is a business user
+      if (!isBusinessUser) {
+        const isBusinessUserCheck = await checkBusinessUser(user.uid);
+        if (!isBusinessUserCheck) {
+          alert("You must be a business user to create posts. Please contact the administrator if you believe this is an error.");
+          return;
+        }
+        isBusinessUser = true;
+      }
+
+      console.log("Creating post with data:", {
+        title,
+        description: description.substring(0, 20) + "...", // Log partial description for privacy
+        hasImage: !!uploadedImage,
+        userId: user.uid,
+        businessName
+      });
+
+      // Prepare post data
+      const postData = {
         title,
         description,
         imageUrl: uploadedImage || null,
         userId: user.uid,
         userName: businessName,
-        timestamp: firebase.firestore.FieldValue.serverTimestamp()
-      });
+        timestamp: firebase.firestore.FieldValue.serverTimestamp(),
+        createdAt: new Date().toISOString()
+      };
+
+      // Create the post in Firestore
+      const docRef = await db.collection("businesspost").add(postData);
+      console.log("Post created with ID:", docRef.id);
 
       alert("Post created successfully!");
-      // Reset form
-      document.getElementById('titleInput').value = "";
-      document.getElementById('descriptionInput').value = "";
-      imagePreview.innerHTML = `<span>🖼️</span>`;
-      uploadedImage = null;
+      // Reset form and clear data
+      function resetForm() {
+        document.getElementById('titleInput').value = "";
+        document.getElementById('descriptionInput').value = "";
+        imagePreview.innerHTML = `<span>🖼️</span>`;
+        uploadedImage = null;
+        imageInput.value = ''; // Reset file input
+      }
 
-
+      resetForm();
       // Close modal
       closePostModal();
 
-      loadPosts();
+      // Reload posts
+      await loadPosts();
+      
     } catch (err) {
       console.error("Error creating post:", err);
-      alert("Failed to create post. Please try again.");
+      // More detailed error message
+      if (err.code === 'permission-denied') {
+        alert("You don't have permission to create posts. Please check your account status.");
+      } else if (err.code === 'unavailable') {
+        alert("Could not connect to the server. Please check your internet connection and try again.");
+      } else {
+        alert("Failed to create post: " + (err.message || "Unknown error occurred. Please try again."));
+      }
     }
   }
 
   // Load posts from Firestore
   function loadPosts() {
     postContainer.innerHTML = "<p>Loading posts...</p>";
-    db.collection("businesspost").orderBy("timestamp", "desc").onSnapshot(snapshot => {
-      if (snapshot.empty) {
-        postContainer.innerHTML = "<p>No posts yet.</p>";
-        return;
-      }
+    try {
+      // Temporarily remove ordering until index is created
+      db.collection("businesspost")
+        .where("userId", "==", auth.currentUser.uid)
+        .onSnapshot(
+          snapshot => {
+            if (snapshot.empty) {
+              postContainer.innerHTML = "<p>No posts yet.</p>";
+              return;
+            }
 
-      let html = "";
+            let html = "";
       snapshot.forEach(doc => {
         const post = doc.data();
         const postId = doc.id;
@@ -721,8 +805,8 @@
 
         html += `
           <article class="post-card" tabindex="0" aria-label="Post titled ${post.title}">
-            <h3>${escapeHtml(post.title)}</h3>
             <span class="username">${escapeHtml(post.userName)}</span>
+            <h3 style="color: #000;">${escapeHtml(post.title)}</h3>
             ${post.imageUrl ? `<img src="${post.imageUrl}" alt="Image for post titled ${escapeHtml(post.title)}" loading="lazy" />` : ""}
             <p>${escapeHtml(post.description)}</p>
             <small style="display:block; text-align:center; color:#555; margin-top:8px; user-select:none;">${postTime}</small>
@@ -732,10 +816,16 @@
       });
 
       postContainer.innerHTML = html || "<p>No posts found.</p>";
-    }, error => {
-      console.error("Error loading posts:", error);
-      postContainer.innerHTML = "<p>Error loading posts.</p>";
-    });
+          },
+          error => {
+            console.error("Error loading posts:", error);
+            postContainer.innerHTML = `<p>Error loading posts: ${error.message}. Please try refreshing the page.</p>`;
+          }
+        );
+    } catch (err) {
+      console.error("Error in loadPosts:", err);
+      postContainer.innerHTML = `<p>An error occurred while loading posts. Please try refreshing the page.</p>`;
+    }
   }
 
   // Delete post
@@ -780,24 +870,43 @@
 
   // On auth state changed
   auth.onAuthStateChanged(async user => {
-    if (!user) {
-      alert("Please login to view posts.");
-      window.location.href = "login.html";
-      return;
-    }
-
     try {
-      const doc = await db.collection("businessUsers").doc(user.uid).get();
-      if (doc.exists) {
-        const data = doc.data();
-        businessName = data.businessName || "Anonymous";
+      if (!user) {
+        console.log("No user logged in, redirecting to login page");
+        window.location.href = "login.html";
+        return;
       }
-    } catch (err) {
-      console.error("Error fetching businessName:", err);
-      businessName = "Anonymous";
-    }
 
-    loadPosts();
+      console.log("User authenticated, checking business user status");
+      try {
+        const doc = await db.collection("businessUsers").doc(user.uid).get();
+        if (doc.exists) {
+          const data = doc.data();
+          businessName = data.businessName || "Anonymous";
+          isBusinessUser = true;
+          console.log("Business user confirmed, name loaded:", businessName);
+        } else {
+          console.log("No business user document found");
+          businessName = "Anonymous";
+          isBusinessUser = false;
+          // Hide create post button for non-business users
+          document.getElementById('showPostFormBtn').style.display = 'none';
+        }
+      } catch (err) {
+        console.error("Error fetching businessName:", err);
+        businessName = "Anonymous";
+        isBusinessUser = false;
+        document.getElementById('showPostFormBtn').style.display = 'none';
+      }
+
+      // Load posts after authentication and business name are handled
+      console.log("Loading posts...");
+      loadPosts();
+    } catch (err) {
+      console.error("Error in auth state change handler:", err);
+      alert("There was an error authenticating. Please try logging in again.");
+      window.location.href = "login.html";
+    }
   });
 </script>
 </body>

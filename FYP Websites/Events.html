@@ -1,110 +1,87 @@
 <!DOCTYPE html>
 <html lang="en">
-
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>Events - Wise Fitness</title>
+  <title>Event Management - Wise Fitness</title>
   <style>
-    /* Events Table Styles */
-    .events-table-wrapper {
-      width: 100%;
-      overflow-x: auto;
-      margin-top: 18px;
+    .challenge-type-btn {
+      color: #222;
+      border: 2.5px solid #e0e0e0;
+      border-radius: 22px;
+      padding: 24px 16px 16px 16px;
+      font-size: 18px;
+      font-weight: 700;
+      cursor: pointer;
+      outline: none;
+      box-shadow: 0 4px 18px rgba(0,0,0,0.08);
+      text-align: center;
+      margin-bottom: 0;
+      transition: box-shadow 0.22s, background 0.22s, color 0.22s, border 0.22s, transform 0.18s;
+      user-select: none;
+      position: relative;
     }
-
-    table.events-table {
-      width: 100%;
-      min-width: 100%;
-      border-collapse: collapse;
-      background: var(--card-bg);
-      border-radius: 12px;
-      box-shadow: 0 2px 10px rgba(0, 0, 0, 0.08);
-      overflow: hidden;
-      font-size: 15px;
-      margin-bottom: 32px;
-    }
-
-    table.events-table th,
-    table.events-table td {
-      padding: 12px 10px;
-      text-align: left;
-      border-bottom: 1px solid #eaeaea;
-    }
-
-    table.events-table th {
+    .challenge-type-btn.selected, .challenge-type-btn:focus {
       background: var(--primary);
       color: #fff;
-      font-weight: 700;
-      font-size: 16px;
-      user-select: none;
+      border: 2.5px solid #005bb5;
+      box-shadow: 0 8px 28px rgba(0,123,255,0.22);
+      outline: 2.5px solid #fff;
+      transform: scale(1.01);
+      z-index: 1;
     }
-
-    table.events-table tr:last-child td {
-      border-bottom: none;
+    .challenge-type-btn.selected .ct-title,
+    .challenge-type-btn.selected .ct-desc,
+    .challenge-type-btn.selected .ct-icon {
+      color: #fff !important;
     }
-
-    table.events-table td img {
-      max-width: 80px;
-      max-height: 60px;
-      border-radius: 8px;
-      object-fit: cover;
-      box-shadow: 0 1px 4px rgba(0, 0, 0, 0.10);
+    .challenge-type-btn.selected .ct-icon {
+      text-shadow: 0 2px 8px #005bb5;
     }
-
-    table.events-table td.actions {
-      min-width: 80px;
-      text-align: center;
-    }
-
-    table.events-table .edit-icon,
-    table.events-table .delete-icon {
-      display: inline-flex;
-      align-items: center;
-      justify-content: center;
+    .challenge-type-btn.selected::after {
+      content: '\2714';
+      position: absolute;
+      top: 16px;
+      right: 32px;
+      font-size: 22px;
+      color: #fff;
+      background: #007bff;
+      border-radius: 50%;
       width: 28px;
       height: 28px;
-      border-radius: 50%;
-      margin: 0 4px;
-      background: #007bff;
-      color: #fff;
-      cursor: pointer;
-      transition: background 0.2s, transform 0.2s;
-      font-size: 16px;
-      border: none;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      box-shadow: 0 1px 6px rgba(0,0,0,0.14);
+      border: 2.5px solid #fff;
+      animation: popIn 0.25s cubic-bezier(.4,2,.6,1);
     }
-
-    table.events-table .edit-icon:hover {
-      background: #0056b3;
-      transform: scale(1.1);
+    .challenge-type-btn:hover:not(.selected) {
+      background: #e6f0fa;
+      color: var(--primary);
+      border: 2.5px solid #b3d4fc;
+      box-shadow: 0 6px 18px rgba(0,123,255,0.13);
+      transform: translateY(-2px) scale(1.01);
     }
-
-    table.events-table .delete-icon {
-      background: #dc3545;
+    .ct-widget {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: flex-start;
+      height: 100%;
+      width: 100%;
     }
-
-    table.events-table .delete-icon:hover {
-      background: #a71d2a;
-      transform: scale(1.1);
+    .ct-widget-text {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: flex-start;
+      flex: 1 1 auto;
+      width: 100%;
+      min-height: 80px;
     }
-
-    body.dark table.events-table {
-      background: var(--card-dark);
-      color: var(--text-dark);
-    }
-
-    body.dark table.events-table th {
-      background: #0056b3;
-    }
-
-    body.dark table.events-table td {
-      border-bottom: 1px solid #333;
-    }
-
-    /* Your existing CSS here */
     :root {
       --primary: #007bff;
-      --primary-dark: #0056b3;
       --light-bg: #f9f9f9;
       --dark-bg: #1f1f1f;
       --card-bg: #ffffff;
@@ -122,8 +99,7 @@
       padding: 0;
     }
 
-    html,
-    body {
+    html, body {
       width: 100%;
       height: 100%;
       font-family: 'Segoe UI', sans-serif;
@@ -139,7 +115,7 @@
     }
 
 
-    /* Toolbar styles (from Posts.html) */
+    /* Toolbar styles (from Posts.html/Events.html) */
     header.toolbar {
       display: flex;
       align-items: center;
@@ -157,13 +133,11 @@
       z-index: 20;
       height: 56px;
     }
-
-    header.toolbar>div {
+    header.toolbar > div {
       display: flex;
       align-items: center;
       gap: 12px;
     }
-
     header.toolbar button {
       background: none;
       border: none;
@@ -171,43 +145,36 @@
       cursor: pointer;
       user-select: none;
     }
-
     #backBtn {
       font-size: 24px;
       padding: 0;
       line-height: 1;
     }
-
     #modeToggle {
       font-size: 20px;
     }
-
     #menuBtn {
       font-size: 24px;
     }
-
     header.toolbar span.title {
       font-weight: 600;
       font-size: 18px;
     }
 
-    /* Side Menu styles (from Posts.html) */
+    /* Side Menu styles (from Posts.html/Events.html) */
     #sideMenuOverlay {
       display: none;
       position: fixed;
-      top: 0;
-      left: 0;
+      top: 0; left: 0;
       width: 100vw;
       height: 100vh;
-      background: rgba(0, 0, 0, 0.4);
+      background: rgba(0,0,0,0.4);
       z-index: 1500;
       transition: opacity 0.3s ease;
     }
-
     #sideMenuOverlay.active {
       display: block;
     }
-
     #sideMenu {
       position: fixed;
       top: 0;
@@ -219,39 +186,34 @@
       color: white;
       padding: 20px;
       box-sizing: border-box;
-      box-shadow: -2px 0 8px rgba(0, 0, 0, 0.3);
+      box-shadow: -2px 0 8px rgba(0,0,0,0.3);
       transition: right 0.3s ease;
       z-index: 1600;
       display: flex;
       flex-direction: column;
     }
-
     #sideMenu.active {
       right: 0;
       left: auto;
     }
-
     #sideMenu h2 {
       margin-top: 0;
       margin-bottom: 20px;
       font-weight: 700;
       font-size: 22px;
     }
-
     #sideMenu nav a {
       color: white;
       text-decoration: none;
       padding: 10px 0;
-      border-bottom: 1px solid rgba(255, 255, 255, 0.2);
+      border-bottom: 1px solid rgba(255,255,255,0.2);
       cursor: pointer;
       font-size: 16px;
       display: block;
     }
-
     #sideMenu nav a:hover {
-      background: rgba(255, 255, 255, 0.1);
+      background: rgba(255,255,255,0.1);
     }
-
     #sideMenu button#closeMenuBtn {
       background: none;
       border: none;
@@ -262,54 +224,110 @@
       margin-bottom: 10px;
     }
 
-    /* Responsive for mobile (from Posts.html) */
+    /* Responsive for mobile (from Posts.html/Events.html) */
     @media (max-width: 480px) {
       header.toolbar {
         padding: 6px 12px;
       }
-
       header.toolbar button#backBtn,
       header.toolbar button#menuBtn {
         font-size: 20px;
       }
-
       header.toolbar button#modeToggle {
         font-size: 18px;
       }
-
       header.toolbar span.title {
         font-size: 16px;
       }
-
       #sideMenu {
         width: 220px;
       }
     }
 
-    /* Container */
-
     .container {
-      width: 100vw;
-      margin: 0;
-      padding: 90px 2vw 24px 2vw;
+      max-width: 98vw;
+      width: 100%;
+      margin: 0 auto;
+      padding: 24px 10px 40px 10px;
       min-height: 100vh;
       transition: padding-right 0.3s ease;
-      box-sizing: border-box;
+      padding-right: 10px;
     }
 
     .sidebar-active .container {
       padding-right: 280px;
     }
 
-    /* Create Event button styles */
-    .create-event-wrapper {
+    .header {
+      background: var(--primary);
+      color: white;
+      padding: 16px 30px;
       display: flex;
-      justify-content: flex-start;
-      margin-bottom: 16px;
+      align-items: center;
+      justify-content: space-between;
+      border-radius: var(--radius) var(--radius) 0 0;
+      box-shadow: var(--shadow);
+      position: fixed;
+      top: 0;
+      right: 0;
+      left: 0;
+      height: 56px;
+      z-index: 20;
+      transition: right 0.3s ease, width 0.3s ease;
+      user-select: none;
     }
 
-    .btn {
-      background-color: var(--primary);
+    .sidebar-active .header {
+      right: 260px;
+      width: calc(100% - 260px);
+    }
+
+    .header span {
+      font-size: 22px;
+      font-weight: 600;
+    }
+
+    .toggle-mode {
+      cursor: pointer;
+      font-size: 22px;
+      background: none;
+      border: none;
+      color: white;
+      user-select: none;
+      margin-right: 16px;
+    }
+
+    .menu-icon {
+      font-size: 26px;
+      cursor: pointer;
+      user-select: none;
+    }
+
+    .content {
+      margin-top: 80px;
+    }
+
+    /* event specific styles */
+    .event-container {
+      display: flex;
+      flex-direction: column;
+      gap: 24px;
+    }
+
+    .event-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 20px;
+    }
+
+    .event-header h2 {
+      color: var(--primary);
+      font-size: 28px;
+    }
+
+    .create-event-btn {
+      background: var(--primary);
       color: white;
       border: none;
       border-radius: var(--radius);
@@ -317,198 +335,338 @@
       font-size: 16px;
       font-weight: 600;
       cursor: pointer;
-      box-shadow: 0 4px 8px rgba(0, 123, 255, 0.4);
-      transition: background-color 0.3s ease, box-shadow 0.3s ease;
-      user-select: none;
-      display: inline-block;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      transition: transform 0.2s ease, box-shadow 0.2s ease;
     }
 
-    .btn:hover {
-      background-color: var(--primary-dark);
-      box-shadow: 0 6px 14px rgba(0, 86, 179, 0.6);
+    .create-event-btn:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 6px 16px rgba(0, 123, 255, 0.4);
     }
 
-    /* Event card */
-    .event-card {
-      background: var(--card-bg);
-      padding: 16px;
-      border-radius: var(--radius);
-      margin-bottom: 16px;
-      position: relative;
-      box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
-      color: inherit;
-    }
-
-    .event-card img {
+    .event-table {
       width: 100%;
-      max-height: 200px;
-      object-fit: cover;
-      border-radius: 8px;
-      margin-top: 10px;
+      min-width: 1200px;
+      border-collapse: collapse;
+      background: var(--card-bg);
+      border-radius: var(--radius);
+      overflow: hidden;
+      box-shadow: var(--shadow);
     }
 
-    /* Updated Edit & Delete Buttons */
-    .event-card .edit-icon,
-    .event-card .delete-icon {
-      position: absolute;
-      top: 10px;
+    body.dark .event-table {
+      background: var(--card-dark);
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.6);
+    }
+
+    .event-table th,
+    .event-table td {
+      padding: 16px;
+      text-align: left;
+      border-bottom: 1px solid #ddd;
+    }
+
+    body.dark .event-table th,
+    body.dark .event-table td {
+      border-bottom: 1px solid #444;
+    }
+
+    .event-table th {
+      background-color: var(--primary);
+      color: white;
+      font-weight: 600;
+    }
+
+    .event-table tr:last-child td {
+      border-bottom: none;
+    }
+
+    .event-table tr:hover {
+      background-color: rgba(0, 123, 255, 0.1);
+    }
+
+    body.dark .event-table tr:hover {
+      background-color: rgba(0, 123, 255, 0.2);
+    }
+
+    .event-actions {
+      display: flex;
+      gap: 6px;
+      justify-content: center;
+      align-items: center;
+    }
+    .action-btn {
+      padding: 7px 13px;
+      border-radius: 8px;
+      border: none;
+      font-weight: 600;
       cursor: pointer;
-      width: 28px;
-      height: 28px;
-      border-radius: 50%;
-      background: #007bff;
+      font-size: 16px;
       display: flex;
       align-items: center;
       justify-content: center;
-      box-shadow: 0 2px 6px rgba(0, 123, 255, 0.6);
-      transition: background-color 0.3s ease, transform 0.2s ease;
-      color: white;
-      font-size: 18px;
-      user-select: none;
+      transition: background 0.18s, box-shadow 0.18s, transform 0.13s;
+      box-shadow: 0 1px 4px rgba(0,0,0,0.06);
+      outline: none;
+    }
+    .action-btn:active {
+      transform: scale(0.97);
     }
 
-    .event-card .edit-icon:hover {
-      background: #0056b3;
-      transform: scale(1.1);
+    .view-btn {
+      background: #28a745;
+      color: #fff;
+      border: 1.5px solid #28a745;
+    }
+    .view-btn:hover {
+      background: #218838;
+      color: #fff;
+      border-color: #218838;
     }
 
-    .event-card .delete-icon {
-      right: 10px;
+    .edit-btn {
+      background: #ffc107;
+      color: #111;
+      border: 1.5px solid #ffc107;
+    }
+    .edit-btn:hover {
+      background: #e0a800;
+      color: #111;
+      border-color: #e0a800;
+    }
+
+    .delete-btn {
       background: #dc3545;
-      box-shadow: 0 2px 6px rgba(220, 53, 69, 0.6);
+      color: white !important;
+      border: 1.5px solid #f5b7b7;
+    }
+    .delete-btn:hover {
+      background: #c82333;
+      color: white !important;
+      border-color: #dc3545;
     }
 
-    .event-card .delete-icon:hover {
-      background: #a71d2a;
-      transform: scale(1.1);
-    }
-
-    .event-card .edit-icon {
-      right: 50px;
-    }
-
-    body.dark .event-card .delete-icon,
-    body.dark .event-card .edit-icon {
-      background: #444;
-      color: white;
-      box-shadow: 0 2px 6px rgba(0, 0, 0, 0.6);
-    }
-
-    /* Modal */
+    /* Modal styles */
     .modal {
       display: none;
       position: fixed;
-      z-index: 40;
-      left: 0;
       top: 0;
+      left: 0;
       width: 100%;
       height: 100%;
-      overflow: auto;
-      background-color: rgba(0, 0, 0, 0.4);
+      background: rgba(0, 0, 0, 0.5);
+      z-index: 40;
+      justify-content: center;
+      align-items: center;
     }
 
     .modal-content {
-      background-color: var(--card-bg);
-      margin: 7% auto;
-      padding: 32px 32px 20px 32px;
-      border-radius: 18px;
-      width: 380px;
-      position: relative;
-      color: inherit;
-      box-shadow: 0 8px 32px rgba(0, 0, 0, 0.18);
-      display: flex;
-      flex-direction: column;
-      gap: 12px;
-      animation: fadeInUp 0.3s;
+      background: var(--card-bg);
+      border-radius: var(--radius);
+      padding: 24px;
+      width: 90%;
+      max-width: 500px;
+      box-shadow: 0 8px 32px rgba(0, 0, 0, 0.2);
     }
 
-    @keyframes fadeInUp {
-      from {
-        opacity: 0;
-        transform: translateY(40px);
-      }
-
-      to {
-        opacity: 1;
-        transform: translateY(0);
-      }
-    }
-
-    .modal-content input,
-    .modal-content textarea {
-      width: 100%;
-      margin-bottom: 12px;
-      padding: 12px 14px;
-      border-radius: 8px;
-      border: 1.5px solid #ccc;
-      box-sizing: border-box;
-      font-family: inherit;
-      font-size: 16px;
-      background: #f7f7f7;
-      color: var(--text-light);
-      transition: border 0.2s;
-    }
-
-    .modal-content input:focus,
-    .modal-content textarea:focus {
-      border: 1.5px solid var(--primary);
-      outline: none;
-    }
-
-    .modal-content label {
-      font-size: 15px;
-      font-weight: 600;
-      margin-bottom: 4px;
-      color: var(--primary);
-      display: block;
-    }
-
-    body.dark .modal-content input,
-    body.dark .modal-content textarea {
+    body.dark .modal-content {
       background: var(--card-dark);
-      border-color: #555;
+    }
+
+    .modal-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 20px;
+    }
+
+    .modal-header h3 {
+      color: var(--primary);
+      font-size: 22px;
+    }
+
+    .close-btn {
+      background: none;
+      border: none;
+      font-size: 24px;
+      cursor: pointer;
+      color: var(--text-light);
+    }
+
+    body.dark .close-btn {
       color: var(--text-dark);
     }
 
-    body.dark .modal-content label {
-      color: #7ab7ff;
+
+    /* Improved form group styles for neater look */
+    .form-group {
+      margin-bottom: 20px;
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+    }
+    .form-group label {
+      display: block;
+      margin-bottom: 4px;
+      font-weight: 600;
+      font-size: 15.5px;
+      color: #222;
+      letter-spacing: 0.01em;
+    }
+    body.dark .form-group label {
+      color: #f1f1f1;
+    }
+    .form-group input,
+    .form-group textarea {
+      width: 100%;
+      padding: 12px 14px;
+      border-radius: 10px;
+      border: 1.5px solid #cfd8dc;
+      font-family: inherit;
+      font-size: 16px;
+      background: #f7f9fb;
+      color: #222;
+      transition: border 0.2s, box-shadow 0.2s;
+      box-shadow: 0 1px 4px rgba(0,0,0,0.04);
+    }
+    .form-group input:focus,
+    .form-group textarea:focus {
+      border: 1.5px solid var(--primary);
+      outline: none;
+      box-shadow: 0 2px 8px rgba(0,123,255,0.10);
+      background: #eaf3fb;
+    }
+    body.dark .form-group input,
+    body.dark .form-group textarea {
+      background: #23272b;
+      color: #f1f1f1;
+      border-color: #444;
+    }
+    body.dark .form-group input:focus,
+    body.dark .form-group textarea:focus {
+      background: #1f2327;
+      border-color: var(--primary);
+    }
+    .form-group textarea {
+      min-height: 90px;
+      resize: vertical;
     }
 
-    .close {
-      color: #aaa;
-      position: absolute;
-      right: 20px;
-      top: 14px;
-      font-size: 32px;
-      font-weight: bold;
-      cursor: pointer;
-      user-select: none;
-      background: none;
+    /* Improved submit button styles */
+    .submit-btn {
+      background: linear-gradient(90deg, var(--primary) 80%, #005bb5 100%);
+      color: white;
       border: none;
-      transition: color 0.2s;
-      z-index: 10;
-    }
-
-    .close:hover,
-    .close:focus {
-      color: #333;
+      border-radius: 10px;
+      padding: 12px 0;
+      font-size: 16.5px;
+      font-weight: 700;
+      cursor: pointer;
+      margin-top: 0;
+      width: 100%;
+      box-shadow: 0 2px 8px rgba(0,123,255,0.08);
+      letter-spacing: 0.01em;
+      transition: background 0.2s, box-shadow 0.2s, filter 0.2s;
       outline: none;
     }
-
-    .modal-content .btn {
-      width: 100%;
-      padding: 14px 0;
-      font-size: 17px;
-      border-radius: 10px;
-      margin-top: 10px;
-      font-weight: 700;
-      box-shadow: 0 2px 8px rgba(0, 123, 255, 0.10);
+    .submit-btn:active {
+      filter: brightness(0.93);
+    }
+    .submit-btn:disabled {
+      background: #b3d4fc;
+      color: #fff;
+      cursor: not-allowed;
+      opacity: 0.7;
+    }
+    .submit-btn:hover:not(:disabled) {
+      background: linear-gradient(90deg, #005bb5 80%, var(--primary) 100%);
+      box-shadow: 0 4px 16px rgba(0,123,255,0.13);
     }
 
-    @media (max-width: 500px) {
+    /* Modal step label improvements */
+  
+
+    .modal-step > label {
+      font-size: 17px !important;
+      font-weight: 700 !important;
+      margin-bottom: 16px !important;
+      color: #111 !important;
+      letter-spacing: 0.01em;
+    }
+    body.dark .modal-step > label {
+      color: #f1f1f1 !important;
+    }
+
+    /* Modal step button row improvements */
+    .modal-step > div[style*="display:flex"] {
+      gap: 12px;
+    }
+
+    /* Metrics and sports options improvements */
+    .metrics-options label, .sports-options label {
+      font-size: 15.5px;
+      margin-bottom: 4px;
+      padding: 7px 0 7px 2px;
+      border-radius: 7px;
+      transition: background 0.18s;
+      display: flex;
+      align-items: center;
+      gap: 7px;
+      cursor: pointer;
+    }
+    .metrics-options label:hover, .sports-options label:hover {
+      background: #eaf3fb;
+    }
+    body.dark .metrics-options label:hover, body.dark .sports-options label:hover {
+      background: #23272b;
+    }
+    .metrics-options input[type="checkbox"], .sports-options input[type="checkbox"] {
+      accent-color: var(--primary);
+      margin-right: 8px;
+      width: 18px;
+      height: 18px;
+    }
+
+    /* Modal content padding for mobile */
+    @media (max-width: 600px) {
       .modal-content {
-        width: 98vw;
-        padding: 18px 6vw 12px 6vw;
+        padding: 14px 6px 18px 6px;
+        max-width: 99vw;
+      }
+      .form-group input, .form-group textarea {
+        font-size: 15px;
+        padding: 10px 8px;
+      }
+      .submit-btn {
+        font-size: 15px;
+        padding: 10px 0;
+      }
+    }
+
+    @media (max-width: 900px) {
+      .container {
+        padding-right: 20px !important;
+      }
+
+      .sidebar {
+        width: 260px;
+        height: 100vh;
+      }
+
+      .sidebar.active {
+        transform: translateX(0);
+      }
+
+      .header, .sidebar-active .header {
+        right: 0 !important;
+        width: 100% !important;
+      }
+
+      .event-table {
+        display: block;
+        overflow-x: auto;
       }
     }
   </style>
@@ -519,13 +677,14 @@
   <header class="toolbar" role="banner" aria-label="Page toolbar">
     <div>
       <button id="backBtn" aria-label="Go back" title="Go back">←</button>
-      <span class="title">Events</span>
+      <span class="title" id="headerTitle">Event Management</span>
     </div>
     <div>
       <button id="modeToggle" aria-label="Toggle light/dark mode" title="Toggle light/dark mode">🌙</button>
       <button id="menuBtn" aria-label="Open menu" title="Open menu">☰</button>
     </div>
   </header>
+
   <div id="sideMenuOverlay" tabindex="-1"></div>
   <aside id="sideMenu" aria-label="Main menu" role="navigation">
     <button id="closeMenuBtn" aria-label="Close menu" title="Close menu">×</button>
@@ -540,55 +699,181 @@
 
   <div class="container">
 
-    <div class="create-event-wrapper">
-      <button class="btn" onclick="openModal()">Create Event</button>
-    </div>
-    <div class="events-table-wrapper">
-      <table class="events-table" id="eventsTable">
-        <thead>
-          <tr>
-            <th>Event Name</th>
-            <th>Business</th>
-            <th>Start</th>
-            <th>End</th>
-            <th>Description</th>
-            <th>Participants</th>
-            <th>Image</th>
-            <th>Actions</th>
-          </tr>
-        </thead>
-        <tbody id="eventsTableBody">
-          <!-- Events will be rendered here -->
-        </tbody>
-      </table>
-    </div>
-  </div>
+    <div class="content">
+      <div class="event-container">
+        <div class="event-header">
+          <button class="create-event-btn" onclick="openCreateModal()">
+            <span>+</span> Create event
+          </button>
+        </div>
 
-  <!-- Modal -->
-  <div id="eventModal" class="modal">
-    <div class="modal-content">
-      <span class="close" onclick="closeModal()">&times;</span>
-      <h3 id="formTitle">Create Event</h3>
-      <input type="text" id="eventName" placeholder="Event Name" />
-      <textarea id="eventDescription" placeholder="Description"></textarea>
-      <label>Start Time</label>
-      <input type="datetime-local" id="eventStart" />
-      <label>End Time</label>
-      <input type="datetime-local" id="eventEnd" />
-      <label>Optional Image</label>
-      <input type="file" id="eventImage" accept="image/*" />
-      <div style="display: flex; justify-content: center; margin-top: 20px;">
-        <button id="submitBtn" class="btn" onclick="submitEvent()">Create</button>
+        <table class="event-table">
+          <thead>
+            <tr>
+              <th>Metrics</th>
+              <th>Sports</th>
+              <th>Start Date</th>
+              <th>End Date</th>
+              <th>Name</th>
+              <th>Description</th>
+              <th>Actions</th>
+            </tr>
+          </thead>
+          <tbody id="eventTableBody">
+            <!-- event rows will be rendered here -->
+          </tbody>
+        </table>
       </div>
     </div>
   </div>
 
-  <!-- Firebase SDKs -->
-  <script src="https://www.gstatic.com/firebasejs/9.22.1/firebase-app-compat.js"></script>
-  <script src="https://www.gstatic.com/firebasejs/9.22.1/firebase-firestore-compat.js"></script>
-  <script src="https://www.gstatic.com/firebasejs/9.22.1/firebase-auth-compat.js"></script>
+  <!-- Create event Modal -->
+  <div class="modal" id="createModal">
+    <div class="modal-content" id="createModalContent">
+      <div class="modal-header">
+        <h3 id="createModalTitle">Create Event</h3>
+        <button class="close-btn" id="createModalCloseBtn">&times;</button>
+      </div>
+      <div class="modal-steps">
+        <div class="modal-step" id="step1">
+          <label style="font-weight:600; font-size:16px; margin-bottom:10px; display:block;">What do you want to track?</label>
+          <div class="metrics-options">
+            <label><input type="checkbox" class="metric-checkbox" value="distance"> Distance</label><br>
+            <label><input type="checkbox" class="metric-checkbox" value="time"> Time</label><br>
+            <label><input type="checkbox" class="metric-checkbox" value="elevation"> Elevation</label><br>
+            <label><input type="checkbox" class="metric-checkbox" value="steps"> Steps</label>
+          </div>
+          <div style="margin-top:18px; display:flex; justify-content:flex-end;">
+            <button type="button" class="submit-btn" id="toStep3Btn">Next</button>
+          </div>
+        </div>
+        <!-- Step 3: Sports -->
+        <div class="modal-step" id="step3" style="display:none;">
+          <label style="font-weight:600; font-size:16px; margin-bottom:10px; display:block;">Which sports will count towards your challenge?</label>
+          <div class="sports-options">
+            <label><input type="checkbox" class="sport-checkbox" value="ride" id="sportRide"> Ride</label>
+            <label><input type="checkbox" class="sport-checkbox" value="run" id="sportRun"> Run</label>
+            <label><input type="checkbox" class="sport-checkbox" value="swim" id="sportSwim"> Swim</label>
+            <label><input type="checkbox" class="sport-checkbox" value="hike" id="sportHike"> Hike</label>
+            <label><input type="checkbox" class="sport-checkbox" value="walk" id="sportWalk"> Walk</label>
+          </div>
+          <div style="margin:10px 0 0 0;">
+            <label><input type="checkbox" id="selectAllSports"> Select All</label>
+          </div>
+          <div style="margin-top:18px; display:flex; justify-content:space-between;">
+            <button type="button" class="submit-btn" id="backToStep2Btn">Back</button>
+            <button type="button" class="submit-btn" id="toStep4Btn">Next</button>
+          </div>
+        </div>
+        <!-- Step 4: Dates -->
+        <div class="modal-step" id="step4" style="display:none;">
+          <label style="font-weight:600; font-size:16px; margin-bottom:10px; display:block;">Choose when to kick off your challenge</label>
+          <div class="form-group">
+            <label for="challengeStartDate">Start Date</label>
+            <input type="date" id="challengeStartDate" required>
+          </div>
+          <div class="form-group">
+            <label for="challengeEndDate">End Date</label>
+            <input type="date" id="challengeEndDate" required>
+          </div>
+          <div style="margin-top:18px; display:flex; justify-content:space-between;">
+            <button type="button" class="submit-btn" id="backToStep3Btn">Back</button>
+            <button type="button" class="submit-btn" id="toStep5Btn">Next</button>
+          </div>
+        </div>
+        <!-- Step 5: Name/Description -->
+        <div class="modal-step" id="step5" style="display:none;">
+          <label style="font-weight:600; font-size:16px; margin-bottom:10px; display:block;">Give your challenge a name and description (optional)</label>
+          <div class="form-group">
+            <label for="challengeName">Name</label>
+            <input type="text" id="challengeName" maxlength="50" placeholder="e.g. Summer Step Challenge">
+          </div>
+          <div class="form-group">
+            <label for="challengeDesc">Description</label>
+            <textarea id="challengeDesc" maxlength="200" placeholder="Describe your challenge (optional)"></textarea>
+          </div>
+          <div style="margin-top:18px; display:flex; justify-content:space-between;">
+            <button type="button" class="submit-btn" id="backToStep4Btn">Back</button>
+            <button type="button" class="submit-btn" id="finishCreateBtn">Finish</button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
 
-  <script>
+  <!-- Edit event Modal -->
+  <div class="modal" id="editModal">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h3>Edit event</h3>
+        <button class="close-btn" id="editModalCloseBtn">&times;</button>
+      </div>
+      <form id="editeventForm">
+        <div style="margin-bottom:18px;">
+          <h4 style="margin-bottom:8px; color:#007bff;">Metrics</h4>
+          <div class="form-group" style="flex-direction:row; flex-wrap:wrap; gap:18px;">
+            <label><input type="checkbox" class="edit-metric-checkbox" value="distance"> Distance</label>
+            <label><input type="checkbox" class="edit-metric-checkbox" value="time"> Time</label>
+            <label><input type="checkbox" class="edit-metric-checkbox" value="elevation"> Elevation</label>
+            <label><input type="checkbox" class="edit-metric-checkbox" value="steps"> Steps</label>
+          </div>
+        </div>
+        <div style="margin-bottom:18px;">
+          <h4 style="margin-bottom:8px; color:#007bff;">Sports</h4>
+          <div class="form-group" style="flex-direction:row; flex-wrap:wrap; gap:18px;">
+            <label><input type="checkbox" class="edit-sport-checkbox" value="ride"> Ride</label>
+            <label><input type="checkbox" class="edit-sport-checkbox" value="run"> Run</label>
+            <label><input type="checkbox" class="edit-sport-checkbox" value="swim"> Swim</label>
+            <label><input type="checkbox" class="edit-sport-checkbox" value="hike"> Hike</label>
+            <label><input type="checkbox" class="edit-sport-checkbox" value="walk"> Walk</label>
+          </div>
+        </div>
+        <div style="margin-bottom:18px;">
+          <h4 style="margin-bottom:8px; color:#007bff;">Dates</h4>
+          <div class="form-group">
+            <label for="editStartDate">Start Date</label>
+            <input type="date" id="editStartDate" required>
+          </div>
+          <div class="form-group">
+            <label for="editEndDate">End Date</label>
+            <input type="date" id="editEndDate" required>
+          </div>
+        </div>
+        <div style="margin-bottom:18px;">
+          <h4 style="margin-bottom:8px; color:#007bff;">Details</h4>
+          <div class="form-group">
+            <label for="editeventName">Name</label>
+            <input type="text" id="editeventName" required>
+          </div>
+          <div class="form-group">
+            <label for="editeventDescription">Description</label>
+            <textarea id="editeventDescription" required></textarea>
+          </div>
+        </div>
+        <button type="submit" class="submit-btn">Update</button>
+      </form>
+    </div>
+  </div>
+
+  <script type="module">
+    // Back button: go back or fallback to BusinessUser.html
+    window.goBack = () => {
+      if (window.history.length > 1) {
+        history.back();
+      } else {
+        window.location.href = "BusinessUser.html";
+      }
+    };
+    
+    const backBtn = document.getElementById('backBtn');
+    if (backBtn) {
+      backBtn.addEventListener("click", window.goBack);
+    }
+
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/9.23.0/firebase-app.js";
+    import { getAuth, onAuthStateChanged, signOut, sendPasswordResetEmail } from "https://www.gstatic.com/firebasejs/9.23.0/firebase-auth.js";
+import { getFirestore, doc, getDoc, updateDoc } from "https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore.js";
+
     const firebaseConfig = {
       apiKey: "AIzaSyAIFV7ynXUzA0p-CrmVOE2lFRgaf_9g_k4",
       authDomain: "fyp-25-s2-09.firebaseapp.com",
@@ -598,12 +883,12 @@
       appId: "1:838641447649:web:6ddfb234b3d445f16dbda0"
     };
 
-    firebase.initializeApp(firebaseConfig);
-    const auth = firebase.auth();
-    const db = firebase.firestore();
+    const app = initializeApp(firebaseConfig);
+    const auth = getAuth(app);
+    const db = getFirestore(app);
+
 
     const menuBtn = document.getElementById('menuBtn');
-    const backBtn = document.getElementById('backBtn');
     const modeToggle = document.getElementById('modeToggle');
     const sideMenu = document.getElementById('sideMenu');
     const sideMenuOverlay = document.getElementById('sideMenuOverlay');
@@ -612,11 +897,12 @@
     const resetPasswordLink = document.getElementById('resetPasswordLink');
     const profileLink = document.getElementById('profileLink');
     const settingsLink = document.getElementById('settingsLink');
-    const eventsTableBody = document.getElementById('eventsTableBody');
+    const headerTitle = document.getElementById('headerTitle');
 
-    const eventModal = document.getElementById('eventModal');
-    let currentUser = null;
-    let editingEventId = null;
+    // Modal elements
+    const createModal = document.getElementById("createModal");
+    const editModal = document.getElementById("editModal");
+    const editeventForm = document.getElementById("editeventForm");
 
     // Side menu open/close functions
     function openMenu() {
@@ -630,15 +916,6 @@
     menuBtn.addEventListener("click", openMenu);
     closeMenuBtn.addEventListener("click", closeMenu);
     sideMenuOverlay.addEventListener("click", closeMenu);
-
-    // Back button: go back or fallback to homepage
-    backBtn.addEventListener("click", () => {
-      if (window.history.length > 1) {
-        history.back();
-      } else {
-        window.location.href = "/";
-      }
-    });
 
     // Dark mode toggle
     modeToggle.addEventListener("click", () => {
@@ -654,303 +931,513 @@
     // Side menu navigation links
     profileLink.addEventListener("click", (e) => {
       e.preventDefault();
-      window.location.href = "profile.html";
+      goProfile();
+      closeMenu();
     });
     settingsLink.addEventListener("click", (e) => {
       e.preventDefault();
-      window.location.href = "settings.html";
+      goSettings();
+      closeMenu();
     });
-    // Logout link
     logoutLink.addEventListener("click", async (e) => {
       e.preventDefault();
-      try {
-        await auth.signOut();
-        alert("Logged out successfully.");
-        closeMenu();
-        window.location.href = "login.html";
-      } catch (error) {
-        alert("Logout failed: " + error.message);
-        console.error(error);
-      }
+      await logout();
+      closeMenu();
     });
-    // Reset password link - sends reset email to current user's email
-    resetPasswordLink.addEventListener("click", async (e) => {
+    resetPasswordLink.addEventListener("click", (e) => {
       e.preventDefault();
-      if (!auth.currentUser || !auth.currentUser.email) {
-        alert("No logged-in user found to reset password.");
-        return;
-      }
-      try {
-        await firebase.auth().sendPasswordResetEmail(auth.currentUser.email);
-        alert(`Password reset email sent to ${auth.currentUser.email}`);
-        closeMenu();
-      } catch (error) {
-        alert("Failed to send password reset email: " + error.message);
-        console.error(error);
-      }
+      resetPassword();
+      closeMenu();
     });
 
-    function openModal(event = null) {
-      const formTitle = document.getElementById('formTitle');
-      const submitBtn = document.getElementById('submitBtn');
-
-      if (event) {
-        editingEventId = event.id;
-        formTitle.textContent = "Edit Event";
-        submitBtn.textContent = "Update";
-
-        document.getElementById('eventName').value = event.name;
-        document.getElementById('eventDescription').value = event.description || "";
-        document.getElementById('eventStart').value = event.start;
-        document.getElementById('eventEnd').value = event.end;
-      } else {
-        editingEventId = null;
-        formTitle.textContent = "Create Event";
-        submitBtn.textContent = "Create";
-
-        document.getElementById('eventName').value = "";
-        document.getElementById('eventDescription').value = "";
-        document.getElementById('eventStart').value = "";
-        document.getElementById('eventEnd').value = "";
-      }
-      // Clear file input always
-      document.getElementById('eventImage').value = "";
-      eventModal.style.display = "block";
-    }
-
-    function closeModal() {
-      eventModal.style.display = "none";
-    }
-
-    window.onclick = function (event) {
-      if (event.target == eventModal) {
-        closeModal();
-      }
-    };
-
-    auth.onAuthStateChanged(async user => {
+    onAuthStateChanged(auth, async (user) => {
       if (!user) {
-        alert("Please log in.");
-        window.location.href = "login.html";
-        return;
+        window.location.href = "Login.html";
+      } else {
+        headerTitle.textContent = "Event Management";
+        // Render the event table after authentication is confirmed
+        await rendereventTable();
       }
-      currentUser = user;
-      loadEvents();
     });
 
-    async function submitEvent() {
-      try {
-        const name = document.getElementById('eventName').value.trim();
-        const description = document.getElementById('eventDescription').value.trim();
-        const start = document.getElementById('eventStart').value;
-        const end = document.getElementById('eventEnd').value;
-        const file = document.getElementById('eventImage').files[0];
+    // Firebase imports for Firestore
+    import { collection, addDoc, getDocs, deleteDoc, doc as firestoreDoc } from "https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore.js";
 
-        if (!name || !start || !end) {
-          alert("Please fill in required fields");
+    // Render event table from Firestore
+    async function rendereventTable() {
+      const tbody = document.getElementById('eventTableBody');
+      tbody.innerHTML = '<tr><td colspan="8" style="text-align:center; color:#888;">Loading...</td></tr>';
+      try {
+        const currentUser = auth.currentUser;
+        if (!currentUser) {
+          tbody.innerHTML = '<tr><td colspan="8" style="text-align:center; color:#888;">Please log in to view your events.</td></tr>';
           return;
         }
 
-        let imageBase64 = "";
+        const querySnapshot = await getDocs(collection(db, "events"));
+        let rows = '';
+        function formatDate(iso) {
+          if (!iso) return '';
+          const [y, m, d] = iso.split('-');
+          if (!y || !m || !d) return iso;
+          return `${d}/${m}/${y}`;
+        }
+        querySnapshot.forEach((docSnap) => {
+          const data = docSnap.data();
+          // Only show events created by the current user
+          if (data.createdBy === currentUser.uid) {
+          rows += `
+            <tr>
+              <td>${(data.metrics || []).map(m => m.charAt(0).toUpperCase() + m.slice(1)).join(', ')}</td>
+              <td>${(data.sports || []).map(s => s.charAt(0).toUpperCase() + s.slice(1)).join(', ')}</td>
+              <td>${formatDate(data.startDate)}</td>
+              <td>${formatDate(data.endDate)}</td>
+              <td>${data.name ? data.name.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;') : ''}</td>
+              <td>${data.description ? data.description.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;') : ''}</td>
+              <td class="event-actions">
+                <button class="action-btn view-btn" title="View" onclick="viewevent('${docSnap.id}')">View</button>
+                <button class="action-btn edit-btn" title="Edit" onclick="editevent('${docSnap.id}')">Edit</button>
+                <button class="action-btn delete-btn" title="Delete" onclick="deleteevent('${docSnap.id}')">Delete</button>
+              </td>
+            </tr>
+          `;
+          }
+        });
+        tbody.innerHTML = rows || '<tr><td colspan="8" style="text-align:center; color:#888;">No events found.</td></tr>';
+      } catch (err) {
+        tbody.innerHTML = `<tr><td colspan="8" style="text-align:center; color:#c00;">Failed to load: ${err.message}</td></tr>`;
+      }
+    }
 
-        if (editingEventId) {
-          // Editing mode: fetch existing event to preserve image if no new one
-          const docRef = db.collection("events").doc(editingEventId);
-          const docSnap = await docRef.get();
+    let selectedMetrics = [];
+    let selectedSports = [];
+    let selectedStartDate = '';
+    let selectedEndDate = '';
+    let enteredName = '';
+    let enteredDesc = '';
+    const step1 = document.getElementById('step1');
+    const step3 = document.getElementById('step3');
+    const step4 = document.getElementById('step4');
+    const step5 = document.getElementById('step5');
+    const toStep3Btn = document.getElementById('toStep3Btn');
+    const backToStep2Btn = document.getElementById('backToStep2Btn');
+    const toStep4Btn = document.getElementById('toStep4Btn');
+    const backToStep3Btn = document.getElementById('backToStep3Btn');
+    const toStep5Btn = document.getElementById('toStep5Btn');
+    const backToStep4Btn = document.getElementById('backToStep4Btn');
+    const finishCreateBtn = document.getElementById('finishCreateBtn');
+    const metricCheckboxes = document.querySelectorAll('.metric-checkbox');
+    const sportCheckboxes = document.querySelectorAll('.sport-checkbox');
+    const selectAllSports = document.getElementById('selectAllSports');
+    const challengeStartDate = document.getElementById('challengeStartDate');
+    const challengeEndDate = document.getElementById('challengeEndDate');
+    const challengeNameInput = document.getElementById('challengeName');
+    const challengeDescInput = document.getElementById('challengeDesc');
+    const createModalTitle = document.getElementById('createModalTitle');
 
-          if (!docSnap.exists) {
-            alert("Event not found for editing.");
+    function openCreateModal() {
+      createModal.style.display = "flex";
+      // Reset steps
+      step1.style.display = '';
+      step3.style.display = 'none';
+      step4.style.display = 'none';
+      step5.style.display = 'none';
+      createModalTitle.textContent = 'Create Event';
+      // Reset selections
+      metricCheckboxes.forEach(cb => cb.checked = false);
+      selectedMetrics = [];
+      sportCheckboxes.forEach(cb => cb.checked = false);
+      selectAllSports.checked = false;
+      selectedSports = [];
+      challengeStartDate.value = '';
+      challengeEndDate.value = '';
+      challengeNameInput.value = '';
+      challengeDescInput.value = '';
+      enteredName = '';
+      enteredDesc = '';
+    }
+
+    // Attach event listener for close button in create modal
+    const createCloseBtn = document.getElementById('createModalCloseBtn');
+    if (createCloseBtn) {
+      createCloseBtn.addEventListener('click', closeCreateModal);
+    }
+    // Expose to global for button onclick
+    window.openCreateModal = openCreateModal;
+
+    function closeCreateModal() {
+      createModal.style.display = "none";
+    }
+
+    // Start with metrics step
+
+    // Step 3: Sports
+    toStep3Btn.addEventListener('click', () => {
+      // Validate metrics
+      selectedMetrics = Array.from(metricCheckboxes).filter(cb => cb.checked).map(cb => cb.value);
+      if (selectedMetrics.length === 0) {
+        alert('Please select at least one metric to track.');
+        return;
+      }
+      step1.style.display = 'none';
+      step3.style.display = '';
+      step4.style.display = 'none';
+      step5.style.display = 'none';
+      createModalTitle.textContent = 'Select Sports';
+    });
+    backToStep2Btn.addEventListener('click', () => {
+      step3.style.display = 'none';
+      step1.style.display = '';
+      step4.style.display = 'none';
+      step5.style.display = 'none';
+      createModalTitle.textContent = 'Event Metrics';
+    });
+    // Select All Sports logic
+    selectAllSports.addEventListener('change', () => {
+      sportCheckboxes.forEach(cb => cb.checked = selectAllSports.checked);
+    });
+    sportCheckboxes.forEach(cb => {
+      cb.addEventListener('change', () => {
+        if (!cb.checked) selectAllSports.checked = false;
+        else if (Array.from(sportCheckboxes).every(c => c.checked)) selectAllSports.checked = true;
+      });
+    });
+
+    // Step 4: Dates
+    toStep4Btn.addEventListener('click', () => {
+      selectedSports = Array.from(sportCheckboxes).filter(cb => cb.checked).map(cb => cb.value);
+      if (selectedSports.length === 0) {
+        alert('Please select at least one sport.');
+        return;
+      }
+      step3.style.display = 'none';
+      step4.style.display = '';
+      step1.style.display = 'none';
+      step2.style.display = 'none';
+      step5.style.display = 'none';
+      createModalTitle.textContent = 'Challenge Dates';
+    });
+    backToStep3Btn.addEventListener('click', () => {
+      step4.style.display = 'none';
+      step3.style.display = '';
+      step1.style.display = 'none';
+      step2.style.display = 'none';
+      step5.style.display = 'none';
+      createModalTitle.textContent = 'Select Sports';
+    });
+
+    // Step 5: Name/Description
+    toStep5Btn.addEventListener('click', () => {
+      selectedStartDate = challengeStartDate.value;
+      selectedEndDate = challengeEndDate.value;
+      if (!selectedStartDate || !selectedEndDate) {
+        alert('Please select both start and end dates.');
+        return;
+      }
+      if (selectedEndDate < selectedStartDate) {
+        alert('End date cannot be before start date.');
+        return;
+      }
+      step4.style.display = 'none';
+      step5.style.display = '';
+      step1.style.display = 'none';
+      step2.style.display = 'none';
+      step3.style.display = 'none';
+      createModalTitle.textContent = 'Challenge Name & Description';
+    });
+    backToStep4Btn.addEventListener('click', () => {
+      step5.style.display = 'none';
+      step4.style.display = '';
+      step1.style.display = 'none';
+      step2.style.display = 'none';
+      step3.style.display = 'none';
+      createModalTitle.textContent = 'Challenge Dates';
+    });
+
+    // Finish
+    finishCreateBtn.addEventListener('click', async () => {
+      enteredName = challengeNameInput.value.trim();
+      enteredDesc = challengeDescInput.value.trim();
+      // Validate all required fields
+      if (selectedMetrics.length === 0) {
+        alert('Please select at least one metric to track.');
+        return;
+      }
+      if (selectedSports.length === 0) {
+        alert('Please select at least one sport.');
+        return;
+      }
+      if (!selectedStartDate || !selectedEndDate) {
+        alert('Please select both start and end dates.');
+        return;
+      }
+      if (selectedEndDate < selectedStartDate) {
+        alert('End date cannot be before start date.');
+        return;
+      }
+      // Use entered name or default
+      const name = enteredName || 'New Event';
+      const description = enteredDesc;
+
+      // Save to Firestore
+      try {
+        const currentUser = auth.currentUser;
+        if (!currentUser) {
+          alert('You must be logged in to create events.');
+          return;
+        }
+        
+        await addDoc(collection(db, "events"), {
+          metrics: selectedMetrics,
+          sports: selectedSports,
+          startDate: selectedStartDate,
+          endDate: selectedEndDate,
+          name: name,
+          description: description,
+          createdBy: currentUser.uid,
+          createdAt: new Date().toISOString()
+        });
+        closeCreateModal();
+        rendereventTable();
+      } catch (err) {
+        alert('Failed to create event: ' + err.message);
+      }
+    });
+
+
+// Track which event is being edited
+let editingeventId = null;
+// Edit event: fetch by id and fill modal
+async function editevent(id) {
+  try {
+    const docRef = firestoreDoc(db, "events", id);
+    const docSnap = await getDoc(docRef);
+    if (docSnap.exists()) {
+      const data = docSnap.data();
+      const currentUser = auth.currentUser;
+      
+      if (!currentUser || data.createdBy !== currentUser.uid) {
+        alert('You can only edit events that you created.');
+        return;
+      }
+      // Metrics
+      const metricCheckboxes = document.querySelectorAll('.edit-metric-checkbox');
+      (data.metrics || []).forEach(metric => {
+        metricCheckboxes.forEach(cb => {
+          cb.checked = (cb.value === metric);
+        });
+      });
+      // Sports
+      const sportCheckboxes = document.querySelectorAll('.edit-sport-checkbox');
+      (data.sports || []).forEach(sport => {
+        sportCheckboxes.forEach(cb => {
+          cb.checked = (cb.value === sport);
+        });
+      });
+      document.getElementById("editStartDate").value = data.startDate || '';
+      document.getElementById("editEndDate").value = data.endDate || '';
+      document.getElementById("editeventName").value = data.name || '';
+      document.getElementById("editeventDescription").value = data.description || '';
+      editModal.style.display = "flex";
+      editingeventId = id;
+    } else {
+      alert("event not found.");
+    }
+  } catch (err) {
+    alert("Failed to load event: " + err.message);
+  }
+}
+// Expose for inline onclick
+window.editevent = editevent;
+
+
+    function closeEditModal() {
+      editModal.style.display = "none";
+    }
+    // Attach event listener for close button in edit modal
+    const editCloseBtn = document.getElementById('editModalCloseBtn');
+    if (editCloseBtn) {
+      editCloseBtn.addEventListener('click', closeEditModal);
+    }
+
+    // View event (placeholder)
+    function viewevent(id) {
+      alert(`Viewing event: ${id}\n(Not implemented - would show ranking and points)`);
+    }
+
+    // Delete event from Firestore
+    async function deleteevent(id) {
+      if (confirm(`Are you sure you want to delete this event?`)) {
+        try {
+          const eventDoc = await getDoc(firestoreDoc(db, "events", id));
+          if (!eventDoc.exists()) {
+            alert('Event not found.');
+            return;
+          }
+          
+          const eventData = eventDoc.data();
+          const currentUser = auth.currentUser;
+          
+          if (!currentUser || eventData.createdBy !== currentUser.uid) {
+            alert('You can only delete events that you created.');
             return;
           }
 
-          const existingData = docSnap.data();
-
-          if (file) {
-            // If new file selected, convert to base64
-            imageBase64 = await fileToBase64(file);
-          } else {
-            // No new file, keep existing image
-            imageBase64 = existingData.imageBase64 || "";
-          }
-        } else {
-          // Creating new event
-          if (file) {
-            imageBase64 = await fileToBase64(file);
-          }
+          await deleteDoc(firestoreDoc(db, "events", id));
+          rendereventTable();
+        } catch (err) {
+          alert('Failed to delete event: ' + err.message);
         }
-
-        const eventData = {
-          name,
-          description,
-          start,
-          end,
-          imageBase64,
-          uid: currentUser.uid,
-          businessName: await getBusinessName(currentUser.uid)
-        };
-
-        if (editingEventId) {
-          await db.collection("events").doc(editingEventId).update(eventData);
-        } else {
-          await db.collection("events").add(eventData);
-        }
-
-        closeModal();
-        loadEvents();
-      } catch (error) {
-        console.error("Error saving event:", error);
-        alert("Failed to save event: " + error.message);
       }
     }
 
-    function fileToBase64(file) {
-      return new Promise((resolve, reject) => {
-        const reader = new FileReader();
-        reader.onload = () => {
-          resolve(reader.result);
-        };
-        reader.onerror = reject;
-        reader.readAsDataURL(file);
-      });
+    // Expose for inline onclick
+    window.viewevent = viewevent;
+    window.deleteevent = deleteevent;
+
+    // Note: createeventForm submission is handled by the step-by-step modal now
+
+
+editeventForm.addEventListener("submit", async (e) => {
+  e.preventDefault();
+  if (!editingeventId) {
+    alert("No event selected for editing.");
+    return;
+  }
+
+  try {
+    const currentUser = auth.currentUser;
+    if (!currentUser) {
+      alert('You must be logged in to edit events.');
+      return;
     }
 
-    async function getBusinessName(uid) {
+    // Gather all fields
+    const metricCheckboxes = document.querySelectorAll('.edit-metric-checkbox');
+    const metrics = Array.from(metricCheckboxes).filter(cb => cb.checked).map(cb => cb.value);
+    const sportCheckboxes = document.querySelectorAll('.edit-sport-checkbox');
+    const sports = Array.from(sportCheckboxes).filter(cb => cb.checked).map(cb => cb.value);
+    const startDate = document.getElementById("editStartDate").value;
+    const endDate = document.getElementById("editEndDate").value;
+    const name = document.getElementById("editeventName").value.trim();
+    const description = document.getElementById("editeventDescription").value.trim();
+
+    // Validation
+    if (metrics.length === 0 || sports.length === 0 || !startDate || !endDate || !name) {
+      alert("Please fill in all required fields and select at least one metric and sport.");
+      return;
+    }
+    if (endDate < startDate) {
+      alert("End date cannot be before start date.");
+      return;
+    }
+
+    // Get the document reference
+    const docRef = firestoreDoc(db, "events", editingeventId);
+    
+    // Get the current event data
+    const eventDoc = await getDoc(docRef);
+    if (!eventDoc.exists()) {
+      alert('Event not found.');
+      return;
+    }
+    
+    const eventData = eventDoc.data();
+    if (eventData.createdBy !== currentUser.uid) {
+      alert('You can only edit events that you created.');
+      return;
+    }
+
+    // Print debug information
+    console.log('Updating document:', editingeventId);
+    console.log('Update data:', {
+      metrics,
+      sports,
+      startDate,
+      endDate,
+      name,
+      description
+    });
+
+    // Create the update data object
+    const updateData = {
+      metrics: metrics,
+      sports: sports,
+      startDate: startDate,
+      endDate: endDate,
+      name: name,
+      description: description,
+      createdBy: eventData.createdBy,
+      createdAt: eventData.createdAt,
+      updatedAt: new Date().toISOString()
+    };
+
+    console.log('Full update data:', updateData);
+    
+    // Get the document reference
+    const eventRef = firestoreDoc(db, "events", editingeventId);
+    
+    // Perform the update
+    await updateDoc(eventRef, updateData);
+    
+    // Verify the update
+    const updatedDoc = await getDoc(eventRef);
+    console.log('Updated document data:', updatedDoc.data());
+
+    // Success!
+    alert('Event updated successfully!');
+    closeEditModal();
+    editingeventId = null;
+    await rendereventTable(); // Refresh the table with new data
+  } catch (err) {
+    console.error('Update error:', err);
+    alert("Failed to update event: " + err.message);
+  }
+});
+
+    // Navigation functions
+    async function handleLogout(e) {
+      if (e) {
+        e.preventDefault();
+      }
       try {
-        const docSnap = await db.collection('businessUsers').doc(uid).get();
-        if (docSnap.exists) {
-          return docSnap.data().businessName || "Unknown Business";
-        }
-        return "Unknown Business";
-      } catch {
-        return "Unknown Business";
-      }
-    }
-
-    function renderEvent(id, data) {
-      // Create a table row for the event
-      const tr = document.createElement('tr');
-      // Count participants (assume array or fallback to 0)
-      let participantsCount = 0;
-      if (Array.isArray(data.participants)) {
-        participantsCount = data.participants.length;
-      } else if (typeof data.participants === 'number') {
-        participantsCount = data.participants;
-      } else {
-        participantsCount = 0;
-      }
-      function formatDateTime(dt) {
-        if (!dt) return '';
-        const date = new Date(dt);
-        if (isNaN(date.getTime())) return escapeHtml(dt);
-
-        const day = String(date.getDate()).padStart(2, '0');
-        const month = String(date.getMonth() + 1).padStart(2, '0'); // months are 0-based
-        const year = date.getFullYear();
-
-        const hours = String(date.getHours()).padStart(2, '0');
-        const minutes = String(date.getMinutes()).padStart(2, '0');
-
-        return `${day}/${month}/${year} ${hours}:${minutes}`;
-      }
-
-      tr.innerHTML = `
-        <td>${escapeHtml(data.name)}</td>
-        <td>${escapeHtml(data.businessName)}</td>
-        <td>${formatDateTime(data.start)}</td>
-        <td>${formatDateTime(data.end)}</td>
-        <td>${escapeHtml(data.description || "")}</td>
-        <td>${participantsCount}</td>
-        <td>${data.imageBase64 ? `<img src="${data.imageBase64}" alt="Event image" />` : ''}</td>
-        <td class="actions"></td>
-      `;
-      // Edit button
-      const edit = document.createElement('button');
-      edit.className = 'edit-icon';
-      edit.title = "Edit event";
-      edit.innerHTML = `
-        <svg xmlns="http://www.w3.org/2000/svg" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" viewBox="0 0 24 24" width="16" height="16">
-          <path d="M12 20h9"></path>
-          <path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"></path>
-        </svg>
-      `;
-      edit.addEventListener('click', () => {
-        if (data.uid === currentUser.uid) {
-          openModal({ id, ...data });
-        } else {
-          alert("You can only edit your own events.");
-        }
-      });
-      // Delete button
-      const del = document.createElement('button');
-      del.className = 'delete-icon';
-      del.title = "Delete event";
-      del.innerHTML = `
-        <svg xmlns="http://www.w3.org/2000/svg" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" viewBox="0 0 24 24" width="16" height="16">
-          <polyline points="3 6 5 6 21 6"></polyline>
-          <path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"></path>
-          <path d="M10 11v6"></path>
-          <path d="M14 11v6"></path>
-          <path d="M9 6V4a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2"></path>
-        </svg>
-      `;
-      del.addEventListener('click', async () => {
-        if (data.uid === currentUser.uid) {
-          if (confirm(`Are you sure you want to delete event "${data.name}"?`)) {
-            await db.collection('events').doc(id).delete();
-            loadEvents();
-          }
-        } else {
-          alert("You can only delete your own events.");
-        }
-      });
-      // Add actions to the last cell
-      const actionsTd = tr.querySelector('.actions');
-      actionsTd.appendChild(edit);
-      actionsTd.appendChild(del);
-      eventsTableBody.appendChild(tr);
-    }
-
-    async function loadEvents() {
-      eventsTableBody.innerHTML = '<tr><td colspan="7">Loading events...</td></tr>';
-      try {
-        const snapshot = await db.collection("events").orderBy('start', 'desc').get();
-        eventsTableBody.innerHTML = '';
-        if (snapshot.empty) {
-          eventsTableBody.innerHTML = '<tr><td colspan="7">No events found.</td></tr>';
-        } else {
-          snapshot.forEach(doc => renderEvent(doc.id, doc.data()));
-        }
+        await signOut(auth);
+        window.location.href = "Login.html";
       } catch (error) {
-        eventsTableBody.innerHTML = '<tr><td colspan="7">Failed to load events.</td></tr>';
-        console.error("Error loading events:", error);
+        console.error("Logout error:", error);
+        alert("Failed to logout: " + error.message);
       }
     }
+    
+    // Expose logout function to global scope
+    window.logout = handleLogout;
 
-    // Escape HTML utility for table rendering
-    function escapeHtml(text) {
-      if (!text) return "";
-      return text
-        .replace(/&/g, "&amp;")
-        .replace(/</g, "&lt;")
-        .replace(/>/g, "&gt;")
-        .replace(/"/g, "&quot;")
-        .replace(/'/g, "&#039;");
+    // Add single event listener for logout
+    if (logoutLink) {
+      logoutLink.addEventListener('click', handleLogout);
     }
 
-    // Profile, Settings, Logout, Reset Password placeholders
-    function goProfile() {
-      alert("Go to Profile page (not implemented)");
-    }
-    function goSettings() {
-      alert("Go to Settings page (not implemented)");
-    }
-    function logout() {
-      auth.signOut().then(() => window.location.href = "login.html");
-    }
-    function resetPassword() {
-      alert("Reset password feature (not implemented)");
-    }
+    window.goProfile = () => window.location.href = "Profile.html";
+    window.goSettings = () => window.location.href = "Settings.html";
+    window.resetPassword = () => {
+      const user = auth.currentUser;
+      if (!user || !user.email) {
+        alert("No user logged in.");
+        return;
+      }
+      const confirmReset = confirm(`Send password reset email to ${user.email}?`);
+      if (confirmReset) {
+        sendPasswordResetEmail(auth, user.email)
+          .then(() => alert("Password reset email sent!"))
+          .catch(err => alert("Error sending reset email: " + err.message));
+      }
+    };
+
+    // Close modals when clicking outside
+    window.addEventListener("click", (e) => {
+      if (e.target === createModal) closeCreateModal();
+      if (e.target === editModal) closeEditModal();
+    });
   </script>
 </body>
-
 </html>
