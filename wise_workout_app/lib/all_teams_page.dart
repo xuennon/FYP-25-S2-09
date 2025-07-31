@@ -1,5 +1,8 @@
 import 'package:flutter/material.dart';
-import 'team_state.dart';
+import 'services/firebase_teams_service.dart';
+import 'models/team.dart';
+import 'team_details_page.dart';
+import 'discovered_team_details_page.dart';
 
 class AllTeamsPage extends StatefulWidget {
   const AllTeamsPage({super.key});
@@ -9,7 +12,41 @@ class AllTeamsPage extends StatefulWidget {
 }
 
 class _AllTeamsPageState extends State<AllTeamsPage> {
-  final TeamState _teamState = TeamState();
+  final FirebaseTeamsService _teamsService = FirebaseTeamsService();
+
+  @override
+  void initState() {
+    super.initState();
+    _teamsService.addListener(_onTeamsChanged);
+    _loadTeams();
+  }
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    // Reload teams every time the page becomes active
+    _loadTeams();
+  }
+
+  @override
+  void dispose() {
+    _teamsService.removeListener(_onTeamsChanged);
+    super.dispose();
+  }
+
+  void _onTeamsChanged() {
+    if (mounted) {
+      setState(() {});
+    }
+  }
+
+  Future<void> _loadTeams() async {
+    try {
+      await _teamsService.loadTeams();
+    } catch (e) {
+      print('Error loading teams: $e');
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -56,7 +93,7 @@ class _AllTeamsPageState extends State<AllTeamsPage> {
                       ),
                     ),
                     Text(
-                      '${_teamState.hasTeam() ? "1 created" : "0 created"} • 0 joined',
+                      '${_teamsService.myTeams.length} created • ${_teamsService.joinedTeams.length} joined',
                       style: TextStyle(
                         fontSize: 12,
                         color: Colors.grey[600],
@@ -71,7 +108,7 @@ class _AllTeamsPageState extends State<AllTeamsPage> {
                     borderRadius: BorderRadius.circular(12),
                   ),
                   child: Text(
-                    '${_getAllTeams().length}',
+                    '${_teamsService.myTeams.length + _teamsService.joinedTeams.length}',
                     style: const TextStyle(
                       fontSize: 16,
                       fontWeight: FontWeight.bold,
@@ -99,76 +136,137 @@ class _AllTeamsPageState extends State<AllTeamsPage> {
     final allTeams = _getAllTeams();
     
     if (allTeams.isEmpty) {
-      return const Center(
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            Icon(
-              Icons.group_off,
-              size: 80,
-              color: Colors.grey,
-            ),
-            SizedBox(height: 16),
-            Text(
-              'No teams yet',
-              style: TextStyle(
-                fontSize: 18,
-                color: Colors.grey,
-                fontWeight: FontWeight.w500,
+      return RefreshIndicator(
+        onRefresh: _loadTeams,
+        child: SingleChildScrollView(
+          physics: const AlwaysScrollableScrollPhysics(),
+          child: Container(
+            height: MediaQuery.of(context).size.height * 0.6,
+            child: const Center(
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  Icon(
+                    Icons.group_off,
+                    size: 80,
+                    color: Colors.grey,
+                  ),
+                  SizedBox(height: 16),
+                  Text(
+                    'No teams yet',
+                    style: TextStyle(
+                      fontSize: 18,
+                      color: Colors.grey,
+                      fontWeight: FontWeight.w500,
+                    ),
+                  ),
+                  SizedBox(height: 8),
+                  Text(
+                    'Create or join some teams to see them here!',
+                    style: TextStyle(
+                      fontSize: 14,
+                      color: Colors.grey,
+                    ),
+                  ),
+                  SizedBox(height: 16),
+                  Text(
+                    'Pull down to refresh',
+                    style: TextStyle(
+                      fontSize: 12,
+                      color: Colors.grey,
+                    ),
+                  ),
+                ],
               ),
             ),
-            SizedBox(height: 8),
-            Text(
-              'Create or join some teams to see them here!',
-              style: TextStyle(
-                fontSize: 14,
-                color: Colors.grey,
-              ),
-            ),
-          ],
+          ),
         ),
       );
     }
 
-    return GridView.builder(
-      gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-        crossAxisCount: 2,
-        crossAxisSpacing: 20,
-        mainAxisSpacing: 20,
-        childAspectRatio: 0.85,
+    return RefreshIndicator(
+      onRefresh: _loadTeams,
+      child: GridView.builder(
+        physics: const AlwaysScrollableScrollPhysics(),
+        gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+          crossAxisCount: 2,
+          crossAxisSpacing: 20,
+          mainAxisSpacing: 20,
+          childAspectRatio: 0.85,
+        ),
+        itemCount: allTeams.length,
+        itemBuilder: (context, index) {
+          final team = allTeams[index];
+          return _buildTeamCard(team);
+        },
       ),
-      itemCount: allTeams.length,
-      itemBuilder: (context, index) {
-        final team = allTeams[index];
-        return _buildTeamCard(team);
-      },
     );
   }
 
-  List<Map<String, String>> _getAllTeams() {
-    List<Map<String, String>> allTeams = [];
+  List<Map<String, dynamic>> _getAllTeams() {
+    List<Map<String, dynamic>> allTeams = [];
     
-    // Add created team (if any)
-    if (_teamState.hasTeam()) {
-      final createdTeam = Map<String, String>.from(_teamState.createdTeam!);
-      createdTeam['type'] = 'created'; // Add a flag to distinguish
-      allTeams.add(createdTeam);
+    // Add created teams from Firebase
+    for (Team team in _teamsService.myTeams) {
+      allTeams.add({
+        'id': team.id,
+        'name': team.name,
+        'description': team.description,
+        'members': team.memberCount.toString(),
+        'creator': team.createdBy,
+        'type': 'created',
+        'teamObject': team, // Keep the original team object for navigation
+      });
     }
     
-    // Add joined teams - TODO: Implement with Firebase
-    // For now, return empty list as joined teams are handled by Firebase
+    // Add joined teams from Firebase
+    for (Team team in _teamsService.joinedTeams) {
+      allTeams.add({
+        'id': team.id,
+        'name': team.name,
+        'description': team.description,
+        'members': team.memberCount.toString(),
+        'creator': team.createdBy,
+        'type': 'joined',
+        'teamObject': team, // Keep the original team object for navigation
+      });
+    }
     
     return allTeams;
   }
 
-  Widget _buildTeamCard(Map<String, String> team) {
+  Widget _buildTeamCard(Map<String, dynamic> team) {
     final isCreatedTeam = team['type'] == 'created';
+    final teamObject = team['teamObject'] as Team;
     
     return GestureDetector(
       onTap: () {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Tapped on ${team['name']} (${isCreatedTeam ? 'Created' : 'Joined'})')),
-        );
+        if (isCreatedTeam) {
+          // Navigate to TeamDetailsPage for created teams
+          Navigator.push(
+            context,
+            MaterialPageRoute(
+              builder: (context) => TeamDetailsPage(teamData: teamObject),
+            ),
+          );
+        } else {
+          // Navigate to DiscoveredTeamDetailsPage for joined teams
+          Navigator.push(
+            context,
+            MaterialPageRoute(
+              builder: (context) => DiscoveredTeamDetailsPage(
+                teamData: {
+                  'id': team['id'] ?? '',
+                  'name': team['name'] ?? '',
+                  'description': team['description'] ?? '',
+                  'members': team['members'] ?? '0',
+                  'creator': team['creator'] ?? '',
+                },
+                initialJoinedState: true,
+              ),
+            ),
+          );
+        }
       },
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.center,
@@ -187,7 +285,7 @@ class _AllTeamsPageState extends State<AllTeamsPage> {
                     : null,
                 ),
                 child: Center(
-                  child: _buildTeamIcon(team['name']!),
+                  child: _buildTeamIcon(team['name']?.toString() ?? ''),
                 ),
               ),
               // Badge for created teams
@@ -211,12 +309,33 @@ class _AllTeamsPageState extends State<AllTeamsPage> {
                     ),
                   ),
                 ),
+              // Badge for joined teams
+              if (!isCreatedTeam)
+                Positioned(
+                  top: 0,
+                  right: 0,
+                  child: Container(
+                    padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                    decoration: BoxDecoration(
+                      color: Colors.blue,
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                    child: const Text(
+                      'Member',
+                      style: TextStyle(
+                        color: Colors.white,
+                        fontSize: 10,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                  ),
+                ),
             ],
           ),
           const SizedBox(height: 12),
           // Team name
           Text(
-            team['name']!,
+            team['name']?.toString() ?? 'Unknown Team',
             style: const TextStyle(
               fontSize: 18,
               fontWeight: FontWeight.bold,

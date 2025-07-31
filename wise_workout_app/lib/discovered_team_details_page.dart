@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'services/firebase_teams_service.dart';
 
 class DiscoveredTeamDetailsPage extends StatefulWidget {
   final Map<String, String> teamData;
@@ -16,6 +17,7 @@ class DiscoveredTeamDetailsPage extends StatefulWidget {
 
 class _DiscoveredTeamDetailsPageState extends State<DiscoveredTeamDetailsPage> {
   late bool isJoined;
+  final FirebaseTeamsService _teamsService = FirebaseTeamsService();
 
   @override
   void initState() {
@@ -108,27 +110,62 @@ class _DiscoveredTeamDetailsPageState extends State<DiscoveredTeamDetailsPage> {
                       label: isJoined ? 'Joined' : 'Join',
                       backgroundColor: isJoined ? Colors.grey : Colors.orange,
                       onTap: () async {
-                        setState(() {
-                          isJoined = !isJoined;
-                        });
-                        
-                        // Note: In a full Firebase implementation, you would:
-                        // if (isJoined) {
-                        //   await _teamsService.joinTeam(teamId);
-                        // } else {
-                        //   await _teamsService.leaveTeam(teamId);
-                        // }
-                        
-                        ScaffoldMessenger.of(context).showSnackBar(
-                          SnackBar(
-                            content: Text(
-                              isJoined 
-                                  ? 'Joined ${widget.teamData['name']}!' 
-                                  : 'Left ${widget.teamData['name']}',
+                        try {
+                          final teamId = widget.teamData['id'];
+                          if (teamId == null) {
+                            ScaffoldMessenger.of(context).showSnackBar(
+                              const SnackBar(
+                                content: Text('Team ID not found'),
+                                backgroundColor: Colors.red,
+                                duration: Duration(seconds: 2),
+                              ),
+                            );
+                            return;
+                          }
+                          
+                          bool success;
+                          if (isJoined) {
+                            success = await _teamsService.leaveTeam(teamId);
+                          } else {
+                            success = await _teamsService.joinTeam(teamId);
+                          }
+                          
+                          if (success) {
+                            setState(() {
+                              isJoined = !isJoined;
+                            });
+                            
+                            ScaffoldMessenger.of(context).showSnackBar(
+                              SnackBar(
+                                content: Text(
+                                  isJoined 
+                                      ? 'Joined ${widget.teamData['name']}!' 
+                                      : 'Left ${widget.teamData['name']}',
+                                ),
+                                backgroundColor: Colors.green,
+                                duration: const Duration(seconds: 2),
+                              ),
+                            );
+                          } else {
+                            ScaffoldMessenger.of(context).showSnackBar(
+                              SnackBar(
+                                content: Text(
+                                  'Failed to ${isJoined ? 'leave' : 'join'} ${widget.teamData['name']}',
+                                ),
+                                backgroundColor: Colors.red,
+                                duration: const Duration(seconds: 2),
+                              ),
+                            );
+                          }
+                        } catch (e) {
+                          ScaffoldMessenger.of(context).showSnackBar(
+                            SnackBar(
+                              content: Text('Error: $e'),
+                              backgroundColor: Colors.red,
+                              duration: const Duration(seconds: 2),
                             ),
-                            duration: const Duration(seconds: 1),
-                          ),
-                        );
+                          );
+                        }
                       },
                     ),
                   ),

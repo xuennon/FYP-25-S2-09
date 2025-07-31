@@ -668,6 +668,7 @@ class _EventPageState extends State<EventPage> with SingleTickerProviderStateMix
                             MaterialPageRoute(
                               builder: (context) => DiscoveredTeamDetailsPage(
                                 teamData: {
+                                  'id': teamData.id, // Add the team ID
                                   'name': teamData.name,
                                   'description': teamData.description,
                                   'members': teamData.memberCount.toString(),

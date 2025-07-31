@@ -161,12 +161,31 @@ class FirebaseTeamsService extends ChangeNotifier {
       }
 
       print('🔄 Joining team: $teamId');
+      print('🔄 Current user ID: $currentUserId');
 
+      // First check if team exists
+      final team = getTeamById(teamId);
+      if (team == null) {
+        print('❌ Team not found: $teamId');
+        return false;
+      }
+
+      // Check if user is already a member
+      if (team.isMember(currentUserId!)) {
+        print('❌ User is already a member of team: $teamId');
+        return false;
+      }
+
+      // Add user to team members array
       await _firestore.collection('teams').doc(teamId).update({
         'members': FieldValue.arrayUnion([currentUserId]),
       });
 
       print('✅ Successfully joined team: $teamId');
+      
+      // Force reload to ensure UI updates immediately
+      await loadTeams();
+      
       return true;
     } catch (e) {
       print('❌ Error joining team: $e');
@@ -183,12 +202,30 @@ class FirebaseTeamsService extends ChangeNotifier {
       }
 
       print('🔄 Leaving team: $teamId');
+      print('🔄 Current user ID: $currentUserId');
 
+      // First check if user is actually a member
+      final team = getTeamById(teamId);
+      if (team == null) {
+        print('❌ Team not found: $teamId');
+        return false;
+      }
+
+      if (!team.isMember(currentUserId!)) {
+        print('❌ User is not a member of team: $teamId');
+        return false;
+      }
+
+      // Remove user from team members array
       await _firestore.collection('teams').doc(teamId).update({
         'members': FieldValue.arrayRemove([currentUserId]),
       });
 
       print('✅ Successfully left team: $teamId');
+      
+      // Force reload to ensure UI updates immediately
+      await loadTeams();
+      
       return true;
     } catch (e) {
       print('❌ Error leaving team: $e');
