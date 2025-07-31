@@ -1887,8 +1887,9 @@
       }
     });
 
-    // Smooth scroll for all navigation links
+    // Smooth scroll for all navigation links except Login
     navLinks.forEach(link => {
+      if (link.id === 'loginBtn') return; // Skip Login button
       link.addEventListener('click', function(event) {
         event.preventDefault();
         const targetId = this.getAttribute('href');
@@ -1905,6 +1906,14 @@
         }
       });
     });
+
+    // Ensure Login button always redirects to Login.html
+    const loginBtn = document.getElementById('loginBtn');
+    if (loginBtn) {
+      loginBtn.addEventListener('click', function(e) {
+        window.location.href = 'Login.html';
+      });
+    }
 
     // Mobile hamburger menu functionality
     const hamburger = document.getElementById('hamburger');
