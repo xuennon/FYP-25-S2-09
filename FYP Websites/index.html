@@ -1642,6 +1642,7 @@
     const landingPageRef = db.collection("landingPage").doc("main");
     const aboutRef = db.collection("landingPage").doc("about");
     const servicesRef = db.collection("landingPage").doc("services");
+    const pricingRef = db.collection("landingPage").doc("pricing");
     landingPageRef.get().then(doc => {
       if (doc.exists) {
         const data = doc.data();
@@ -1746,6 +1747,79 @@
       }
     }).catch(error => {
       console.error("Error loading services content:", error);
+    });
+
+    // Load pricing section content
+    pricingRef.get().then(doc => {
+      if (doc.exists) {
+        const data = doc.data();
+        
+        // Update Free plan
+        if (data.freePlan) {
+          const freePlanBox = document.querySelector('.plan-box.free');
+          if (freePlanBox) {
+            // Update title
+            const freeTitle = freePlanBox.querySelector('h3');
+            if (freeTitle) freeTitle.textContent = data.freePlan.title || 'Free';
+            
+            // Update price
+            const freePrice = freePlanBox.querySelector('div[style*="font-size: 2rem"]');
+            if (freePrice) {
+              const price = parseFloat(data.freePlan.price) || 0;
+              freePrice.innerHTML = `$${price.toFixed(2)}<span style="font-size: 1rem; font-weight: normal;">/month</span>`;
+            }
+            
+            // Update features
+            const freeFeatures = freePlanBox.querySelector('p');
+            if (freeFeatures && data.freePlan.features) {
+              // Convert newlines to <br> tags for HTML display
+              const featuresHtml = data.freePlan.features.split('\n').join('<br />');
+              freeFeatures.innerHTML = featuresHtml;
+            }
+            
+            // Update button text
+            const freeButton = freePlanBox.querySelector('.button');
+            if (freeButton && data.freePlan.buttonText) {
+              freeButton.textContent = data.freePlan.buttonText;
+            }
+          }
+        }
+        
+        // Update Premium plan
+        if (data.premiumPlan) {
+          const premiumPlanBox = document.querySelector('.plan-box.premium');
+          if (premiumPlanBox) {
+            // Update title
+            const premiumTitle = premiumPlanBox.querySelector('h3');
+            if (premiumTitle) premiumTitle.textContent = data.premiumPlan.title || 'Premium';
+            
+            // Update price
+            const premiumPrice = premiumPlanBox.querySelector('div[style*="font-size: 2rem"]');
+            if (premiumPrice) {
+              const price = parseFloat(data.premiumPlan.price) || 10.00;
+              premiumPrice.innerHTML = `$${price.toFixed(2)}<span style="font-size: 1rem; font-weight: normal;">/month</span>`;
+            }
+            
+            // Update features
+            const premiumFeatures = premiumPlanBox.querySelector('p');
+            if (premiumFeatures && data.premiumPlan.features) {
+              // Convert newlines to <br> tags for HTML display
+              const featuresHtml = data.premiumPlan.features.split('\n').join('<br />');
+              premiumFeatures.innerHTML = featuresHtml;
+            }
+            
+            // Update button text
+            const premiumButton = premiumPlanBox.querySelector('.button');
+            if (premiumButton && data.premiumPlan.buttonText) {
+              premiumButton.textContent = data.premiumPlan.buttonText;
+            }
+          }
+        }
+      } else {
+        console.log("No pricing document found, using default values");
+      }
+    }).catch(error => {
+      console.error("Error loading pricing content:", error);
     });
 
 
@@ -2191,6 +2265,40 @@
     // Global functions for carousel navigation
     window.changeSlide = changeSlide;
     window.goToSlide = goToSlide;
+
+    // SCROLL TO TOP ON PAGE LOAD/REFRESH
+    // This ensures the page always starts at the top when loaded or refreshed
+    window.addEventListener('beforeunload', function() {
+      // Save scroll position as 0 before page unloads
+      sessionStorage.setItem('scrollPosition', '0');
+    });
+
+    window.addEventListener('load', function() {
+      // Force scroll to top when page loads
+      window.scrollTo(0, 0);
+      document.documentElement.scrollTop = 0;
+      document.body.scrollTop = 0;
+      
+      // Also handle any stored scroll position
+      sessionStorage.removeItem('scrollPosition');
+      
+      // Force immediate scroll to top with smooth behavior disabled initially
+      setTimeout(() => {
+        window.scrollTo({ top: 0, behavior: 'instant' });
+      }, 50);
+    });
+
+    // Additional scroll to top on DOMContentLoaded (backup)
+    document.addEventListener('DOMContentLoaded', function() {
+      window.scrollTo(0, 0);
+      document.documentElement.scrollTop = 0;
+      document.body.scrollTop = 0;
+    });
+
+    // Override browser's scroll restoration
+    if ('scrollRestoration' in history) {
+      history.scrollRestoration = 'manual';
+    }
   </script>
 
   <!-- Login Modal -->

@@ -291,6 +291,363 @@
       user-select: none;
     }
 
+    /* Survey Banner Styles */
+    .survey-banner {
+      background: linear-gradient(135deg, #ff6b35, #f7931e);
+      border-radius: var(--radius);
+      padding: 20px;
+      margin-bottom: 30px;
+      box-shadow: var(--shadow);
+      position: relative;
+      overflow: hidden;
+    }
+
+    .survey-banner::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background: linear-gradient(45deg, rgba(255,255,255,0.1) 0%, transparent 100%);
+      pointer-events: none;
+    }
+
+    .survey-banner-content {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      position: relative;
+      z-index: 1;
+    }
+
+    .survey-banner-text h3 {
+      color: white;
+      margin: 0 0 8px 0;
+      font-size: 20px;
+      font-weight: 700;
+    }
+
+    .survey-banner-text p {
+      color: rgba(255,255,255,0.9);
+      margin: 0;
+      font-size: 14px;
+    }
+
+    .survey-btn {
+      background: white;
+      color: #ff6b35;
+      border: none;
+      padding: 12px 24px;
+      border-radius: 25px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      white-space: nowrap;
+      margin-left: 20px;
+    }
+
+    .survey-btn:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 8px 20px rgba(0,0,0,0.3);
+    }
+
+    .survey-dismiss {
+      background: none;
+      border: none;
+      color: white;
+      font-size: 20px;
+      cursor: pointer;
+      padding: 4px;
+      margin-left: 12px;
+      opacity: 0.7;
+      transition: opacity 0.3s ease;
+    }
+
+    .survey-dismiss:hover {
+      opacity: 1;
+    }
+
+    /* Survey Modal Styles - Light Theme */
+    .survey-modal {
+      display: none;
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: rgba(0,0,0,0.5);
+      z-index: 2000;
+      backdrop-filter: blur(4px);
+    }
+
+    .survey-modal.active {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      animation: fadeIn 0.3s ease;
+    }
+
+    @keyframes fadeIn {
+      from { opacity: 0; }
+      to { opacity: 1; }
+    }
+
+    .survey-modal-content {
+      background: var(--card-bg);
+      color: var(--text-light);
+      border-radius: var(--radius);
+      width: 90%;
+      max-width: 500px;
+      max-height: 90vh;
+      overflow-y: auto;
+      position: relative;
+      animation: slideIn 0.3s ease;
+      box-shadow: var(--shadow);
+    }
+
+    body.dark .survey-modal-content {
+      background: var(--card-dark);
+      color: var(--text-dark);
+    }
+
+    @keyframes slideIn {
+      from { transform: translateY(-30px); opacity: 0; }
+      to { transform: translateY(0); opacity: 1; }
+    }
+
+    .survey-header {
+      background: linear-gradient(135deg, #ff6b35, #f7931e);
+      padding: 24px;
+      border-radius: var(--radius) var(--radius) 0 0;
+      position: relative;
+      color: white;
+    }
+
+    .survey-header h2 {
+      margin: 0 0 8px 0;
+      font-size: 22px;
+      font-weight: 700;
+      color: white;
+    }
+
+    .survey-header p {
+      margin: 0;
+      opacity: 0.9;
+      font-size: 14px;
+      color: white;
+    }
+
+    .survey-close {
+      position: absolute;
+      top: 16px;
+      right: 16px;
+      background: none;
+      border: none;
+      color: white;
+      font-size: 24px;
+      cursor: pointer;
+      padding: 4px;
+      opacity: 0.8;
+      transition: opacity 0.3s ease;
+    }
+
+    .survey-close:hover {
+      opacity: 1;
+    }
+
+    .survey-form {
+      padding: 24px;
+    }
+
+    .survey-field {
+      margin-bottom: 24px;
+    }
+
+    .survey-field label {
+      display: block;
+      margin-bottom: 12px;
+      font-weight: 600;
+      font-size: 14px;
+      color: var(--text-light);
+    }
+
+    body.dark .survey-field label {
+      color: var(--text-dark);
+    }
+
+    .required {
+      color: #ff6b35;
+    }
+
+    .optional {
+      color: #888;
+      font-weight: normal;
+    }
+
+    .role-selection {
+      display: flex;
+      gap: 12px;
+      flex-wrap: wrap;
+    }
+
+    .role-btn {
+      flex: 1;
+      min-width: 120px;
+      background: #f8f9fa;
+      border: 2px solid #e9ecef;
+      color: var(--text-light);
+      padding: 16px 12px;
+      border-radius: 8px;
+      cursor: not-allowed;
+      transition: all 0.3s ease;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 8px;
+      opacity: 0.6;
+    }
+
+    body.dark .role-btn {
+      background: #3a3a3a;
+      border-color: #555;
+      color: var(--text-dark);
+    }
+
+    .role-btn.selected {
+      background: var(--primary);
+      border-color: var(--primary);
+      color: white;
+      opacity: 1;
+      cursor: default;
+    }
+
+    .role-icon {
+      font-size: 20px;
+    }
+
+    .role-disabled-text {
+      font-size: 12px;
+      color: #888;
+      text-align: center;
+      margin-top: 8px;
+      font-style: italic;
+    }
+
+    .rating-container {
+      text-align: center;
+    }
+
+    .stars {
+      font-size: 32px;
+      margin-bottom: 8px;
+    }
+
+    .star {
+      color: #ddd;
+      cursor: pointer;
+      transition: color 0.2s ease;
+      margin: 0 2px;
+    }
+
+    .star:hover,
+    .star.active {
+      color: #ffc107;
+    }
+
+    body.dark .star {
+      color: #555;
+    }
+
+    .rating-text {
+      color: #888;
+      font-size: 14px;
+      margin: 0;
+    }
+
+    .survey-field textarea {
+      width: 100%;
+      background: var(--card-bg);
+      border: 2px solid #e9ecef;
+      color: var(--text-light);
+      padding: 12px;
+      border-radius: 8px;
+      font-family: inherit;
+      resize: vertical;
+      min-height: 100px;
+      transition: var(--transition);
+    }
+
+    body.dark .survey-field textarea {
+      background: #3a3a3a;
+      border-color: #555;
+      color: var(--text-dark);
+    }
+
+    .survey-field textarea:focus {
+      outline: none;
+      border-color: var(--primary);
+    }
+
+    .survey-field textarea::placeholder {
+      color: #888;
+    }
+
+    .contact-row {
+      display: flex;
+      gap: 12px;
+    }
+
+    .contact-row input {
+      flex: 1;
+      background: #f8f9fa;
+      border: 2px solid #e9ecef;
+      color: var(--text-light);
+      padding: 12px;
+      border-radius: 8px;
+      font-family: inherit;
+      transition: var(--transition);
+    }
+
+    body.dark .contact-row input {
+      background: #3a3a3a;
+      border-color: #555;
+      color: var(--text-dark);
+    }
+
+    .contact-row input:read-only {
+      background: #f1f3f4;
+      color: #6c757d;
+      cursor: not-allowed;
+    }
+
+    body.dark .contact-row input:read-only {
+      background: #2a2a2a;
+      color: #aaa;
+    }
+
+    .survey-submit {
+      width: 100%;
+      background: linear-gradient(135deg, #ff6b35, #f7931e);
+      border: none;
+      color: white;
+      padding: 16px;
+      border-radius: 8px;
+      font-size: 16px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.3s ease;
+    }
+
+    .survey-submit:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 8px 20px rgba(255, 107, 53, 0.4);
+    }
+
+    .survey-banner.hidden {
+      display: none;
+    }
+
     @media (max-width: 900px) {
       .container {
         padding-right: 20px !important;
@@ -313,6 +670,24 @@
 
       .widgets {
         grid-template-columns: 1fr !important;
+      }
+
+      .survey-banner-content {
+        flex-direction: column;
+        text-align: center;
+        gap: 16px;
+      }
+
+      .survey-btn {
+        margin-left: 0;
+      }
+
+      .role-selection {
+        flex-direction: column;
+      }
+
+      .contact-row {
+        flex-direction: column;
       }
     }
   </style>
@@ -341,11 +716,85 @@
     </nav>
   </aside>
 
+  <!-- Survey Modal -->
+  <div id="surveyModal" class="survey-modal">
+    <div class="survey-modal-content">
+      <div class="survey-header">
+        <h2>Share Your Experience</h2>
+        <p>Help us improve by sharing how you feel about the Wise Fitness platform!</p>
+        <button class="survey-close" onclick="closeSurvey()">×</button>
+      </div>
+      
+      <form id="surveyForm" class="survey-form">
+        <div class="survey-field">
+          <label>I am a <span class="required">*</span></label>
+          <div class="role-selection">
+            <button type="button" class="role-btn" data-role="free">
+              <div class="role-icon">📱</div>
+              <span>Free User</span>
+            </button>
+            <button type="button" class="role-btn" data-role="premium">
+              <div class="role-icon">⭐</div>
+              <span>Premium User</span>
+            </button>
+            <button type="button" class="role-btn selected" data-role="business">
+              <div class="role-icon">🏢</div>
+              <span>Business User</span>
+            </button>
+          </div>
+          <p class="role-disabled-text">Your role is automatically detected and cannot be changed</p>
+        </div>
+
+        <div class="survey-field">
+          <label>Rate your experience <span class="required">*</span></label>
+          <div class="rating-container">
+            <div class="stars">
+              <span class="star" data-rating="1">★</span>
+              <span class="star" data-rating="2">★</span>
+              <span class="star" data-rating="3">★</span>
+              <span class="star" data-rating="4">★</span>
+              <span class="star" data-rating="5">★</span>
+            </div>
+            <p class="rating-text">Click to rate your experience</p>
+          </div>
+        </div>
+
+        <div class="survey-field">
+          <label>Your Feedback <span class="required">*</span></label>
+          <textarea id="feedbackText" placeholder="Tell us what you loved or what could be better. Your honest feedback helps us create a better experience for everyone..." rows="4" required></textarea>
+        </div>
+
+        <div class="survey-field">
+          <label>Contact Information <span class="optional">(Auto-filled from your account)</span></label>
+          <div class="contact-row">
+            <input type="text" id="contactName" placeholder="Your Name" readonly>
+            <input type="email" id="contactEmail" placeholder="Your Email" readonly>
+          </div>
+          <p class="role-disabled-text">Contact information is automatically filled from your account and cannot be edited</p>
+        </div>
+
+        <button type="submit" class="survey-submit">Share Feedback</button>
+      </form>
+    </div>
+  </div>
+
   <div class="container">
 
     <div class="content">
       <h2>Welcome to your dashboard</h2>
       <p>Select one of the sections below to manage your business.</p>
+
+      <!-- Survey Notification Banner -->
+      <div id="surveyBanner" class="survey-banner">
+        <div class="survey-banner-content">
+          <div class="survey-banner-text">
+            <h3>📝 Share Your Experience</h3>
+            <p>Help us improve by sharing how you feel about the Wise Fitness platform!</p>
+          </div>
+          <button onclick="openSurvey()" class="survey-btn">Take Survey</button>
+          <button onclick="dismissSurvey()" class="survey-dismiss" title="Dismiss">×</button>
+        </div>
+      </div>
 
       <div class="widget-container">
         <h3>Main Sections</h3>
@@ -443,27 +892,6 @@
       closeMenu();
     });
 
-    onAuthStateChanged(auth, async (user) => {
-      if (!user) {
-        window.location.href = "Login.html";
-      } else {
-        try {
-          const docRef = doc(db, "businessUsers", user.uid);
-          const docSnap = await getDoc(docRef);
-          if (docSnap.exists()) {
-            const data = docSnap.data();
-            const businessName = data.businessName || user.email || "Business User";
-            headerTitle.textContent = `Welcome, ${businessName}`;
-          } else {
-            headerTitle.textContent = `Welcome, ${user.email || "Business User"}`;
-          }
-        } catch (error) {
-          console.error("Error fetching business user data:", error);
-          headerTitle.textContent = `Welcome, ${user.email || "Business User"}`;
-        }
-      }
-    });
-
     window.logout = async () => {
       try {
         await signOut(auth);
@@ -504,6 +932,200 @@
     window.goService = () => window.location.href = "Services.html";
     window.goPost = () => window.location.href = "posts.html";
     window.goEvent = () => window.location.href = "events.html";
+
+    // Survey functionality
+    let selectedRole = 'business'; // Fixed for business users
+    let selectedRating = 0;
+
+    // Check if survey was already completed
+    function checkSurveyStatus() {
+      const user = auth.currentUser;
+      if (user) {
+        const surveyCompleted = localStorage.getItem(`survey_completed_${user.uid}`);
+        if (surveyCompleted) {
+          document.getElementById('surveyBanner').classList.add('hidden');
+        }
+      }
+    }
+
+    // Survey modal functions
+    window.openSurvey = () => {
+      document.getElementById('surveyModal').classList.add('active');
+      // Pre-fill user info from Firebase
+      loadUserInfoForSurvey();
+    };
+
+    window.closeSurvey = () => {
+      document.getElementById('surveyModal').classList.remove('active');
+    };
+
+    window.dismissSurvey = () => {
+      const user = auth.currentUser;
+      if (user) {
+        localStorage.setItem(`survey_dismissed_${user.uid}`, 'true');
+        document.getElementById('surveyBanner').classList.add('hidden');
+      }
+    };
+
+    // Load user information for survey
+    async function loadUserInfoForSurvey() {
+      const user = auth.currentUser;
+      if (user) {
+        // Set email
+        document.getElementById('contactEmail').value = user.email || '';
+        
+        try {
+          // Try to get business name from Firestore
+          const docRef = doc(db, "businessUsers", user.uid);
+          const docSnap = await getDoc(docRef);
+          
+          if (docSnap.exists()) {
+            const data = docSnap.data();
+            const businessName = data.businessName || data.name || user.displayName || '';
+            document.getElementById('contactName').value = businessName;
+          } else {
+            // Fallback to display name or empty
+            document.getElementById('contactName').value = user.displayName || '';
+          }
+        } catch (error) {
+          console.error('Error loading user data for survey:', error);
+          document.getElementById('contactName').value = user.displayName || '';
+        }
+      }
+    }
+
+    // Role selection
+    document.addEventListener('DOMContentLoaded', () => {
+      // Role buttons are disabled - no click handlers needed
+      // Business User role is pre-selected and cannot be changed
+      
+      // Star rating
+      const stars = document.querySelectorAll('.star');
+      const ratingText = document.querySelector('.rating-text');
+      
+      stars.forEach((star, index) => {
+        star.addEventListener('click', () => {
+          selectedRating = index + 1;
+          updateStars();
+          updateRatingText();
+        });
+
+        star.addEventListener('mouseenter', () => {
+          highlightStars(index + 1);
+        });
+      });
+
+      document.querySelector('.stars').addEventListener('mouseleave', () => {
+        updateStars();
+      });
+
+      function highlightStars(rating) {
+        stars.forEach((star, index) => {
+          star.classList.toggle('active', index < rating);
+        });
+      }
+
+      function updateStars() {
+        stars.forEach((star, index) => {
+          star.classList.toggle('active', index < selectedRating);
+        });
+      }
+
+      function updateRatingText() {
+        const texts = [
+          'Click to rate your experience',
+          'Poor - Needs significant improvement',
+          'Fair - Could be better',
+          'Good - Meets expectations',
+          'Very Good - Exceeds expectations',
+          'Excellent - Outstanding experience'
+        ];
+        ratingText.textContent = texts[selectedRating];
+      }
+
+      // Survey form submission
+      document.getElementById('surveyForm').addEventListener('submit', async (e) => {
+        e.preventDefault();
+        
+        if (selectedRating === 0) {
+          alert('Please rate your experience before submitting.');
+          return;
+        }
+
+        const feedback = document.getElementById('feedbackText').value;
+        if (!feedback.trim()) {
+          alert('Please provide your feedback before submitting.');
+          return;
+        }
+
+        const user = auth.currentUser;
+        if (!user) {
+          alert('Please log in to submit survey.');
+          return;
+        }
+
+        // Prepare survey data
+        const surveyData = {
+          userId: user.uid,
+          userEmail: user.email,
+          userName: document.getElementById('contactName').value,
+          role: selectedRole,
+          rating: selectedRating,
+          feedback: feedback.trim(),
+          submittedAt: new Date().toISOString(),
+          userType: 'business'
+        };
+
+        console.log('Survey data to be submitted:', surveyData);
+        
+        // TODO: Save to Firebase when backend is ready
+        // For now, just mark as completed
+        localStorage.setItem(`survey_completed_${user.uid}`, 'true');
+        
+        // Hide banner and close modal
+        document.getElementById('surveyBanner').classList.add('hidden');
+        document.getElementById('surveyModal').classList.remove('active');
+        
+        alert('Thank you for your feedback! Your response has been recorded.');
+      });
+
+      // Close modal when clicking outside
+      document.getElementById('surveyModal').addEventListener('click', (e) => {
+        if (e.target.id === 'surveyModal') {
+          closeSurvey();
+        }
+      });
+
+      // Check survey status after DOM is loaded
+      setTimeout(checkSurveyStatus, 1000);
+    });
+
+    // Update survey status check when auth state changes
+    onAuthStateChanged(auth, async (user) => {
+      if (!user) {
+        window.location.href = "Login.html";
+      } else {
+        try {
+          const docRef = doc(db, "businessUsers", user.uid);
+          const docSnap = await getDoc(docRef);
+          if (docSnap.exists()) {
+            const data = docSnap.data();
+            const businessName = data.businessName || user.email || "Business User";
+            headerTitle.textContent = `Welcome, ${businessName}`;
+            
+            // No need to pre-fill name here as it's done in loadUserInfoForSurvey
+          } else {
+            headerTitle.textContent = `Welcome, ${user.email || "Business User"}`;
+          }
+        } catch (error) {
+          console.error("Error fetching business user data:", error);
+          headerTitle.textContent = `Welcome, ${user.email || "Business User"}`;
+        }
+        
+        // Check survey status
+        checkSurveyStatus();
+      }
+    });
   </script>
 </body>
 

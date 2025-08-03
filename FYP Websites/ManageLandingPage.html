@@ -428,6 +428,381 @@
         padding: 1rem;
       }
     }
+
+    /* COMPREHENSIVE RESPONSIVE BREAKPOINTS */
+    
+    /* Large tablets and small laptops - 768px to 1024px */
+    @media (max-width: 1024px) and (min-width: 769px) {
+      .container {
+        max-width: 900px;
+        padding: 20px 16px;
+      }
+      
+      .section-content.active {
+        padding: 1.5rem;
+      }
+      
+      .form-row {
+        grid-template-columns: 1fr 1fr;
+        gap: 1rem;
+      }
+      
+      .sidebar {
+        width: 240px;
+      }
+      
+      body.sidebar-active .container {
+        padding-right: 260px;
+      }
+    }
+    
+    /* Tablets and large phones - iPads, Galaxy tablets, etc. */
+    @media (max-width: 768px) {
+      .container {
+        margin: 70px 8px 20px;
+        padding: 12px;
+      }
+      
+      .section-card {
+        margin-bottom: 1.5rem;
+      }
+      
+      .section-content.active {
+        padding: 1rem;
+      }
+      
+      .form-row {
+        grid-template-columns: 1fr;
+        gap: 0.75rem;
+      }
+      
+      .btn {
+        padding: 10px 20px;
+        font-size: 0.9rem;
+      }
+      
+      .headerTitle {
+        font-size: 16px;
+      }
+      
+      .sidebar {
+        width: 280px;
+      }
+      
+      body.sidebar-active .container {
+        padding-right: 12px;
+      }
+      
+      body.sidebar-active .header {
+        right: 0;
+        width: 100%;
+      }
+      
+      /* Price Plans Grid on Tablets */
+      #pricing-content form > div:first-child {
+        grid-template-columns: 1fr !important;
+        gap: 1.5rem !important;
+      }
+    }
+    
+    /* Standard smartphones - iPhone 14/15, Galaxy S23/S24, Pixel 8 (390-430px width) */
+    @media (max-width: 480px) {
+      .container {
+        margin: 65px 4px 15px;
+        padding: 8px;
+      }
+      
+      .section-header {
+        padding: 1rem 1.5rem;
+        font-size: 1rem;
+      }
+      
+      .section-content.active {
+        padding: 0.75rem;
+      }
+      
+      .form-group {
+        margin-bottom: 1rem;
+      }
+      
+      input[type="text"], 
+      input[type="url"],
+      input[type="number"],
+      textarea, 
+      select {
+        padding: 10px 12px;
+        font-size: 0.9rem;
+      }
+      
+      .btn {
+        padding: 8px 16px;
+        font-size: 0.85rem;
+      }
+      
+      .btn-block {
+        margin-top: 0.75rem;
+      }
+      
+      .headerTitle {
+        font-size: 14px;
+      }
+      
+      #backBtn, #menuBtn {
+        font-size: 20px;
+      }
+      
+      /* Price Plans on Mobile */
+      #pricing-content form > div:first-child {
+        grid-template-columns: 1fr !important;
+        gap: 1rem !important;
+        margin-bottom: 1rem !important;
+      }
+      
+      #pricing-content form > div:first-child > div {
+        padding: 1rem !important;
+      }
+      
+      #pricing-content form > div:first-child h4 {
+        font-size: 1rem !important;
+      }
+    }
+    
+    /* Small smartphones - iPhone SE, iPhone 12/13 Mini (360-375px width) */
+    @media (max-width: 375px) {
+      .container {
+        margin: 60px 2px 10px;
+        padding: 6px;
+      }
+      
+      .section-header {
+        padding: 0.75rem 1rem;
+        font-size: 0.9rem;
+      }
+      
+      .section-content.active {
+        padding: 0.5rem;
+      }
+      
+      .form-group {
+        margin-bottom: 0.75rem;
+      }
+      
+      input[type="text"], 
+      input[type="url"],
+      input[type="number"],
+      textarea, 
+      select {
+        padding: 8px 10px;
+        font-size: 0.85rem;
+      }
+      
+      textarea {
+        min-height: 80px;
+      }
+      
+      .btn {
+        padding: 6px 12px;
+        font-size: 0.8rem;
+      }
+      
+      .headerTitle {
+        font-size: 12px;
+      }
+      
+      label {
+        font-size: 0.8rem;
+      }
+      
+      small {
+        font-size: 0.7rem;
+      }
+    }
+    
+    /* Extra small smartphones - iPhone SE 1st gen, very small devices (< 360px) */
+    @media (max-width: 360px) {
+      .container {
+        margin: 58px 1px 8px;
+        padding: 4px;
+      }
+      
+      .section-header {
+        padding: 0.5rem 0.75rem;
+        font-size: 0.85rem;
+      }
+      
+      .section-content.active {
+        padding: 0.375rem;
+      }
+      
+      .form-group {
+        margin-bottom: 0.5rem;
+      }
+      
+      input[type="text"], 
+      input[type="url"],
+      input[type="number"],
+      textarea, 
+      select {
+        padding: 6px 8px;
+        font-size: 0.8rem;
+      }
+      
+      .btn {
+        padding: 5px 10px;
+        font-size: 0.75rem;
+      }
+      
+      .headerTitle {
+        font-size: 11px;
+      }
+    }
+    
+    /* Foldable phones - cover screen mode (around 412px but can be narrower when folded) */
+    @media (max-width: 412px) and (min-width: 376px) {
+      .container {
+        margin: 65px 3px 12px;
+        padding: 7px;
+      }
+      
+      .section-content.active {
+        padding: 0.625rem;
+      }
+      
+      /* Optimize for foldable cover screens */
+      .form-row {
+        grid-template-columns: 1fr;
+        gap: 0.5rem;
+      }
+      
+      .section-header {
+        padding: 0.875rem 1.25rem;
+      }
+    }
+    
+    /* Large smartphones and phablets - Galaxy Note, iPhone Pro Max (414-430px) */
+    @media (max-width: 430px) and (min-width: 415px) {
+      .container {
+        margin: 68px 5px 15px;
+        padding: 10px;
+      }
+      
+      .section-content.active {
+        padding: 0.875rem;
+      }
+      
+      input[type="text"], 
+      input[type="url"],
+      input[type="number"],
+      textarea, 
+      select {
+        padding: 9px 11px;
+        font-size: 0.875rem;
+      }
+    }
+    
+    /* Standard size smartphones - most common range (390-414px) */
+    @media (max-width: 414px) and (min-width: 390px) {
+      .container {
+        margin: 66px 4px 14px;
+        padding: 9px;
+      }
+      
+      .section-content.active {
+        padding: 0.75rem;
+      }
+      
+      .form-group {
+        margin-bottom: 0.875rem;
+      }
+    }
+    
+    /* Compact smartphones - iPhone 12/13 Mini, smaller Androids (360-389px) */
+    @media (max-width: 389px) and (min-width: 360px) {
+      .container {
+        margin: 62px 3px 12px;
+        padding: 7px;
+      }
+      
+      .section-content.active {
+        padding: 0.625rem;
+      }
+      
+      .form-group {
+        margin-bottom: 0.625rem;
+      }
+      
+      textarea {
+        min-height: 70px;
+      }
+    }
+    
+    /* Small smartphones - iPhone SE, older devices (< 360px) */
+    @media (max-width: 359px) {
+      .container {
+        margin: 58px 1px 8px;
+        padding: 4px;
+      }
+      
+      .section-content.active {
+        padding: 0.375rem;
+      }
+      
+      textarea {
+        min-height: 60px;
+      }
+      
+      /* Make sure form elements are still usable on very small screens */
+      .form-group {
+        margin-bottom: 0.375rem;
+      }
+      
+      .btn-block {
+        margin-top: 0.5rem;
+      }
+    }
+    
+    /* Universal mobile styles that apply to all small screens */
+    @media (max-width: 768px) {
+      /* Hide sidebar by default on mobile */
+      .sidebar {
+        transform: translateX(100%);
+      }
+      
+      .sidebar.active {
+        transform: translateX(0);
+      }
+      
+      /* Ensure mobile menu works properly */
+      #menuBtn {
+        display: block;
+      }
+      
+      /* Optimize form layout for mobile */
+      .form-row {
+        grid-template-columns: 1fr;
+      }
+      
+      /* Better touch targets */
+      .btn {
+        min-height: 44px;
+        touch-action: manipulation;
+      }
+      
+      /* Improve text readability */
+      label {
+        font-weight: 600;
+        margin-bottom: 0.375rem;
+      }
+      
+      /* Better mobile typography */
+      .section-title {
+        font-size: clamp(1.5rem, 4vw, 2.5rem);
+      }
+      
+      .section-subtitle {
+        font-size: clamp(0.9rem, 2.5vw, 1.1rem);
+      }
+    }
   </style>
 </head>
 <body>
@@ -585,6 +960,99 @@
       </div>
     </div>
 
+    <!-- Price Plans Management Section -->
+    <div class="section-card">
+      <div class="section-header" onclick="toggleSection('pricing')">
+        <span>💰 Price Plans Management</span>
+        <span class="toggle-icon">▼</span>
+      </div>
+      <div class="section-content" id="pricing-content">
+        <form id="pricingForm">
+          <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 2rem; margin-bottom: 2rem;">
+            
+            <!-- Free Plan -->
+            <div style="border: 2px solid #28a745; border-radius: 12px; padding: 1.5rem; background: #f8fff8;">
+              <h4 style="color: #28a745; margin-bottom: 1rem; text-align: center;">🆓 Free Plan</h4>
+              
+              <div class="form-group">
+                <label for="freePlanTitle">Plan Title</label>
+                <input type="text" id="freePlanTitle" value="Free" placeholder="e.g., Free, Basic, Starter">
+              </div>
+              
+              <div class="form-group">
+                <label for="freePlanPrice">Price (in dollars)</label>
+                <input type="number" id="freePlanPrice" step="0.01" min="0" max="9999.99" value="0" placeholder="0.00" oninput="validatePrice(this)">
+                <small style="color: var(--text-muted); display: block; margin-top: 0.5rem;">
+                  Enter price in dollars, e.g., 0.90 for $0.90/month or 10.00 for $10.00/month (no negative values)
+                </small>
+              </div>
+              
+              <div class="form-group">
+                <label for="freePlanFeatures">Features (one per line, max 700 words)</label>
+                <textarea id="freePlanFeatures" rows="8" placeholder="✓ Access to basic workouts&#10;✓ Limited exercise tracking&#10;✓ Daily reminders&#10;✗ Personalized training&#10;✗ Nutrition planning">✓ Access to basic workouts
+✓ Limited exercise tracking
+✓ Daily reminders
+✗ Personalized training
+✗ Nutrition planning</textarea>
+                <small style="color: var(--text-muted); display: block; margin-top: 0.5rem;">
+                  Word count: <span id="freeFeaturesCount">18</span>/700
+                </small>
+              </div>
+              
+              <div class="form-group">
+                <label for="freePlanButton">Button Text</label>
+                <input type="text" id="freePlanButton" value="Get Started" placeholder="Get Started, Sign Up, etc.">
+              </div>
+            </div>
+            
+            <!-- Premium Plan -->
+            <div style="border: 2px solid #ff6b35; border-radius: 12px; padding: 1.5rem; background: #fff8f5; position: relative;">
+              <div style="position: absolute; top: -12px; right: 20px; background: #ff6b35; color: white; padding: 4px 12px; border-radius: 20px; font-size: 0.8rem; font-weight: bold;">
+                MOST POPULAR
+              </div>
+              <h4 style="color: #ff6b35; margin-bottom: 1rem; text-align: center;">⭐ Premium Plan</h4>
+              
+              <div class="form-group">
+                <label for="premiumPlanTitle">Plan Title</label>
+                <input type="text" id="premiumPlanTitle" value="Premium" placeholder="e.g., Premium, Pro, Advanced">
+              </div>
+              
+              <div class="form-group">
+                <label for="premiumPlanPrice">Price (in dollars)</label>
+                <input type="number" id="premiumPlanPrice" step="0.01" min="0" max="9999.99" value="10.00" placeholder="10.00" oninput="validatePrice(this)">
+                <small style="color: var(--text-muted); display: block; margin-top: 0.5rem;">
+                  Enter price in dollars, e.g., 9.99 for $9.99/month or 19.99 for $19.99/month (no negative values)
+                </small>
+              </div>
+              
+              <div class="form-group">
+                <label for="premiumPlanFeatures">Features (one per line, max 700 words)</label>
+                <textarea id="premiumPlanFeatures" rows="8" placeholder="✓ All Free features&#10;✓ Personalized fitness plans&#10;✓ Full workout library&#10;✓ Nutrition and meal guidance&#10;✓ Progress tracking and analytics">✓ All Free features
+✓ Personalized fitness plans
+✓ Full workout library
+✓ Nutrition and meal guidance
+✓ Progress tracking and analytics</textarea>
+                <small style="color: var(--text-muted); display: block; margin-top: 0.5rem;">
+                  Word count: <span id="premiumFeaturesCount">22</span>/700
+                </small>
+              </div>
+              
+              <div class="form-group">
+                <label for="premiumPlanButton">Button Text</label>
+                <input type="text" id="premiumPlanButton" value="Start Premium" placeholder="Start Premium, Upgrade Now, etc.">
+              </div>
+            </div>
+          </div>
+          
+          <div style="text-align: center; margin-top: 2rem;">
+            <button type="submit" class="btn btn-primary" style="padding: 12px 40px; font-size: 1.1rem;">
+              💾 Save Price Plans
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>
+
     <!-- Testimonials Management Section -->
     <div class="section-card">
       <div class="section-header" onclick="toggleSection('testimonials')">
@@ -708,7 +1176,7 @@
           <div style="background: var(--light-bg); padding: 1rem; border-radius: 8px; font-size: 0.9rem; color: var(--text-muted);">
             <p><strong>Current Template:</strong> Wise Fitness Default v1.0</p>
             <p><strong>Last Modified:</strong> <span id="lastModified">Loading...</span></p>
-            <p><strong>Sections Managed:</strong> About Us, Services (Testimonials are dynamic)</p>
+            <p><strong>Sections Managed:</strong> About Us, Services, Price Plans (Testimonials are dynamic)</p>
             <p><strong>Image Storage:</strong> Firebase Storage with automatic cleanup</p>
           </div>
         </div>
@@ -910,6 +1378,7 @@
       try {
         await loadAboutSection();
         await loadServicesSection();
+        await loadPricingSection();
         await updateLastModifiedInfo();
       } catch (error) {
         console.error('Error loading content:', error);
@@ -1266,12 +1735,12 @@ Services Section:
     };
 
     window.resetToDefaults = async () => {
-      if (!confirm('Are you sure you want to reset all content to the default template? This will restore the original Wise Fitness content and cannot be undone.')) {
+      if (!confirm('⚠️ Are you sure you want to reset all content to the default template?\n\nThis will:\n• Reset About Us section\n• Reset Services section\n• Reset Price Plans to original values (Free: $0, Premium: $10)\n• Remove all custom images\n\nThis action cannot be undone!')) {
         return;
       }
       
       try {
-        showMessage('Resetting to default template...', 'success');
+        showMessage('🔄 Resetting to default template...', 'success');
         
         // Default About section template
         const defaultAbout = {
@@ -1282,8 +1751,6 @@ Services Section:
           lastUpdated: new Date(),
           isDefaultTemplate: true
         };
-        
-        await setDoc(doc(db, "landingPage", "about"), defaultAbout);
         
         // Default Services section template
         const defaultServices = {
@@ -1313,7 +1780,30 @@ Services Section:
           isDefaultTemplate: true
         };
         
-        await setDoc(doc(db, "landingPage", "services"), defaultServices);
+        // Default Price Plans section
+        const defaultPricing = {
+          freePlan: {
+            title: "Free",
+            price: 0,
+            features: "✓ Access to basic workouts\n✓ Limited exercise tracking\n✓ Daily reminders\n✗ Personalized training\n✗ Nutrition planning",
+            buttonText: "Get Started"
+          },
+          premiumPlan: {
+            title: "Premium",
+            price: 10.00,
+            features: "✓ All Free features\n✓ Personalized fitness plans\n✓ Full workout library\n✓ Nutrition and meal guidance\n✓ Progress tracking and analytics",
+            buttonText: "Start Premium"
+          },
+          lastUpdated: new Date(),
+          isDefaultTemplate: true
+        };
+        
+        // Save all default data to Firestore
+        await Promise.all([
+          setDoc(doc(db, "landingPage", "about"), defaultAbout),
+          setDoc(doc(db, "landingPage", "services"), defaultServices),
+          setDoc(doc(db, "landingPage", "pricing"), defaultPricing)
+        ]);
         
         // Update main document for backward compatibility
         await setDoc(doc(db, "landingPage", "main"), {
@@ -1341,7 +1831,15 @@ Services Section:
         // Reload content to reflect reset
         await loadAllContent();
         
-        showMessage('✅ Content successfully reset to default template! All sections have been restored to their original state.', 'success');
+        showMessage('✅ Content successfully reset to default template! All sections including price plans have been restored to their original state.', 'success');
+        
+        // Add preview link
+        setTimeout(() => {
+          const previewMsg = document.createElement('div');
+          previewMsg.innerHTML = '<a href="index.html" target="_blank" style="color: #007bff; text-decoration: underline;">🔗 Click here to preview the reset changes</a>';
+          globalMessage.appendChild(previewMsg);
+        }, 1000);
+        
       } catch (error) {
         console.error('Error resetting to defaults:', error);
         showMessage('❌ Error resetting to defaults: ' + error.message, 'error');
@@ -1398,6 +1896,184 @@ Services Section:
         const event = new Event('change', { bubbles: true });
         document.getElementById(inputId).dispatchEvent(event);
       });
+    });
+
+    // PRICING MANAGEMENT FUNCTIONS
+    
+    // Price validation function
+    window.validatePrice = (input) => {
+      let value = parseFloat(input.value);
+      
+      // Check for negative values
+      if (value < 0) {
+        input.value = 0;
+        showMessage('❌ Price cannot be negative. Value reset to 0.', 'error');
+        return;
+      }
+      
+      // Check for maximum value
+      if (value > 9999.99) {
+        input.value = 9999.99;
+        showMessage('❌ Price cannot exceed $9999.99. Value capped at maximum.', 'error');
+        return;
+      }
+      
+      // Ensure proper decimal places (max 2)
+      if (input.value.includes('.') && input.value.split('.')[1].length > 2) {
+        input.value = value.toFixed(2);
+      }
+    };
+    
+    // Word count tracking for features
+    document.getElementById('freePlanFeatures').addEventListener('input', function() {
+      const wordCount = this.value.trim().split(/\s+/).filter(word => word.length > 0).length;
+      document.getElementById('freeFeaturesCount').textContent = wordCount;
+      if (wordCount > 700) {
+        document.getElementById('freeFeaturesCount').style.color = '#dc3545';
+      } else {
+        document.getElementById('freeFeaturesCount').style.color = 'var(--text-muted)';
+      }
+    });
+    
+    document.getElementById('premiumPlanFeatures').addEventListener('input', function() {
+      const wordCount = this.value.trim().split(/\s+/).filter(word => word.length > 0).length;
+      document.getElementById('premiumFeaturesCount').textContent = wordCount;
+      if (wordCount > 700) {
+        document.getElementById('premiumFeaturesCount').style.color = '#dc3545';
+      } else {
+        document.getElementById('premiumFeaturesCount').style.color = 'var(--text-muted)';
+      }
+    });
+
+    // Load pricing data
+    async function loadPricingSection() {
+      try {
+        const user = auth.currentUser;
+        if (!user) return;
+
+        // Try to load from the same collection structure as other sections
+        const docRef = doc(db, 'landingPage', 'pricing');
+        const docSnap = await getDoc(docRef);
+        
+        if (docSnap.exists()) {
+          const data = docSnap.data();
+          
+          // Load Free plan data
+          if (data.freePlan) {
+            document.getElementById('freePlanTitle').value = data.freePlan.title || 'Free';
+            document.getElementById('freePlanPrice').value = data.freePlan.price || 0;
+            document.getElementById('freePlanFeatures').value = data.freePlan.features || '✓ Access to basic workouts\n✓ Limited exercise tracking\n✓ Daily reminders\n✗ Personalized training\n✗ Nutrition planning';
+            document.getElementById('freePlanButton').value = data.freePlan.buttonText || 'Get Started';
+          }
+          
+          // Load Premium plan data
+          if (data.premiumPlan) {
+            document.getElementById('premiumPlanTitle').value = data.premiumPlan.title || 'Premium';
+            document.getElementById('premiumPlanPrice').value = data.premiumPlan.price || 10.00;
+            document.getElementById('premiumPlanFeatures').value = data.premiumPlan.features || '✓ All Free features\n✓ Personalized fitness plans\n✓ Full workout library\n✓ Nutrition and meal guidance\n✓ Progress tracking and analytics';
+            document.getElementById('premiumPlanButton').value = data.premiumPlan.buttonText || 'Start Premium';
+          }
+        } else {
+          // Set default values if no document exists
+          console.log('No pricing document found, using defaults');
+        }
+        
+        // Update word counts
+        document.getElementById('freePlanFeatures').dispatchEvent(new Event('input'));
+        document.getElementById('premiumPlanFeatures').dispatchEvent(new Event('input'));
+        
+      } catch (error) {
+        console.error('Error loading pricing data:', error);
+        // Don't show error message for loading, just use defaults
+        console.log('Using default pricing values due to error:', error.message);
+      }
+    }
+
+    // Save pricing data
+    document.getElementById('pricingForm').addEventListener('submit', async (e) => {
+      e.preventDefault();
+      
+      try {
+        const user = auth.currentUser;
+        if (!user) {
+          showMessage('❌ Please log in to save pricing data', 'error');
+          return;
+        }
+
+        // Validate prices
+        const freePrice = parseFloat(document.getElementById('freePlanPrice').value) || 0;
+        const premiumPrice = parseFloat(document.getElementById('premiumPlanPrice').value) || 0;
+        
+        if (freePrice < 0) {
+          showMessage('❌ Free plan price cannot be negative.', 'error');
+          document.getElementById('freePlanPrice').value = 0;
+          return;
+        }
+        
+        if (premiumPrice < 0) {
+          showMessage('❌ Premium plan price cannot be negative.', 'error');
+          document.getElementById('premiumPlanPrice').value = 0;
+          return;
+        }
+        
+        if (freePrice > 9999.99 || premiumPrice > 9999.99) {
+          showMessage('❌ Price cannot exceed $9999.99.', 'error');
+          return;
+        }
+
+        // Validate word counts
+        const freeWordCount = document.getElementById('freePlanFeatures').value.trim().split(/\s+/).filter(word => word.length > 0).length;
+        const premiumWordCount = document.getElementById('premiumPlanFeatures').value.trim().split(/\s+/).filter(word => word.length > 0).length;
+        
+        if (freeWordCount > 700) {
+          showMessage('❌ Free plan features exceed 700 words. Please shorten the content.', 'error');
+          return;
+        }
+        
+        if (premiumWordCount > 700) {
+          showMessage('❌ Premium plan features exceed 700 words. Please shorten the content.', 'error');
+          return;
+        }
+
+        // Prepare pricing data with proper float formatting
+        const pricingData = {
+          freePlan: {
+            title: document.getElementById('freePlanTitle').value.trim() || 'Free',
+            price: parseFloat(freePrice.toFixed(2)), // Ensure 2 decimal places
+            features: document.getElementById('freePlanFeatures').value.trim() || '',
+            buttonText: document.getElementById('freePlanButton').value.trim() || 'Get Started'
+          },
+          premiumPlan: {
+            title: document.getElementById('premiumPlanTitle').value.trim() || 'Premium',
+            price: parseFloat(premiumPrice.toFixed(2)), // Ensure 2 decimal places
+            features: document.getElementById('premiumPlanFeatures').value.trim() || '',
+            buttonText: document.getElementById('premiumPlanButton').value.trim() || 'Start Premium'
+          },
+          lastUpdated: new Date(),
+          isDefaultTemplate: false
+        };
+
+        // Save to the same collection structure as other sections
+        const docRef = doc(db, 'landingPage', 'pricing');
+        await setDoc(docRef, pricingData, { merge: true });
+        
+        await updateLastModifiedInfo();
+        
+        showMessage('✅ Price plans saved successfully!', 'success');
+      } catch (error) {
+        console.error('Error saving pricing data:', error);
+        
+        // Handle specific Firebase errors
+        if (error.code === 'permission-denied') {
+          showMessage('❌ Access denied. You do not have permission to save pricing data. Please contact your administrator.', 'error');
+        } else if (error.code === 'unauthenticated') {
+          showMessage('❌ Authentication required. Please log out and log back in.', 'error');
+        } else if (error.code === 'unavailable') {
+          showMessage('❌ Service temporarily unavailable. Please try again in a moment.', 'error');
+        } else {
+          showMessage('❌ Error saving pricing data: ' + error.message, 'error');
+        }
+      }
     });
 
     // TESTIMONIALS MANAGEMENT FUNCTIONS
