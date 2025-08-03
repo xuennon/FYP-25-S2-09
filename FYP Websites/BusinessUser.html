@@ -819,7 +819,7 @@
   <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/9.23.0/firebase-app.js";
     import { getAuth, onAuthStateChanged, signOut, sendPasswordResetEmail } from "https://www.gstatic.com/firebasejs/9.23.0/firebase-auth.js";
-    import { getFirestore, doc, getDoc } from "https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore.js";
+    import { getFirestore, doc, getDoc, setDoc, serverTimestamp } from "https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore.js";
 
     const firebaseConfig = {
       apiKey: "AIzaSyAIFV7ynXUzA0p-CrmVOE2lFRgaf_9g_k4",
@@ -938,14 +938,121 @@
     let selectedRating = 0;
 
     // Check if survey was already completed
-    function checkSurveyStatus() {
+    async function checkSurveyStatus() {
       const user = auth.currentUser;
-      if (user) {
+      console.log('=== SURVEY STATUS CHECK START ===');
+      console.log('Current user:', user ? user.uid : 'No user');
+      
+      if (!user) {
+        console.log('No authenticated user found');
+        return;
+      }
+
+      try {
+        console.log('Checking testimonial document for user:', user.uid);
+        
+        // Check if testimonial document exists
+        const testimonialRef = doc(db, "businessUserTestimonial", user.uid);
+        console.log('Testimonial reference created:', testimonialRef.path);
+        
+        const testimonialSnap = await getDoc(testimonialRef);
+        console.log('Document snapshot retrieved, exists:', testimonialSnap.exists());
+        
+        if (testimonialSnap.exists()) {
+          const testimonialData = testimonialSnap.data();
+          console.log('Testimonial data:', testimonialData);
+          
+          if (testimonialData.isCompleted) {
+            console.log('Survey completed - hiding banner');
+            document.getElementById('surveyBanner').classList.add('hidden');
+          } else {
+            console.log('Survey not completed - showing banner');
+            document.getElementById('surveyBanner').classList.remove('hidden');
+          }
+        } else {
+          console.log('No testimonial document found - creating default one');
+          try {
+            await createDefaultTestimonialDocument(user.uid);
+            console.log('Default document created successfully');
+            document.getElementById('surveyBanner').classList.remove('hidden');
+            console.log('Banner shown for new user');
+          } catch (createError) {
+            console.error('Failed to create default document:', createError);
+            alert('Error: Could not create testimonial record. Details: ' + createError.message);
+          }
+        }
+      } catch (error) {
+        console.error('Error in checkSurveyStatus:', error);
+        console.error('Error code:', error.code);
+        console.error('Error message:', error.message);
+        
+        // Show detailed error to user
+        alert('Survey check failed: ' + error.message + '\nError code: ' + (error.code || 'Unknown'));
+        
+        // Fallback to localStorage check
         const surveyCompleted = localStorage.getItem(`survey_completed_${user.uid}`);
         if (surveyCompleted) {
           document.getElementById('surveyBanner').classList.add('hidden');
         }
       }
+      console.log('=== SURVEY STATUS CHECK END ===');
+    }
+
+    // Create default testimonial document
+    async function createDefaultTestimonialDocument(userId) {
+      console.log('=== CREATE DEFAULT TESTIMONIAL START ===');
+      console.log('Creating for user ID:', userId);
+      
+      try {
+        // Verify we have database access
+        console.log('Database instance:', db);
+        
+        const testimonialRef = doc(db, "businessUserTestimonial", userId);
+        console.log('Document reference path:', testimonialRef.path);
+        console.log('Document reference ID:', testimonialRef.id);
+        
+        const defaultTestimonial = {
+          userId: userId,
+          rating: 0,
+          feedback: "",
+          isCompleted: false,
+          submittedAt: null,
+          userType: "business"
+        };
+        
+        console.log('Default testimonial object:', defaultTestimonial);
+        console.log('Attempting to write to Firestore...');
+        
+        await setDoc(testimonialRef, defaultTestimonial);
+        
+        console.log('✅ Default testimonial document created successfully');
+        
+        // Verify the document was created by reading it back
+        const verifySnap = await getDoc(testimonialRef);
+        console.log('Verification - document exists:', verifySnap.exists());
+        if (verifySnap.exists()) {
+          console.log('Verification - document data:', verifySnap.data());
+        }
+        
+      } catch (error) {
+        console.error('❌ Error creating default testimonial document:');
+        console.error('Error code:', error.code);
+        console.error('Error message:', error.message);
+        console.error('Full error object:', error);
+        
+        // Provide detailed error information
+        let errorDetails = `Failed to create testimonial document:\n`;
+        errorDetails += `Code: ${error.code || 'Unknown'}\n`;
+        errorDetails += `Message: ${error.message}\n`;
+        
+        if (error.code === 'permission-denied') {
+          errorDetails += `\nThis is likely a Firestore security rules issue.\n`;
+          errorDetails += `Check your Firestore security rules to ensure write access to businessUserTestimonial collection.`;
+        }
+        
+        throw new Error(errorDetails);
+      }
+      console.log('=== CREATE DEFAULT TESTIMONIAL END ===');
     }
 
     // Survey modal functions
@@ -1064,29 +1171,41 @@
           return;
         }
 
-        // Prepare survey data
-        const surveyData = {
-          userId: user.uid,
-          userEmail: user.email,
-          userName: document.getElementById('contactName').value,
-          role: selectedRole,
-          rating: selectedRating,
-          feedback: feedback.trim(),
-          submittedAt: new Date().toISOString(),
-          userType: 'business'
-        };
+        try {
+          // Prepare survey data to save to Firestore
+          const surveyData = {
+            userId: user.uid,
+            rating: selectedRating,
+            feedback: feedback.trim(),
+            submittedAt: serverTimestamp(),
+            isCompleted: true,
+            userType: 'business'
+          };
 
-        console.log('Survey data to be submitted:', surveyData);
-        
-        // TODO: Save to Firebase when backend is ready
-        // For now, just mark as completed
-        localStorage.setItem(`survey_completed_${user.uid}`, 'true');
-        
-        // Hide banner and close modal
-        document.getElementById('surveyBanner').classList.add('hidden');
-        document.getElementById('surveyModal').classList.remove('active');
-        
-        alert('Thank you for your feedback! Your response has been recorded.');
+          console.log('Submitting survey data to Firestore:', surveyData);
+          
+          // Save to Firestore businessUserTestimonial collection
+          const testimonialRef = doc(db, "businessUserTestimonial", user.uid);
+          await setDoc(testimonialRef, surveyData, { merge: true });
+          
+          console.log('Survey data successfully saved to Firestore');
+          
+          // Hide banner and close modal
+          document.getElementById('surveyBanner').classList.add('hidden');
+          document.getElementById('surveyModal').classList.remove('active');
+          
+          alert('Thank you for your feedback! Your response has been recorded.');
+          
+        } catch (error) {
+          console.error('Error saving survey to Firestore:', error);
+          
+          // Fallback to localStorage if Firestore fails
+          localStorage.setItem(`survey_completed_${user.uid}`, 'true');
+          document.getElementById('surveyBanner').classList.add('hidden');
+          document.getElementById('surveyModal').classList.remove('active');
+          
+          alert('Thank you for your feedback! Your response has been recorded.');
+        }
       });
 
       // Close modal when clicking outside
@@ -1097,34 +1216,43 @@
       });
 
       // Check survey status after DOM is loaded
-      setTimeout(checkSurveyStatus, 1000);
+      setTimeout(() => checkSurveyStatus(), 1000);
     });
 
     // Update survey status check when auth state changes
     onAuthStateChanged(auth, async (user) => {
+      console.log('=== AUTH STATE CHANGED ===');
+      console.log('User:', user ? user.uid : 'No user');
+      
       if (!user) {
+        console.log('No user - redirecting to login');
         window.location.href = "Login.html";
-      } else {
-        try {
-          const docRef = doc(db, "businessUsers", user.uid);
-          const docSnap = await getDoc(docRef);
-          if (docSnap.exists()) {
-            const data = docSnap.data();
-            const businessName = data.businessName || user.email || "Business User";
-            headerTitle.textContent = `Welcome, ${businessName}`;
-            
-            // No need to pre-fill name here as it's done in loadUserInfoForSurvey
-          } else {
-            headerTitle.textContent = `Welcome, ${user.email || "Business User"}`;
-          }
-        } catch (error) {
-          console.error("Error fetching business user data:", error);
-          headerTitle.textContent = `Welcome, ${user.email || "Business User"}`;
-        }
-        
-        // Check survey status
-        checkSurveyStatus();
+        return;
       }
+
+      console.log('User authenticated, loading business data...');
+      
+      try {
+        const docRef = doc(db, "businessUsers", user.uid);
+        const docSnap = await getDoc(docRef);
+        
+        if (docSnap.exists()) {
+          const data = docSnap.data();
+          const businessName = data.businessName || user.email || "Business User";
+          headerTitle.textContent = `Welcome, ${businessName}`;
+          console.log('Business data loaded:', data);
+        } else {
+          headerTitle.textContent = `Welcome, ${user.email || "Business User"}`;
+          console.log('No business data found for user');
+        }
+      } catch (error) {
+        console.error("Error fetching business user data:", error);
+        headerTitle.textContent = `Welcome, ${user.email || "Business User"}`;
+      }
+      
+      console.log('Starting survey status check...');
+      // Check survey status (this will create testimonial document if needed)
+      await checkSurveyStatus();
     });
   </script>
 </body>

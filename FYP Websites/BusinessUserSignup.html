@@ -240,6 +240,26 @@
   const auth = getAuth(app);
   const db = getFirestore(app);
 
+  // Create default testimonial document for new business user
+  async function createDefaultTestimonialDocument(userId) {
+    try {
+      const testimonialRef = doc(db, "businessUsersTestimonial", userId);
+      const defaultTestimonial = {
+        userId: userId,
+        rating: 0,
+        feedback: "",
+        isCompleted: false,
+        submittedAt: null,
+        userType: "business"
+      };
+      
+      await setDoc(testimonialRef, defaultTestimonial);
+      console.log('Default testimonial document created for new business user:', userId);
+    } catch (error) {
+      console.error('Error creating default testimonial document:', error);
+    }
+  }
+
   const otherCheckbox = document.getElementById('otherServiceCheckbox');
   const otherText = document.getElementById('otherServiceText');
 
@@ -305,6 +325,9 @@
         verified: false,  // Admin updates this after manual verification
         membershipType: "BusinessUser"
       });
+
+      // Create default testimonial document for this business user
+      await createDefaultTestimonialDocument(user.uid);
 
       alert(`Registration successful! Your account will be reviewed by our admin. You will receive an email once your registration is approved.`);
 
