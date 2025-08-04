@@ -644,8 +644,12 @@
       box-shadow: 0 8px 20px rgba(255, 107, 53, 0.4);
     }
 
-    .survey-banner.hidden {
-      display: none;
+    .survey-banner {
+      display: none; /* Hidden by default to prevent flash */
+    }
+    
+    .survey-banner.show {
+      display: block; /* Show when needed */
     }
 
     @media (max-width: 900px) {
@@ -944,7 +948,15 @@
       console.log('Current user:', user ? user.uid : 'No user');
       
       if (!user) {
-        console.log('No authenticated user found');
+        console.log('No user logged in');
+        return;
+      }
+
+      // Check if user has dismissed the survey
+      const surveyDismissed = localStorage.getItem(`survey_dismissed_${user.uid}`);
+      if (surveyDismissed) {
+        console.log('Survey was dismissed - keeping banner hidden');
+        document.getElementById('surveyBanner').classList.remove('show');
         return;
       }
 
@@ -964,17 +976,17 @@
           
           if (testimonialData.isCompleted) {
             console.log('Survey completed - hiding banner');
-            document.getElementById('surveyBanner').classList.add('hidden');
+            document.getElementById('surveyBanner').classList.remove('show');
           } else {
             console.log('Survey not completed - showing banner');
-            document.getElementById('surveyBanner').classList.remove('hidden');
+            document.getElementById('surveyBanner').classList.add('show');
           }
         } else {
           console.log('No testimonial document found - creating default one');
           try {
             await createDefaultTestimonialDocument(user.uid);
             console.log('Default document created successfully');
-            document.getElementById('surveyBanner').classList.remove('hidden');
+            document.getElementById('surveyBanner').classList.add('show');
             console.log('Banner shown for new user');
           } catch (createError) {
             console.error('Failed to create default document:', createError);
@@ -992,7 +1004,9 @@
         // Fallback to localStorage check
         const surveyCompleted = localStorage.getItem(`survey_completed_${user.uid}`);
         if (surveyCompleted) {
-          document.getElementById('surveyBanner').classList.add('hidden');
+          document.getElementById('surveyBanner').classList.remove('show');
+        } else {
+          document.getElementById('surveyBanner').classList.add('show');
         }
       }
       console.log('=== SURVEY STATUS CHECK END ===');
@@ -1070,7 +1084,7 @@
       const user = auth.currentUser;
       if (user) {
         localStorage.setItem(`survey_dismissed_${user.uid}`, 'true');
-        document.getElementById('surveyBanner').classList.add('hidden');
+        document.getElementById('surveyBanner').classList.remove('show');
       }
     };
 
@@ -1191,7 +1205,7 @@
           console.log('Survey data successfully saved to Firestore');
           
           // Hide banner and close modal
-          document.getElementById('surveyBanner').classList.add('hidden');
+          document.getElementById('surveyBanner').classList.remove('show');
           document.getElementById('surveyModal').classList.remove('active');
           
           alert('Thank you for your feedback! Your response has been recorded.');
@@ -1201,7 +1215,7 @@
           
           // Fallback to localStorage if Firestore fails
           localStorage.setItem(`survey_completed_${user.uid}`, 'true');
-          document.getElementById('surveyBanner').classList.add('hidden');
+          document.getElementById('surveyBanner').classList.remove('show');
           document.getElementById('surveyModal').classList.remove('active');
           
           alert('Thank you for your feedback! Your response has been recorded.');
@@ -1215,8 +1229,7 @@
         }
       });
 
-      // Check survey status after DOM is loaded
-      setTimeout(() => checkSurveyStatus(), 1000);
+      // Survey status will be checked in onAuthStateChanged - no need for duplicate check
     });
 
     // Update survey status check when auth state changes
