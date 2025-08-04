@@ -84,7 +84,8 @@
   import { initializeApp } from "https://www.gstatic.com/firebasejs/9.23.0/firebase-app.js";
   import {
     getAuth,
-    signInWithEmailAndPassword
+    signInWithEmailAndPassword,
+    signOut
   } from "https://www.gstatic.com/firebasejs/9.23.0/firebase-auth.js";
   import {
     getFirestore,
@@ -132,6 +133,11 @@
       const businessDoc = await getDoc(doc(db, "businessUsers", uid));
       if (businessDoc.exists()) {
         const data = businessDoc.data();
+        if (data.suspensionStatus === "yes") {
+          errorMessage.textContent = "Your account has been suspended. Please contact the administrator.";
+          await signOut(auth);
+          return;
+        }
         if (data.verified) {
           console.log("User is verified business user");
           window.location.href = "BusinessUser.html";
@@ -144,6 +150,13 @@
       // 3. Check if user is a regular user
       const userDoc = await getDoc(doc(db, "users", uid));
       if (userDoc.exists()) {
+        const userData = userDoc.data();
+        if (userData.suspensionStatus === "yes") {
+          errorMessage.textContent = "Your account has been suspended. Please contact the administrator.";
+          await signOut(auth);
+          return;
+        }
+
         await user.reload(); // 🔄 Refresh user emailVerified status
         if (!user.emailVerified) {
           errorMessage.textContent = "Please verify your email before logging in.";
