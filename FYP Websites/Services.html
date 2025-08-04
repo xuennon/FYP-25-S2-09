@@ -45,6 +45,19 @@
     th {
       background-color: #f2f2f2;
     }
+    #servicesTable tbody tr {
+      transition: background-color 0.3s ease;
+    }
+    #servicesTable tbody tr:hover {
+      background-color: #f5f5f5;
+    }
+    body.dark #servicesTable tbody tr:hover {
+      background-color: #2a2a2a;
+    }
+    .edit, .delete {
+      margin: 0 5px;
+      padding: 5px 10px;
+    }
     .modal {
       display: none;
       position: fixed;
@@ -341,6 +354,8 @@
       doc,
       updateDoc,
       deleteDoc,
+      query,
+      where
     } from "https://www.gstatic.com/firebasejs/10.6.0/firebase-firestore.js";
     import { getAuth, onAuthStateChanged, signOut, sendPasswordResetEmail } from "https://www.gstatic.com/firebasejs/10.6.0/firebase-auth.js";
 
@@ -427,8 +442,9 @@
           await updateDoc(doc(db, "services", id), data);
           alert("Service updated successfully.");
         } else {
-          // Add createdBy field for new service
+          // Add createdBy field and timestamp for new service
           data.createdBy = currentUser.uid;
+          data.createdAt = new Date().toISOString();
           await addDoc(collection(db, "services"), data);
           alert("Service created successfully.");
         }
@@ -441,35 +457,49 @@
     };
 
     async function loadServices() {
+      // Clear existing content
       servicesTable.innerHTML = "";
+      
       if (!currentUser) {
         servicesTable.innerHTML = `<tr><td colspan="5" style="text-align:center; color:red;">Please log in to view services.</td></tr>`;
         return;
       }
 
       try {
-        const querySnapshot = await getDocs(collection(db, "services"));
+        // Get only services created by the current user
+        const q = query(
+          collection(db, "services"), 
+          where("createdBy", "==", currentUser.uid)
+        );
+        
+        const querySnapshot = await getDocs(q);
+        
         if (querySnapshot.empty) {
           servicesTable.innerHTML = `<tr><td colspan="5" style="text-align:center;">No services found.</td></tr>`;
           return;
         }
-        querySnapshot.forEach((docSnap) => {
-          const data = docSnap.data();
-          const tr = document.createElement("tr");
 
+        // Sort services by creation time if available
+        const services = [];
+        querySnapshot.forEach((doc) => {
+          services.push({ id: doc.id, ...doc.data() });
+        });
+        // Create table rows for each service
+        services.forEach((service) => {
+          const tr = document.createElement("tr");
           tr.innerHTML = `
-            <td>${data.name}</td>
-            <td>${data.description}</td>
-            <td>${data.duration}</td>
-            <td>${data.category}</td>
+            <td>${service.name || ''}</td>
+            <td>${service.description || ''}</td>
+            <td>${service.duration || ''}</td>
+            <td>${service.category || ''}</td>
             <td>
-              <button class="edit" data-id="${docSnap.id}">Edit</button>
-              <button class="delete" data-id="${docSnap.id}">Delete</button>
+              <button class="edit" data-id="${service.id}">Edit</button>
+              <button class="delete" data-id="${service.id}">Delete</button>
             </td>
           `;
 
-          tr.querySelector(".edit").onclick = () => editService(docSnap.id, data);
-          tr.querySelector(".delete").onclick = () => deleteService(docSnap.id);
+          tr.querySelector(".edit").onclick = () => editService(service.id, service);
+          tr.querySelector(".delete").onclick = () => deleteService(service.id);
 
           servicesTable.appendChild(tr);
         });
@@ -479,12 +509,12 @@
       }
     }
 
-    function editService(id, data) {
+    function editService(id, service) {
       serviceId.value = id;
-      nameInput.value = data.name;
-      descInput.value = data.description;
-      durationInput.value = data.duration;
-      categoryInput.value = data.category;
+      nameInput.value = service.name || '';
+      descInput.value = service.description || '';
+      durationInput.value = service.duration || '';
+      categoryInput.value = service.category || '';
       formTitle.textContent = "Edit Service";
       openModal();
     }
