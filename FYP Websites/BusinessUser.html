@@ -952,8 +952,13 @@
         return;
       }
 
-      // Clear any existing dismissal flags since we want survey to always appear if not completed
-      localStorage.removeItem(`survey_dismissed_${user.uid}`);
+      // Check if user has dismissed the survey
+      const surveyDismissed = localStorage.getItem(`survey_dismissed_${user.uid}`);
+      if (surveyDismissed) {
+        console.log('Survey was dismissed - keeping banner hidden');
+        document.getElementById('surveyBanner').classList.remove('show');
+        return;
+      }
 
       try {
         console.log('Checking testimonial document for user:', user.uid);
@@ -1076,9 +1081,11 @@
     };
 
     window.dismissSurvey = () => {
-      // Only hide the banner temporarily for current session
-      // It will reappear on page refresh/reload if survey is not completed
-      document.getElementById('surveyBanner').classList.remove('show');
+      const user = auth.currentUser;
+      if (user) {
+        localStorage.setItem(`survey_dismissed_${user.uid}`, 'true');
+        document.getElementById('surveyBanner').classList.remove('show');
+      }
     };
 
     // Load user information for survey

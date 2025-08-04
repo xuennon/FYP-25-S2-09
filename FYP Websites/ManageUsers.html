@@ -428,10 +428,10 @@
         <option value="36 - 55">36 - 55</option>
         <option value="56 and above">56 and above</option>
       </select>
-      <select id="filterSuspension">
+      <select id="filterStatus">
         <option value="">All Status</option>
-        <option value="yes">Suspended</option>
-        <option value="no">Active</option>
+        <option value="active">Active</option>
+        <option value="suspended">Suspended</option>
       </select>
     </div>
 
@@ -526,13 +526,13 @@
       const search = searchInput.value.toLowerCase();
       const gender = filterGender.value;
       const ageRange = filterAge.value;
-      const suspension = filterSuspension.value;
+      const status = filterStatus.value;
       const userType = sortUserType.value;
 
       let filtered = allUsers.filter(u => {
         const matchesSearch = [u.fullName, u.email, u.username].some(f => f && f.toLowerCase().includes(search));
         const matchesGender = !gender || (u.gender && u.gender.toLowerCase() === gender);
-        const matchesSuspension = !suspension || (u.suspensionStatus && u.suspensionStatus === suspension);
+        const matchesStatus = !status || (status === 'active' && u.suspensionStatus !== 'yes') || (status === 'suspended' && u.suspensionStatus === 'yes');
         const matchesUserType = !userType || (u.userType && u.userType === userType);
 
         let matchesAge = true;
@@ -540,7 +540,7 @@
           matchesAge = u.ageRange === ageRange;
         }
 
-        return matchesSearch && matchesGender && matchesSuspension && matchesAge && matchesUserType;
+        return matchesSearch && matchesGender && matchesStatus && matchesAge && matchesUserType;
       });
 
       if (userType) {
@@ -619,7 +619,7 @@
       location.href = "Login.html";
     };
 
-    ["searchInput", "sortUserType", "filterGender", "filterAge", "filterSuspension"].forEach(id =>
+    ["searchInput", "sortUserType", "filterGender", "filterAge", "filterStatus"].forEach(id =>
       document.getElementById(id).addEventListener("input", applyFilters)
     );
   </script>
