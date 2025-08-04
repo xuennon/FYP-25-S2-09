@@ -1,0 +1,14 @@
+services:
+  - type: web
+    name: fyp-wise-fitness-landing
+    env: docker
+    plan: free
+    dockerfilePath: ./Dockerfile
+    dockerContext: .
+    branch: render-deployment
+    buildCommand: ""
+    startCommand: ""
+    healthCheckPath: /
+    envVars:
+      - key: PORT
+        value: 80

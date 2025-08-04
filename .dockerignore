@@ -1,0 +1,19 @@
+# Dockerignore for FYP Websites deployment
+# Ignore everything except FYP Websites
+*
+!FYP Websites/
+!Dockerfile
+!nginx.conf
+
+# Ignore common unnecessary files
+.git/
+.gitignore
+README.md
+wise_workout_app/
+*.md
+.vscode/
+.idea/
+node_modules/
+.env
+.env.local
+*.log
