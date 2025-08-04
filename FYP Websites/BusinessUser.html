@@ -915,8 +915,8 @@
       }
     }
 
-    window.goProfile = () => alert("Go to Profile page (not implemented)");
-    window.goSettings = () => alert("Go to Settings page (not implemented)");
+    window.goProfile = () => window.location.href = "BusinessUserProfile.html";
+    window.goSettings = () => window.location.href = "BusinessUserSettings.html";
 
     window.resetPassword = () => {
       const user = auth.currentUser;

@@ -1,0 +1,452 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Business Profile - Wise Fitness</title>
+  <style>
+    :root {
+      --primary: #007bff;
+      --light-bg: #f9f9f9;
+      --dark-bg: #1f1f1f;
+      --card-bg: #ffffff;
+      --card-dark: #2c2c2c;
+      --text-light: #111;
+      --text-dark: #f1f1f1;
+      --shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+      --radius: 14px;
+      --transition: 0.3s ease;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    html, body {
+      width: 100%;
+      height: 100%;
+      font-family: 'Segoe UI', sans-serif;
+      background: var(--light-bg);
+      color: var(--text-light);
+      transition: var(--transition);
+    }
+
+    body.dark {
+      background: var(--dark-bg);
+      color: var(--text-dark);
+    }
+
+    /* Toolbar styles */
+    header.toolbar {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      background-color: #0066cc;
+      padding: 8px 16px;
+      color: white;
+      border-radius: 5px;
+      user-select: none;
+      margin-bottom: 20px;
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      z-index: 20;
+      height: 56px;
+    }
+
+    header.toolbar > div {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    header.toolbar button {
+      background: none;
+      border: none;
+      color: white;
+      cursor: pointer;
+      user-select: none;
+    }
+
+    #backBtn {
+      font-size: 24px;
+      padding: 0;
+      line-height: 1;
+    }
+
+    header.toolbar span.title {
+      font-weight: 600;
+      font-size: 18px;
+    }
+
+    .container {
+      max-width: 800px;
+      margin: 76px auto 20px;
+      padding: 20px;
+    }
+
+    .profile-card {
+      background: var(--card-bg);
+      border-radius: var(--radius);
+      padding: 30px;
+      box-shadow: var(--shadow);
+      margin-bottom: 20px;
+    }
+
+    body.dark .profile-card {
+      background: var(--card-dark);
+    }
+
+    .profile-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 24px;
+    }
+
+    .profile-header h2 {
+      color: var(--text-light);
+      font-size: 24px;
+      font-weight: 700;
+    }
+
+    body.dark .profile-header h2 {
+      color: var(--text-dark);
+    }
+
+    .edit-btn {
+      background: var(--primary);
+      color: white;
+      border: none;
+      padding: 8px 16px;
+      border-radius: 8px;
+      font-size: 14px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.3s ease;
+    }
+
+    .edit-btn:hover {
+      background: #0056b3;
+      transform: translateY(-2px);
+    }
+
+    .form-group {
+      margin-bottom: 20px;
+    }
+
+    .form-group label {
+      display: block;
+      margin-bottom: 8px;
+      font-weight: 600;
+      color: var(--text-light);
+    }
+
+    body.dark .form-group label {
+      color: var(--text-dark);
+    }
+
+    .form-group input,
+    .form-group textarea {
+      width: 100%;
+      padding: 12px;
+      border: 2px solid #e9ecef;
+      border-radius: 8px;
+      font-size: 15px;
+      background: var(--card-bg);
+      color: var(--text-light);
+      transition: var(--transition);
+    }
+
+    body.dark .form-group input,
+    body.dark .form-group textarea {
+      background: #3a3a3a;
+      border-color: #555;
+      color: var(--text-dark);
+    }
+
+    .form-group input:focus,
+    .form-group textarea:focus {
+      outline: none;
+      border-color: var(--primary);
+    }
+
+    .form-group textarea {
+      resize: vertical;
+      min-height: 100px;
+    }
+
+    .form-group input:read-only,
+    .form-group textarea:read-only {
+      background: #f8f9fa;
+      cursor: not-allowed;
+    }
+
+    body.dark .form-group input:read-only,
+    body.dark .form-group textarea:read-only {
+      background: #2a2a2a;
+    }
+
+    .form-actions {
+      display: flex;
+      gap: 12px;
+      justify-content: flex-end;
+      margin-top: 24px;
+    }
+
+    .save-btn,
+    .cancel-btn {
+      padding: 10px 20px;
+      border-radius: 8px;
+      font-size: 15px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.3s ease;
+    }
+
+    .save-btn {
+      background: var(--primary);
+      color: white;
+      border: none;
+    }
+
+    .save-btn:hover {
+      background: #0056b3;
+      transform: translateY(-2px);
+    }
+
+    .cancel-btn {
+      background: none;
+      border: 2px solid #dee2e6;
+      color: var(--text-light);
+    }
+
+    body.dark .cancel-btn {
+      border-color: #555;
+      color: var(--text-dark);
+    }
+
+    .cancel-btn:hover {
+      background: #f8f9fa;
+    }
+
+    body.dark .cancel-btn:hover {
+      background: #2a2a2a;
+    }
+
+    @media (max-width: 480px) {
+      .container {
+        padding: 15px;
+      }
+
+      .profile-card {
+        padding: 20px;
+      }
+
+      .profile-header {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 12px;
+      }
+
+      .form-actions {
+        flex-direction: column;
+      }
+
+      .save-btn,
+      .cancel-btn {
+        width: 100%;
+      }
+    }
+  </style>
+</head>
+<body>
+  <header class="toolbar" role="banner" aria-label="Page toolbar">
+    <div>
+      <button id="backBtn" aria-label="Go back" title="Go back">←</button>
+      <span class="title">Business Profile</span>
+    </div>
+    <div>
+      <button id="modeToggle" aria-label="Toggle light/dark mode" title="Toggle light/dark mode">🌙</button>
+    </div>
+  </header>
+
+  <div class="container">
+    <div class="profile-card">
+      <div class="profile-header">
+        <h2>Business Profile</h2>
+        <button id="editBtn" class="edit-btn">Edit Profile</button>
+      </div>
+
+      <form id="profileForm">
+        <div class="form-group">
+          <label for="businessName">Business Name</label>
+          <input type="text" id="businessName" name="businessName" readonly required>
+        </div>
+
+        <div class="form-group">
+          <label for="email">Email Address</label>
+          <input type="email" id="email" name="email" readonly>
+        </div>
+
+        <div class="form-group">
+          <label for="phone">Phone Number</label>
+          <input type="tel" id="phone" name="phone" readonly>
+        </div>
+
+        <div class="form-group">
+          <label for="address">Business Address</label>
+          <textarea id="address" name="address" readonly></textarea>
+        </div>
+
+        <div class="form-group">
+          <label for="description">Business Description</label>
+          <textarea id="description" name="description" readonly></textarea>
+        </div>
+
+        <div class="form-group">
+          <label for="website">Business Website (Optional)</label>
+          <input type="url" id="website" name="website" readonly>
+        </div>
+
+        <div class="form-actions" style="display: none;">
+          <button type="button" class="cancel-btn" id="cancelBtn">Cancel</button>
+          <button type="submit" class="save-btn">Save Changes</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/9.23.0/firebase-app.js";
+    import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/9.23.0/firebase-auth.js";
+    import { getFirestore, doc, getDoc, updateDoc } from "https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore.js";
+
+    const firebaseConfig = {
+      apiKey: "AIzaSyAIFV7ynXUzA0p-CrmVOE2lFRgaf_9g_k4",
+      authDomain: "fyp-25-s2-09.firebaseapp.com",
+      projectId: "fyp-25-s2-09",
+      storageBucket: "fyp-25-s2-09.appspot.com",
+      messagingSenderId: "838641447649",
+      appId: "1:838641447649:web:6ddfb234b3d445f16dbda0"
+    };
+
+    const app = initializeApp(firebaseConfig);
+    const auth = getAuth(app);
+    const db = getFirestore(app);
+
+    // DOM Elements
+    const profileForm = document.getElementById('profileForm');
+    const editBtn = document.getElementById('editBtn');
+    const cancelBtn = document.getElementById('cancelBtn');
+    const formActions = document.querySelector('.form-actions');
+    const inputs = profileForm.querySelectorAll('input, textarea');
+    const backBtn = document.getElementById('backBtn');
+    const modeToggle = document.getElementById('modeToggle');
+
+    // Load profile data
+    async function loadProfile(userId) {
+      try {
+        const docRef = doc(db, "businessUsers", userId);
+        const docSnap = await getDoc(docRef);
+
+        if (docSnap.exists()) {
+          const data = docSnap.data();
+          document.getElementById('businessName').value = data.businessName || '';
+          document.getElementById('email').value = data.email || '';
+          document.getElementById('phone').value = data.phone || '';
+          document.getElementById('address').value = data.address || '';
+          document.getElementById('description').value = data.description || '';
+          document.getElementById('website').value = data.website || '';
+        }
+      } catch (error) {
+        console.error("Error loading profile:", error);
+        alert("Error loading profile data: " + error.message);
+      }
+    }
+
+    // Save profile changes
+    async function saveProfile(userId, profileData) {
+      try {
+        const docRef = doc(db, "businessUsers", userId);
+        await updateDoc(docRef, profileData);
+        alert("Profile updated successfully!");
+        toggleEditMode(false);
+      } catch (error) {
+        console.error("Error saving profile:", error);
+        alert("Error saving profile: " + error.message);
+      }
+    }
+
+    // Toggle edit mode
+    function toggleEditMode(editable) {
+      inputs.forEach(input => {
+        if (input.id !== 'email') { // Keep email readonly
+          input.readOnly = !editable;
+        }
+      });
+      formActions.style.display = editable ? 'flex' : 'none';
+      editBtn.style.display = editable ? 'none' : 'block';
+    }
+
+    // Event Listeners
+    editBtn.addEventListener('click', () => toggleEditMode(true));
+
+    cancelBtn.addEventListener('click', () => {
+      if (confirm("Are you sure? Any unsaved changes will be lost.")) {
+        const user = auth.currentUser;
+        if (user) {
+          loadProfile(user.uid); // Reload profile data
+        }
+        toggleEditMode(false);
+      }
+    });
+
+    profileForm.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const user = auth.currentUser;
+      if (!user) return;
+
+      const profileData = {
+        businessName: document.getElementById('businessName').value.trim(),
+        phone: document.getElementById('phone').value.trim(),
+        address: document.getElementById('address').value.trim(),
+        description: document.getElementById('description').value.trim(),
+        website: document.getElementById('website').value.trim()
+      };
+
+      await saveProfile(user.uid, profileData);
+    });
+
+    // Back button handler
+    backBtn.addEventListener('click', () => {
+      window.location.href = "BusinessUser.html";
+    });
+
+    // Dark mode toggle
+    modeToggle.addEventListener('click', () => {
+      const isDark = document.body.classList.toggle('dark');
+      modeToggle.textContent = isDark ? '☀️' : '🌙';
+      localStorage.setItem('theme', isDark ? 'dark' : 'light');
+    });
+
+    // Load saved theme
+    if (localStorage.getItem('theme') === 'dark') {
+      document.body.classList.add('dark');
+      modeToggle.textContent = '☀️';
+    }
+
+    // Auth state observer
+    onAuthStateChanged(auth, (user) => {
+      if (user) {
+        loadProfile(user.uid);
+      } else {
+        window.location.href = "Login.html";
+      }
+    });
+  </script>
+</body>
+</html>

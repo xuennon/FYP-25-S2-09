@@ -1,0 +1,643 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Settings - Wise Fitness</title>
+  <style>
+    :root {
+      --primary: #007bff;
+      --light-bg: #f9f9f9;
+      --dark-bg: #1f1f1f;
+      --card-bg: #ffffff;
+      --card-dark: #2c2c2c;
+      --text-light: #111;
+      --text-dark: #f1f1f1;
+      --shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+      --radius: 14px;
+      --transition: 0.3s ease;
+      --danger: #dc3545;
+      --success: #28a745;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    html, body {
+      width: 100%;
+      height: 100%;
+      font-family: 'Segoe UI', sans-serif;
+      background: var(--light-bg);
+      color: var(--text-light);
+      transition: var(--transition);
+    }
+
+    body.dark {
+      background: var(--dark-bg);
+      color: var(--text-dark);
+    }
+
+    /* Toolbar styles */
+    header.toolbar {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      background-color: #0066cc;
+      padding: 8px 16px;
+      color: white;
+      border-radius: 5px;
+      user-select: none;
+      margin-bottom: 20px;
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      z-index: 20;
+      height: 56px;
+    }
+
+    header.toolbar > div {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    header.toolbar button {
+      background: none;
+      border: none;
+      color: white;
+      cursor: pointer;
+      user-select: none;
+    }
+
+    #backBtn {
+      font-size: 24px;
+      padding: 0;
+      line-height: 1;
+    }
+
+    header.toolbar span.title {
+      font-weight: 600;
+      font-size: 18px;
+    }
+
+    .container {
+      max-width: 800px;
+      margin: 76px auto 20px;
+      padding: 20px;
+    }
+
+    .settings-section {
+      background: var(--card-bg);
+      border-radius: var(--radius);
+      padding: 30px;
+      box-shadow: var(--shadow);
+      margin-bottom: 20px;
+    }
+
+    body.dark .settings-section {
+      background: var(--card-dark);
+    }
+
+    .settings-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 24px;
+    }
+
+    .settings-header h2 {
+      color: var(--text-light);
+      font-size: 24px;
+      font-weight: 700;
+    }
+
+    body.dark .settings-header h2 {
+      color: var(--text-dark);
+    }
+
+    .settings-group {
+      margin-bottom: 30px;
+    }
+
+    .settings-group:last-child {
+      margin-bottom: 0;
+    }
+
+    .settings-group h3 {
+      font-size: 18px;
+      margin-bottom: 16px;
+      color: var(--text-light);
+      font-weight: 600;
+    }
+
+    body.dark .settings-group h3 {
+      color: var(--text-dark);
+    }
+
+    .setting-item {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 16px;
+      border: 1px solid #e9ecef;
+      border-radius: 8px;
+      margin-bottom: 12px;
+      transition: var(--transition);
+    }
+
+    body.dark .setting-item {
+      border-color: #444;
+    }
+
+    .setting-item:hover {
+      background: rgba(0,0,0,0.02);
+    }
+
+    body.dark .setting-item:hover {
+      background: rgba(255,255,255,0.05);
+    }
+
+    .setting-info {
+      flex: 1;
+    }
+
+    .setting-info h4 {
+      font-size: 16px;
+      margin-bottom: 4px;
+      color: var(--text-light);
+    }
+
+    body.dark .setting-info h4 {
+      color: var(--text-dark);
+    }
+
+    .setting-info p {
+      font-size: 14px;
+      color: #6c757d;
+      margin: 0;
+    }
+
+    body.dark .setting-info p {
+      color: #aaa;
+    }
+
+    .toggle-switch {
+      position: relative;
+      width: 50px;
+      height: 26px;
+    }
+
+    .toggle-switch input {
+      opacity: 0;
+      width: 0;
+      height: 0;
+    }
+
+    .toggle-slider {
+      position: absolute;
+      cursor: pointer;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background-color: #ccc;
+      transition: .4s;
+      border-radius: 34px;
+    }
+
+    .toggle-slider:before {
+      position: absolute;
+      content: "";
+      height: 18px;
+      width: 18px;
+      left: 4px;
+      bottom: 4px;
+      background-color: white;
+      transition: .4s;
+      border-radius: 50%;
+    }
+
+    input:checked + .toggle-slider {
+      background-color: var(--primary);
+    }
+
+    input:checked + .toggle-slider:before {
+      transform: translateX(24px);
+    }
+
+    .btn {
+      padding: 10px 20px;
+      border-radius: 8px;
+      font-size: 15px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.3s ease;
+    }
+
+    .btn-primary {
+      background: var(--primary);
+      color: white;
+      border: none;
+    }
+
+    .btn-primary:hover {
+      background: #0056b3;
+      transform: translateY(-2px);
+    }
+
+    .btn-danger {
+      background: var(--danger);
+      color: white;
+      border: none;
+    }
+
+    .btn-danger:hover {
+      background: #c82333;
+      transform: translateY(-2px);
+    }
+
+    .modal {
+      display: none;
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: rgba(0,0,0,0.5);
+      z-index: 1000;
+      backdrop-filter: blur(4px);
+    }
+
+    .modal.active {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .modal-content {
+      background: var(--card-bg);
+      padding: 30px;
+      border-radius: var(--radius);
+      width: 90%;
+      max-width: 400px;
+      box-shadow: var(--shadow);
+    }
+
+    body.dark .modal-content {
+      background: var(--card-dark);
+    }
+
+    .modal-header {
+      margin-bottom: 20px;
+    }
+
+    .modal-header h3 {
+      color: var(--text-light);
+      margin: 0;
+    }
+
+    body.dark .modal-header h3 {
+      color: var(--text-dark);
+    }
+
+    .modal-body {
+      margin-bottom: 24px;
+    }
+
+    .modal-footer {
+      display: flex;
+      justify-content: flex-end;
+      gap: 12px;
+    }
+
+    .success-message {
+      color: var(--success);
+      font-size: 14px;
+      margin-top: 8px;
+      display: none;
+    }
+
+    .success-message.show {
+      display: block;
+    }
+
+    @media (max-width: 480px) {
+      .container {
+        padding: 15px;
+      }
+
+      .settings-section {
+        padding: 20px;
+      }
+
+      .setting-item {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 12px;
+      }
+
+      .setting-info {
+        margin-bottom: 8px;
+      }
+
+      .modal-footer {
+        flex-direction: column;
+      }
+
+      .modal-footer .btn {
+        width: 100%;
+      }
+    }
+  </style>
+</head>
+<body>
+  <header class="toolbar" role="banner" aria-label="Page toolbar">
+    <div>
+      <button id="backBtn" aria-label="Go back" title="Go back">←</button>
+      <span class="title">Settings</span>
+    </div>
+    <div>
+      <button id="modeToggle" aria-label="Toggle light/dark mode" title="Toggle light/dark mode">🌙</button>
+    </div>
+  </header>
+
+  <div class="container">
+    <div class="settings-section">
+      <div class="settings-header">
+        <h2>Account Settings</h2>
+      </div>
+
+      <div class="settings-group">
+        <h3>Notifications</h3>
+        <div class="setting-item">
+          <div class="setting-info">
+            <h4>Email Notifications</h4>
+            <p>Receive updates about your business activities</p>
+          </div>
+          <label class="toggle-switch">
+            <input type="checkbox" id="emailNotifications">
+            <span class="toggle-slider"></span>
+          </label>
+        </div>
+        <div class="setting-item">
+          <div class="setting-info">
+            <h4>Marketing Emails</h4>
+            <p>Receive promotional content and newsletters</p>
+          </div>
+          <label class="toggle-switch">
+            <input type="checkbox" id="marketingEmails">
+            <span class="toggle-slider"></span>
+          </label>
+        </div>
+      </div>
+
+      <div class="settings-group">
+        <h3>Privacy</h3>
+        <div class="setting-item">
+          <div class="setting-info">
+            <h4>Business Profile Visibility</h4>
+            <p>Make your business profile visible to other users</p>
+          </div>
+          <label class="toggle-switch">
+            <input type="checkbox" id="profileVisibility">
+            <span class="toggle-slider"></span>
+          </label>
+        </div>
+      </div>
+
+      <div class="settings-group">
+        <h3>Security</h3>
+        <div class="setting-item">
+          <div class="setting-info">
+            <h4>Change Password</h4>
+            <p>Update your account password</p>
+          </div>
+          <button class="btn btn-primary" id="changePasswordBtn">Change</button>
+        </div>
+        <div class="setting-item">
+          <div class="setting-info">
+            <h4>Delete Account</h4>
+            <p>Permanently delete your account and all data</p>
+          </div>
+          <button class="btn btn-danger" id="deleteAccountBtn">Delete</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Change Password Modal -->
+  <div id="passwordModal" class="modal">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h3>Change Password</h3>
+      </div>
+      <div class="modal-body">
+        <p>We'll send a password reset link to your email address.</p>
+        <div class="success-message" id="passwordSuccess">
+          Password reset email sent successfully!
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button class="btn btn-primary" id="sendResetLinkBtn">Send Reset Link</button>
+        <button class="btn" id="cancelPasswordBtn">Cancel</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Delete Account Modal -->
+  <div id="deleteModal" class="modal">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h3>Delete Account</h3>
+      </div>
+      <div class="modal-body">
+        <p>Are you sure you want to delete your account? This action cannot be undone.</p>
+      </div>
+      <div class="modal-footer">
+        <button class="btn btn-danger" id="confirmDeleteBtn">Delete Account</button>
+        <button class="btn" id="cancelDeleteBtn">Cancel</button>
+      </div>
+    </div>
+  </div>
+
+  <script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/9.23.0/firebase-app.js";
+    import { getAuth, onAuthStateChanged, sendPasswordResetEmail, deleteUser } from "https://www.gstatic.com/firebasejs/9.23.0/firebase-auth.js";
+    import { getFirestore, doc, getDoc, updateDoc, deleteDoc } from "https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore.js";
+
+    const firebaseConfig = {
+      apiKey: "AIzaSyAIFV7ynXUzA0p-CrmVOE2lFRgaf_9g_k4",
+      authDomain: "fyp-25-s2-09.firebaseapp.com",
+      projectId: "fyp-25-s2-09",
+      storageBucket: "fyp-25-s2-09.appspot.com",
+      messagingSenderId: "838641447649",
+      appId: "1:838641447649:web:6ddfb234b3d445f16dbda0"
+    };
+
+    const app = initializeApp(firebaseConfig);
+    const auth = getAuth(app);
+    const db = getFirestore(app);
+
+    // DOM Elements
+    const backBtn = document.getElementById('backBtn');
+    const modeToggle = document.getElementById('modeToggle');
+    const emailNotifications = document.getElementById('emailNotifications');
+    const marketingEmails = document.getElementById('marketingEmails');
+    const profileVisibility = document.getElementById('profileVisibility');
+    const changePasswordBtn = document.getElementById('changePasswordBtn');
+    const deleteAccountBtn = document.getElementById('deleteAccountBtn');
+    const passwordModal = document.getElementById('passwordModal');
+    const deleteModal = document.getElementById('deleteModal');
+    const sendResetLinkBtn = document.getElementById('sendResetLinkBtn');
+    const cancelPasswordBtn = document.getElementById('cancelPasswordBtn');
+    const confirmDeleteBtn = document.getElementById('confirmDeleteBtn');
+    const cancelDeleteBtn = document.getElementById('cancelDeleteBtn');
+    const passwordSuccess = document.getElementById('passwordSuccess');
+
+    // Load settings
+    async function loadSettings(userId) {
+      try {
+        const docRef = doc(db, "businessUsers", userId);
+        const docSnap = await getDoc(docRef);
+
+        if (docSnap.exists()) {
+          const data = docSnap.data();
+          emailNotifications.checked = data.emailNotifications ?? true;
+          marketingEmails.checked = data.marketingEmails ?? true;
+          profileVisibility.checked = data.profileVisibility ?? true;
+        }
+      } catch (error) {
+        console.error("Error loading settings:", error);
+        alert("Error loading settings: " + error.message);
+      }
+    }
+
+    // Save setting change
+    async function saveSetting(setting, value) {
+      const user = auth.currentUser;
+      if (!user) return;
+
+      try {
+        const docRef = doc(db, "businessUsers", user.uid);
+        await updateDoc(docRef, {
+          [setting]: value
+        });
+      } catch (error) {
+        console.error("Error saving setting:", error);
+        alert("Error saving setting: " + error.message);
+      }
+    }
+
+    // Event Listeners for toggles
+    emailNotifications.addEventListener('change', (e) => {
+      saveSetting('emailNotifications', e.target.checked);
+    });
+
+    marketingEmails.addEventListener('change', (e) => {
+      saveSetting('marketingEmails', e.target.checked);
+    });
+
+    profileVisibility.addEventListener('change', (e) => {
+      saveSetting('profileVisibility', e.target.checked);
+    });
+
+    // Password change functionality
+    changePasswordBtn.addEventListener('click', () => {
+      passwordModal.classList.add('active');
+    });
+
+    sendResetLinkBtn.addEventListener('click', async () => {
+      const user = auth.currentUser;
+      if (!user || !user.email) {
+        alert("No user logged in.");
+        return;
+      }
+
+      try {
+        await sendPasswordResetEmail(auth, user.email);
+        passwordSuccess.classList.add('show');
+        setTimeout(() => {
+          passwordSuccess.classList.remove('show');
+          passwordModal.classList.remove('active');
+        }, 3000);
+      } catch (error) {
+        alert("Error sending reset email: " + error.message);
+      }
+    });
+
+    cancelPasswordBtn.addEventListener('click', () => {
+      passwordModal.classList.remove('active');
+      passwordSuccess.classList.remove('show');
+    });
+
+    // Account deletion functionality
+    deleteAccountBtn.addEventListener('click', () => {
+      deleteModal.classList.add('active');
+    });
+
+    confirmDeleteBtn.addEventListener('click', async () => {
+      const user = auth.currentUser;
+      if (!user) return;
+
+      try {
+        // Delete user data from Firestore
+        await deleteDoc(doc(db, "businessUsers", user.uid));
+        // Delete Firebase auth user
+        await deleteUser(user);
+        window.location.href = "Login.html";
+      } catch (error) {
+        alert("Error deleting account: " + error.message);
+      }
+    });
+
+    cancelDeleteBtn.addEventListener('click', () => {
+      deleteModal.classList.remove('active');
+    });
+
+    // Modal outside click handlers
+    passwordModal.addEventListener('click', (e) => {
+      if (e.target === passwordModal) {
+        passwordModal.classList.remove('active');
+        passwordSuccess.classList.remove('show');
+      }
+    });
+
+    deleteModal.addEventListener('click', (e) => {
+      if (e.target === deleteModal) {
+        deleteModal.classList.remove('active');
+      }
+    });
+
+    // Back button handler
+    backBtn.addEventListener('click', () => {
+      window.location.href = "BusinessUser.html";
+    });
+
+    // Dark mode toggle
+    modeToggle.addEventListener('click', () => {
+      const isDark = document.body.classList.toggle('dark');
+      modeToggle.textContent = isDark ? '☀️' : '🌙';
+      localStorage.setItem('theme', isDark ? 'dark' : 'light');
+    });
+
+    // Load saved theme
+    if (localStorage.getItem('theme') === 'dark') {
+      document.body.classList.add('dark');
+      modeToggle.textContent = '☀️';
+    }
+
+    // Auth state observer
+    onAuthStateChanged(auth, (user) => {
+      if (user) {
+        loadSettings(user.uid);
+      } else {
+        window.location.href = "Login.html";
+      }
+    });
+  </script>
+</body>
+</html>
