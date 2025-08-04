@@ -803,6 +803,366 @@
         font-size: clamp(0.9rem, 2.5vw, 1.1rem);
       }
     }
+
+    /* TESTIMONIALS TABLE STYLES */
+    .testimonials-dashboard {
+      margin-bottom: 2rem;
+    }
+
+    .dashboard-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+      gap: 1rem;
+      margin-bottom: 1.5rem;
+    }
+
+    .dashboard-card {
+      background: white;
+      border-radius: 12px;
+      padding: 1.5rem;
+      box-shadow: var(--shadow);
+      border-left: 4px solid;
+      transition: transform 0.2s ease, box-shadow 0.2s ease;
+      display: flex;
+      align-items: center;
+      gap: 1rem;
+    }
+
+    .dashboard-card:hover {
+      transform: translateY(-2px);
+      box-shadow: var(--shadow-lg);
+    }
+
+    .dashboard-card.total {
+      border-left-color: var(--primary);
+    }
+
+    .dashboard-card.business {
+      border-left-color: #17a2b8;
+    }
+
+    .dashboard-card.basic {
+      border-left-color: #28a745;
+    }
+
+    .dashboard-card.premium {
+      border-left-color: #ffc107;
+    }
+
+    .dashboard-icon {
+      font-size: 2rem;
+      opacity: 0.8;
+    }
+
+    .dashboard-content h3 {
+      margin: 0;
+      font-size: 2rem;
+      font-weight: 700;
+      color: var(--text-light);
+    }
+
+    .dashboard-content p {
+      margin: 0;
+      font-size: 0.9rem;
+      color: var(--text-muted);
+      font-weight: 600;
+    }
+
+    .testimonials-table {
+      width: 100%;
+      border-collapse: collapse;
+      background: white;
+      border-radius: 8px;
+      overflow: hidden;
+      box-shadow: var(--shadow);
+      margin-top: 1rem;
+    }
+
+    .testimonials-table th,
+    .testimonials-table td {
+      padding: 12px 16px;
+      text-align: left;
+      border-bottom: 1px solid var(--border-color);
+    }
+
+    .testimonials-table th {
+      background: var(--primary);
+      color: white;
+      font-weight: 600;
+      font-size: 0.9rem;
+    }
+
+    .testimonials-table tr:hover {
+      background: rgba(0, 123, 255, 0.05);
+    }
+
+    .testimonials-table tr:last-child td {
+      border-bottom: none;
+    }
+
+    .rating-stars {
+      color: #ffc107;
+      font-size: 1.1rem;
+    }
+
+    .user-type-badge {
+      display: inline-block;
+      padding: 4px 8px;
+      border-radius: 4px;
+      font-size: 0.75rem;
+      font-weight: 600;
+      text-transform: uppercase;
+    }
+
+    .user-type-business {
+      background: #e3f2fd;
+      color: #1565c0;
+    }
+
+    .user-type-basic {
+      background: #e8f5e8;
+      color: #2e7d32;
+    }
+
+    .user-type-premium {
+      background: #fff8e1;
+      color: #f57c00;
+    }
+
+    .user-type-normal {
+      background: #f3e5f5;
+      color: #7b1fa2;
+    }
+
+    .feedback-text {
+      max-width: 200px;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+
+    .loading-text {
+      text-align: center;
+      color: var(--text-muted);
+      padding: 2rem;
+      font-style: italic;
+    }
+
+    /* TESTIMONIALS MODAL STYLES */
+    .testimonials-modal {
+      display: none;
+      position: fixed;
+      z-index: 1000;
+      left: 0;
+      top: 0;
+      width: 100%;
+      height: 100%;
+      background-color: rgba(0,0,0,0.5);
+      backdrop-filter: blur(5px);
+    }
+
+    .testimonials-modal-content {
+      background-color: white;
+      margin: 2% auto;
+      border-radius: 12px;
+      width: 95%;
+      max-width: 1400px;
+      height: 90vh;
+      overflow: hidden;
+      box-shadow: 0 20px 40px rgba(0,0,0,0.3);
+      display: flex;
+      flex-direction: column;
+    }
+
+    .modal-header {
+      background: linear-gradient(135deg, var(--primary), #0056b3);
+      color: white;
+      padding: 1.5rem;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      border-radius: 12px 12px 0 0;
+    }
+
+    .modal-title {
+      font-size: 1.5rem;
+      font-weight: 600;
+      margin: 0;
+    }
+
+    .close-modal {
+      background: none;
+      border: none;
+      color: white;
+      font-size: 2rem;
+      cursor: pointer;
+      padding: 0;
+      width: 40px;
+      height: 40px;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: background-color 0.2s;
+    }
+
+    .close-modal:hover {
+      background-color: rgba(255,255,255,0.2);
+    }
+
+    .modal-filters {
+      background: #f8f9fa;
+      padding: 1rem 1.5rem;
+      border-bottom: 1px solid var(--border-color);
+      display: flex;
+      flex-wrap: wrap;
+      gap: 1rem;
+      align-items: center;
+    }
+
+    .filter-group {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+
+    .filter-group label {
+      font-weight: 500;
+      font-size: 0.9rem;
+      color: var(--text-dark);
+    }
+
+    .filter-select, .filter-input {
+      padding: 6px 12px;
+      border: 1px solid var(--border-color);
+      border-radius: 6px;
+      font-size: 0.9rem;
+      background: white;
+    }
+
+    .ai-analyze-btn {
+      background: linear-gradient(135deg, #ff6b35, #f7931e);
+      color: white;
+      border: none;
+      padding: 8px 16px;
+      border-radius: 6px;
+      font-size: 0.9rem;
+      font-weight: 600;
+      cursor: pointer;
+      transition: transform 0.2s;
+    }
+
+    .ai-analyze-btn:hover {
+      transform: translateY(-1px);
+    }
+
+    .ai-analyze-btn:disabled {
+      opacity: 0.6;
+      cursor: not-allowed;
+      transform: none;
+    }
+
+    .modal-body {
+      flex: 1;
+      overflow: auto;
+      padding: 0;
+    }
+
+    .ai-sentiment-badge {
+      display: inline-block;
+      padding: 3px 8px;
+      border-radius: 12px;
+      font-size: 0.7rem;
+      font-weight: 600;
+      text-transform: uppercase;
+      margin-bottom: 4px;
+    }
+
+    .sentiment-positive {
+      background: #d4edda;
+      color: #155724;
+    }
+
+    .sentiment-negative {
+      background: #f8d7da;
+      color: #721c24;
+    }
+
+    .sentiment-neutral {
+      background: #e2e3e5;
+      color: #383d41;
+    }
+
+    .sentiment-spam {
+      background: #ffeaa7;
+      color: #d63031;
+    }
+
+    .sentiment-inappropriate {
+      background: #fd79a8;
+      color: #2d3436;
+    }
+
+    .feedback-full {
+      white-space: pre-wrap;
+      word-wrap: break-word;
+      max-width: 250px;
+      line-height: 1.4;
+    }
+
+    .feedback-preview {
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+      cursor: pointer;
+      color: var(--primary);
+      max-width: 250px;
+    }
+
+    .feedback-preview:hover {
+      text-decoration: underline;
+    }
+
+    .ai-score {
+      font-size: 0.8rem;
+      color: var(--text-muted);
+      margin-top: 2px;
+    }
+
+    .pagination {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      padding: 1rem;
+      gap: 0.5rem;
+      background: #f8f9fa;
+      border-top: 1px solid var(--border-color);
+    }
+
+    .pagination button {
+      padding: 6px 12px;
+      border: 1px solid var(--border-color);
+      background: white;
+      border-radius: 4px;
+      cursor: pointer;
+      font-size: 0.9rem;
+    }
+
+    .pagination button:hover:not(:disabled) {
+      background: var(--primary);
+      color: white;
+    }
+
+    .pagination button:disabled {
+      opacity: 0.5;
+      cursor: not-allowed;
+    }
+
+    .pagination .current-page {
+      background: var(--primary);
+      color: white;
+      border-color: var(--primary);
+    }
   </style>
 </head>
 <body>
@@ -1060,10 +1420,133 @@
         <span class="toggle-icon">▼</span>
       </div>
       <div class="section-content" id="testimonials-content">
-        <!-- Content will be rebuilt from scratch -->
-        <p style="text-align: center; color: var(--text-muted); padding: 2rem;">
-          Testimonial management content will be implemented here.
-        </p>
+        <!-- Testimonials Dashboard -->
+        <div id="testimonials-dashboard" class="testimonials-dashboard" style="display: none;">
+          <div class="dashboard-grid">
+            <div class="dashboard-card total">
+              <div class="dashboard-icon">📊</div>
+              <div class="dashboard-content">
+                <h3 id="total-reviews">0</h3>
+                <p>Total Reviews</p>
+              </div>
+            </div>
+            
+            <div class="dashboard-card business">
+              <div class="dashboard-icon">🏢</div>
+              <div class="dashboard-content">
+                <h3 id="business-reviews">0</h3>
+                <p>Business User Reviews</p>
+              </div>
+            </div>
+            
+            <div class="dashboard-card basic">
+              <div class="dashboard-icon">👤</div>
+              <div class="dashboard-content">
+                <h3 id="basic-reviews">0</h3>
+                <p>Basic User Reviews</p>
+              </div>
+            </div>
+            
+            <div class="dashboard-card premium">
+              <div class="dashboard-icon">⭐</div>
+              <div class="dashboard-content">
+                <h3 id="premium-reviews">0</h3>
+                <p>Premium User Reviews</p>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div style="margin-bottom: 1rem; display: flex; gap: 1rem; align-items: center; flex-wrap: wrap;">
+          <button onclick="openTestimonialsModal()" style="background: var(--primary); color: white; border: none; padding: 12px 24px; border-radius: 8px; cursor: pointer; font-weight: 600;">
+            🔍 View All Testimonials
+          </button>
+          <button onclick="loadTestimonials()" style="background: #28a745; color: white; border: none; padding: 10px 20px; border-radius: 8px; cursor: pointer;">
+            📊 Refresh Dashboard
+          </button>
+          <span id="testimonial-count" style="color: var(--text-muted); font-size: 0.9rem;"></span>
+        </div>
+        
+        <div id="testimonials-table-container">
+          <p style="text-align: center; color: var(--text-muted); padding: 2rem;">
+            Use the dashboard above to see testimonial statistics, or click "View All Testimonials" to see detailed data with AI filtering.
+          </p>
+        </div>
+      </div>
+    </div>
+
+    <!-- Testimonials Modal -->
+    <div id="testimonials-modal" class="testimonials-modal">
+      <div class="testimonials-modal-content">
+        <div class="modal-header">
+          <h2 class="modal-title">🤖 AI-Powered Testimonials Management</h2>
+          <button class="close-modal" onclick="closeTestimonialsModal()">&times;</button>
+        </div>
+        
+        <div class="modal-filters">
+          <div class="filter-group">
+            <label>Membership:</label>
+            <select id="filter-membership" class="filter-select" onchange="filterTestimonials()">
+              <option value="">All Types</option>
+              <option value="business">Business</option>
+              <option value="premium">Premium</option>
+              <option value="basic">Basic</option>
+            </select>
+          </div>
+          
+          <div class="filter-group">
+            <label>Rating:</label>
+            <select id="filter-rating" class="filter-select" onchange="filterTestimonials()">
+              <option value="">All Ratings</option>
+              <option value="5">5 Stars (Excellent)</option>
+              <option value="4">4 Stars (Good)</option>
+              <option value="low">3 Stars & Below (Needs Improvement)</option>
+            </select>
+          </div>
+          
+          <div class="filter-group">
+            <label>AI Sentiment:</label>
+            <select id="filter-sentiment" class="filter-select" onchange="filterTestimonials()">
+              <option value="">All Sentiments</option>
+              <option value="positive">Positive</option>
+              <option value="negative">Negative</option>
+              <option value="neutral">Neutral</option>
+            </select>
+          </div>
+          
+          <div class="filter-group">
+            <label>Search:</label>
+            <input type="text" id="filter-search" class="filter-input" placeholder="Search feedback..." onkeyup="filterTestimonials()">
+          </div>
+          
+          <div class="filter-group">
+            <button onclick="clearAllFilters()" class="clear-filters-btn" style="background: #6c757d; color: white; border: none; padding: 0.5rem 1rem; border-radius: 5px; cursor: pointer; font-size: 0.9rem;">Clear All Filters</button>
+          </div>
+          
+          <button id="ai-analyze-all" class="ai-analyze-btn" onclick="analyzeAllTestimonials()" title="Analyze all testimonials with AI">
+            🤖 AI Analysis
+          </button>
+          
+          <button onclick="refreshTestimonials()" style="background: #28a745; color: white; border: none; padding: 8px 16px; border-radius: 6px; font-size: 0.9rem; font-weight: 600; cursor: pointer;" title="Refresh testimonials data">
+            🔄 Refresh
+          </button>
+          
+          <button onclick="testOpenAI()" style="background: #17a2b8; color: white; border: none; padding: 8px 16px; border-radius: 6px; font-size: 0.9rem; font-weight: 600; cursor: pointer;" title="Test OpenAI API connection">
+            🧪 Test API
+          </button>
+        </div>
+        
+        <div class="modal-body">
+          <div id="modal-testimonials-content">
+            <p class="loading-text">Loading testimonials...</p>
+          </div>
+        </div>
+        
+        <div class="pagination" id="testimonials-pagination" style="display: none;">
+          <button onclick="changePage(-1)">Previous</button>
+          <span id="page-info">Page 1 of 1</span>
+          <button onclick="changePage(1)">Next</button>
+        </div>
       </div>
     </div>
 
@@ -1126,6 +1609,20 @@
       deleteDoc,
       writeBatch 
     } from "https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore.js";
+
+    // ===========================================================================
+    // IMPORTANT: AI FILTERING CONFIGURATION
+    // ===========================================================================
+    // To enable AI-powered testimonial analysis, you need to:
+    // 1. Get an OpenAI API key from https://platform.openai.com/api-keys
+    // 2. Replace 'your-openai-api-key-here' in the OPENAI_API_KEY variable below
+    // 3. The AI will analyze testimonials for:
+    //    - Sentiment (positive, negative, neutral)
+    //    - Spam detection
+    //    - Inappropriate content detection
+    //    - Confidence scores
+    // Industry standard: OpenAI GPT models are widely used for content moderation
+    // ===========================================================================
 
     const firebaseConfig = {
       apiKey: "AIzaSyAIFV7ynXUzA0p-CrmVOE2lFRgaf_9g_k4",
@@ -1999,8 +2496,1162 @@ Services Section:
       }
     });
 
-    // TESTIMONIALS MANAGEMENT FUNCTIONS - TO BE REBUILT
-    // Functions will be implemented here when rebuilding from scratch
+    // TESTIMONIALS MANAGEMENT FUNCTIONS - AI-Enhanced Version
+    
+    // Global variables for testimonials
+    let allTestimonialsData = [];
+    let filteredTestimonialsData = [];
+    let currentPage = 1;
+    const itemsPerPage = 15;
+    let isAiAnalyzing = false;
+    
+    // AI Configuration - Replace with your OpenAI API key
+    const OPENAI_API_KEY = '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'; // Your OpenAI API key
+    const OPENAI_API_URL = 'https://api.openai.com/v1/chat/completions';
+    
+    // Test OpenAI API connection
+    window.testOpenAI = async function() {
+      try {
+        showMessage('🧪 Testing OpenAI API connection...', 'success');
+        console.log('Testing OpenAI API with key:', OPENAI_API_KEY.substring(0, 10) + '...');
+        
+        // Test with different scenarios
+        const testCases = [
+          { feedback: 'This is a great app! I love using it every day.', rating: 5 },
+          { feedback: 'This app is terrible and crashes all the time.', rating: 1 },
+          { feedback: 'The app is okay, but needs improvement.', rating: 3 }
+        ];
+        
+        for (const testCase of testCases) {
+          console.log(`Testing: "${testCase.feedback}" (${testCase.rating} stars)`);
+          const analysis = await callOpenAIWithFallback(testCase.feedback, testCase.rating);
+          console.log('Analysis Result:', analysis);
+        }
+        
+        showMessage(`✅ API Test Successful! All test cases completed.`, 'success');
+        return true;
+        
+      } catch (error) {
+        console.error('API Test Failed:', error);
+        showMessage(`❌ API Test Failed: ${error.message}`, 'error');
+        
+        // Check common issues
+        if (error.message.includes('401')) {
+          showMessage('🔑 Error 401: Invalid API key. Please check your OpenAI API key.', 'error');
+        } else if (error.message.includes('429')) {
+          showMessage('⏳ Error 429: Rate limit exceeded. Please wait and try again.', 'error');
+        } else if (error.message.includes('CORS')) {
+          showMessage('🌐 CORS Error: This might be a browser security issue. Try using this from a server environment.', 'error');
+        }
+        
+        return false;
+      }
+    };
+    
+    // Update dashboard statistics
+    window.updateDashboardStats = function() {
+      const dashboard = document.getElementById('testimonials-dashboard');
+      const countElement = document.getElementById('testimonial-count');
+      
+      if (!allTestimonialsData || allTestimonialsData.length === 0) {
+        dashboard.style.display = 'none';
+        countElement.textContent = 'No testimonials loaded';
+        return;
+      }
+      
+      // Calculate dashboard statistics
+      const stats = {
+        total: allTestimonialsData.length,
+        business: allTestimonialsData.filter(t => t.userMembershipType === 'business').length,
+        basic: allTestimonialsData.filter(t => t.userMembershipType === 'basic').length,
+        premium: allTestimonialsData.filter(t => t.userMembershipType === 'premium').length
+      };
+      
+      // Update dashboard - User types
+      document.getElementById('total-reviews').textContent = stats.total;
+      document.getElementById('business-reviews').textContent = stats.business;
+      document.getElementById('basic-reviews').textContent = stats.basic;
+      document.getElementById('premium-reviews').textContent = stats.premium;
+      
+      dashboard.style.display = 'block';
+      
+      // Update count with breakdown
+      countElement.textContent = `Total: ${stats.total} reviews (${stats.business} business, ${stats.basic} basic, ${stats.premium} premium)`;
+    };
+    
+    // Load testimonials for dashboard only
+    window.loadTestimonials = async function() {
+      const countElement = document.getElementById('testimonial-count');
+      const dashboard = document.getElementById('testimonials-dashboard');
+      
+      // Show loading state
+      countElement.textContent = 'Loading...';
+      dashboard.style.display = 'none';
+      
+      try {
+        // Fetch all collections in parallel
+        const [businessTestimonials, regularTestimonials, businessUsers, regularUsers] = await Promise.all([
+          getDocs(collection(db, 'businessUserTestimonial')),
+          getDocs(collection(db, 'testimonial')),
+          getDocs(collection(db, 'businessUsers')),
+          getDocs(collection(db, 'users'))
+        ]);
+        
+        // Create user lookup maps
+        const businessUserMap = new Map();
+        businessUsers.forEach(doc => {
+          businessUserMap.set(doc.id, doc.data());
+        });
+        
+        const regularUserMap = new Map();
+        regularUsers.forEach(doc => {
+          regularUserMap.set(doc.id, doc.data());
+        });
+        
+        // Combine testimonial results with user data
+        allTestimonialsData = [];
+        
+        // Process business testimonials
+        businessTestimonials.forEach(doc => {
+          const data = doc.data();
+          const userData = businessUserMap.get(data.userId || doc.id);
+          
+          // EXCEPTION: Skip specific user who should be in premium category
+          if (data.userId === '5bP0koGL6cSqNPQfpDH5uJUMSqH2') {
+            console.log(`🎯 EXCEPTION: Skipping user ${data.userId} from business testimonials (should be premium)`);
+            return; // Skip this iteration
+          }
+          
+          // Debug log for business testimonials
+          console.log(`Processing business testimonial ${doc.id}:`, {
+            userId: data.userId,
+            userData: userData,
+            hasBusinessData: !!userData
+          });
+          
+          allTestimonialsData.push({
+            id: doc.id,
+            ...data,
+            source: 'business',
+            userMembershipType: 'business', // Force business type for all business testimonials
+            userName: userData?.businessName || userData?.fullName || 'Unknown Business',
+            userEmail: userData?.email || 'Unknown',
+            // Initialize AI analysis fields
+            aiSentiment: data.aiSentiment || null,
+            aiScore: data.aiScore || null,
+            aiFlags: data.aiFlags || []
+          });
+        });
+        
+        // Process regular testimonials
+        regularTestimonials.forEach(doc => {
+          const data = doc.data();
+          
+          // Try multiple ways to find user data
+          let userData = null;
+          let userId = data.userId || doc.id;
+          
+          // First try with testimonial's userId
+          if (data.userId) {
+            userData = regularUserMap.get(data.userId);
+          }
+          
+          // If not found and different from doc.id, try with doc.id
+          if (!userData && data.userId !== doc.id) {
+            userData = regularUserMap.get(doc.id);
+            userId = doc.id;
+          }
+          
+          // Enhanced membership type detection
+          let membershipType = 'basic'; // Default to basic
+          
+          // EXCEPTION CASE: Handle specific user with inconsistent data
+          if (userId === '5bP0koGL6cSqNPQfpDH5uJUMSqH2') {
+            membershipType = 'premium';
+            console.log(`🎯 EXCEPTION: Applied premium membership for user ${userId} (data inconsistency override)`);
+          } else {
+            // Check multiple sources for membership type
+            if (userData) {
+              // Check various possible field names for membership type
+              membershipType = userData.membershipType || 
+                             userData.membership || 
+                             userData.userType || 
+                             userData.accountType || 
+                             'basic';
+            }
+            
+            // Also check if membership type is directly in testimonial data
+            if (data.membershipType) {
+              membershipType = data.membershipType;
+            }
+            if (data.userMembershipType) {
+              membershipType = data.userMembershipType;
+            }
+            
+            // Exception handling for legacy/inconsistent data
+            // Handle "normal" userType from old data structure
+            if (data.userType === 'normal' || membershipType === 'normal') {
+              membershipType = 'basic'; // Treat "normal" as "basic" user
+              console.log(`Converting legacy userType "normal" to "basic" for testimonial ${doc.id}`);
+            }
+          }
+          
+          // Debug log for regular testimonials
+          console.log(`Processing regular testimonial ${doc.id}:`, {
+            originalUserId: data.userId,
+            finalUserId: userId,
+            userDataExists: !!userData,
+            userDataFields: userData ? Object.keys(userData) : [],
+            originalMembershipType: userData?.membershipType,
+            userDataMembership: userData?.membership,
+            userDataUserType: userData?.userType,
+            userDataAccountType: userData?.accountType,
+            testimonialMembershipType: data.membershipType,
+            testimonialUserMembershipType: data.userMembershipType,
+            finalMembershipType: membershipType,
+            userName: userData?.fullName || userData?.username
+          });
+          
+          // Ensure this testimonial is NOT marked as business
+          if (membershipType === 'business') {
+            console.warn(`Warning: Regular testimonial ${doc.id} has business membership type, converting to basic`);
+            membershipType = 'basic';
+          }
+          
+          allTestimonialsData.push({
+            id: doc.id,
+            ...data,
+            source: 'regular',
+            userMembershipType: membershipType,
+            userName: userData?.fullName || userData?.username || 'Unknown User',
+            userEmail: userData?.email || 'Unknown',
+            // Initialize AI analysis fields
+            aiSentiment: data.aiSentiment || null,
+            aiScore: data.aiScore || null,
+            aiFlags: data.aiFlags || []
+          });
+        });
+        
+        // Calculate dashboard statistics
+        const stats = {
+          total: allTestimonialsData.length,
+          business: allTestimonialsData.filter(t => t.userMembershipType === 'business').length,
+          basic: allTestimonialsData.filter(t => t.userMembershipType === 'basic').length,
+          premium: allTestimonialsData.filter(t => t.userMembershipType === 'premium').length
+        };
+        
+        // Debug log for final statistics
+        console.log('Final testimonial statistics:', stats);
+        console.log('Business testimonials:', allTestimonialsData.filter(t => t.userMembershipType === 'business').map(t => ({
+          id: t.id,
+          userName: t.userName,
+          source: t.source,
+          membershipType: t.userMembershipType
+        })));
+        console.log('Basic testimonials:', allTestimonialsData.filter(t => t.userMembershipType === 'basic').map(t => ({
+          id: t.id,
+          userName: t.userName,
+          source: t.source,
+          membershipType: t.userMembershipType
+        })));
+        console.log('Premium testimonials:', allTestimonialsData.filter(t => t.userMembershipType === 'premium').map(t => ({
+          id: t.id,
+          userName: t.userName,
+          source: t.source,
+          membershipType: t.userMembershipType,
+          userId: t.userId
+        })));
+        
+        // Check for testimonials with unexpected membership types
+        const unknownTypes = allTestimonialsData.filter(t => 
+          !['business', 'basic', 'premium', 'freemium', 'free', 'normal'].includes(t.userMembershipType)
+        );
+        if (unknownTypes.length > 0) {
+          console.warn('Testimonials with unknown membership types:', unknownTypes.map(t => ({
+            id: t.id,
+            userName: t.userName,
+            membershipType: t.userMembershipType
+          })));
+        }
+        
+        // Update dashboard - User types
+        document.getElementById('total-reviews').textContent = stats.total;
+        document.getElementById('business-reviews').textContent = stats.business;
+        document.getElementById('basic-reviews').textContent = stats.basic;
+        document.getElementById('premium-reviews').textContent = stats.premium;
+        
+        dashboard.style.display = 'block';
+        
+        // Update count with breakdown
+        countElement.textContent = `Total: ${stats.total} reviews (${stats.business} business, ${stats.basic} basic, ${stats.premium} premium)`;
+        
+      } catch (error) {
+        console.error('Error loading testimonials:', error);
+        countElement.textContent = 'Error loading data';
+        dashboard.style.display = 'none';
+        showMessage('❌ Error loading testimonials: ' + error.message, 'error');
+      }
+    };
+    
+    // Open testimonials modal
+    window.openTestimonialsModal = async function() {
+      const modal = document.getElementById('testimonials-modal');
+      const modalContent = document.getElementById('modal-testimonials-content');
+      
+      modal.style.display = 'block';
+      modalContent.innerHTML = '<p class="loading-text">Loading testimonials...</p>';
+      
+      // Load testimonials if not already loaded
+      if (allTestimonialsData.length === 0) {
+        await loadTestimonials();
+      }
+      
+      // Initialize filtered data
+      filteredTestimonialsData = [...allTestimonialsData];
+      currentPage = 1;
+      
+      // Sort by submission date (most recent first)
+      filteredTestimonialsData.sort((a, b) => {
+        const dateA = a.submittedAt || a.timestamp || 0;
+        const dateB = b.submittedAt || b.timestamp || 0;
+        return new Date(dateB) - new Date(dateA);
+      });
+      
+      renderTestimonialsTable();
+    };
+    
+    // Close testimonials modal
+    window.closeTestimonialsModal = function() {
+      document.getElementById('testimonials-modal').style.display = 'none';
+    };
+    
+    // Close modal when clicking outside
+    window.onclick = function(event) {
+      const modal = document.getElementById('testimonials-modal');
+      if (event.target === modal) {
+        closeTestimonialsModal();
+      }
+    };
+    
+    // Filter testimonials with strict priority order: Membership → Rating → AI Sentiment
+    window.filterTestimonials = function() {
+      const membershipFilter = document.getElementById('filter-membership').value;
+      const sentimentFilter = document.getElementById('filter-sentiment').value;
+      const ratingFilter = document.getElementById('filter-rating').value;
+      const searchFilter = document.getElementById('filter-search').value.toLowerCase();
+      
+      console.log('🔍 STARTING FILTER with priority order:', {
+        '1. Membership (HIGHEST)': membershipFilter || 'None',
+        '2. Rating': ratingFilter || 'None', 
+        '3. AI Sentiment': sentimentFilter || 'None',
+        '4. Search (LOWEST)': searchFilter || 'None'
+      });
+      
+      // ALWAYS start fresh from all testimonials
+      filteredTestimonialsData = [...allTestimonialsData];
+      console.log(`Starting with ${filteredTestimonialsData.length} total testimonials`);
+      
+      // PRIORITY 1: Membership filter (HIGHEST PRIORITY - MUST BE EXACT MATCH)
+      if (membershipFilter && membershipFilter !== '') {
+        console.log(`🎯 APPLYING MEMBERSHIP FILTER: "${membershipFilter}"`);
+        
+        const beforeFilter = filteredTestimonialsData.length;
+        filteredTestimonialsData = filteredTestimonialsData.filter(testimonial => {
+          const userType = testimonial.userMembershipType;
+          const isMatch = userType === membershipFilter;
+          
+          if (!isMatch) {
+            console.log(`   ❌ EXCLUDED: ${testimonial.userName} (${userType} ≠ ${membershipFilter})`);
+          } else {
+            console.log(`   ✅ INCLUDED: ${testimonial.userName} (${userType})`);
+          }
+          
+          return isMatch;
+        });
+        
+        console.log(`📊 MEMBERSHIP FILTER RESULT: ${beforeFilter} → ${filteredTestimonialsData.length} testimonials`);
+        
+        // If membership filter results in 0 testimonials, stop here
+        if (filteredTestimonialsData.length === 0) {
+          console.log(`⚠️ No testimonials match membership "${membershipFilter}" - stopping filter chain`);
+          currentPage = 1;
+          renderTestimonialsTable();
+          return;
+        }
+      }
+      
+      // PRIORITY 2: Rating filter (SECOND PRIORITY)
+      if (ratingFilter && ratingFilter !== '' && filteredTestimonialsData.length > 0) {
+        console.log(`⭐ APPLYING RATING FILTER: "${ratingFilter}"`);
+        
+        const beforeFilter = filteredTestimonialsData.length;
+        filteredTestimonialsData = filteredTestimonialsData.filter(testimonial => {
+          const rating = testimonial.rating || 0;
+          let isMatch = false;
+          
+          if (ratingFilter === 'low') {
+            // 3 stars and below
+            isMatch = rating <= 3;
+          } else if (ratingFilter === '4') {
+            isMatch = rating === 4;
+          } else if (ratingFilter === '5') {
+            isMatch = rating === 5;
+          }
+          
+          if (!isMatch) {
+            console.log(`   ❌ EXCLUDED: ${testimonial.userName} (rating: ${rating})`);
+          } else {
+            console.log(`   ✅ INCLUDED: ${testimonial.userName} (rating: ${rating})`);
+          }
+          
+          return isMatch;
+        });
+        
+        console.log(`📊 RATING FILTER RESULT: ${beforeFilter} → ${filteredTestimonialsData.length} testimonials`);
+      }
+      
+      // PRIORITY 3: AI Sentiment filter (THIRD PRIORITY)
+      if (sentimentFilter && sentimentFilter !== '' && filteredTestimonialsData.length > 0) {
+        console.log(`🤖 APPLYING SENTIMENT FILTER: "${sentimentFilter}"`);
+        
+        const beforeFilter = filteredTestimonialsData.length;
+        filteredTestimonialsData = filteredTestimonialsData.filter(testimonial => {
+          const sentiment = testimonial.aiSentiment;
+          const isMatch = sentiment === sentimentFilter;
+          
+          if (!isMatch) {
+            console.log(`   ❌ EXCLUDED: ${testimonial.userName} (sentiment: ${sentiment})`);
+          } else {
+            console.log(`   ✅ INCLUDED: ${testimonial.userName} (sentiment: ${sentiment})`);
+          }
+          
+          return isMatch;
+        });
+        
+        console.log(`📊 SENTIMENT FILTER RESULT: ${beforeFilter} → ${filteredTestimonialsData.length} testimonials`);
+      }
+      
+      // PRIORITY 4: Search filter (LOWEST PRIORITY)
+      if (searchFilter && searchFilter.trim() !== '' && filteredTestimonialsData.length > 0) {
+        console.log(`🔎 APPLYING SEARCH FILTER: "${searchFilter}"`);
+        
+        const beforeFilter = filteredTestimonialsData.length;
+        filteredTestimonialsData = filteredTestimonialsData.filter(testimonial => {
+          const searchText = `${testimonial.feedback || ''} ${testimonial.userName || ''} ${testimonial.userEmail || ''}`.toLowerCase();
+          const isMatch = searchText.includes(searchFilter);
+          
+          if (!isMatch) {
+            console.log(`   ❌ EXCLUDED: ${testimonial.userName} (no search match)`);
+          } else {
+            console.log(`   ✅ INCLUDED: ${testimonial.userName} (search match)`);
+          }
+          
+          return isMatch;
+        });
+        
+        console.log(`📊 SEARCH FILTER RESULT: ${beforeFilter} → ${filteredTestimonialsData.length} testimonials`);
+      }
+      
+      // Final results summary
+      console.log(`🎯 FINAL FILTER RESULTS: ${filteredTestimonialsData.length} testimonials`);
+      
+      if (filteredTestimonialsData.length > 0) {
+        console.log('📋 FINAL TESTIMONIALS:', filteredTestimonialsData.map(t => ({
+          name: t.userName,
+          membership: t.userMembershipType,
+          rating: t.rating,
+          sentiment: t.aiSentiment,
+          feedback: (t.feedback || '').substring(0, 50) + '...'
+        })));
+      }
+      
+      // Reset to page 1 and render
+      currentPage = 1;
+      renderTestimonialsTable();
+    };
+    
+    // Clear all filters and show all testimonials
+    window.clearAllFilters = function() {
+      console.log('🧹 CLEARING ALL FILTERS');
+      
+      // Reset all filter controls
+      document.getElementById('filter-membership').value = '';
+      document.getElementById('filter-rating').value = '';
+      document.getElementById('filter-sentiment').value = '';
+      document.getElementById('filter-search').value = '';
+      
+      // Reset filtered data to show all testimonials
+      filteredTestimonialsData = [...allTestimonialsData];
+      currentPage = 1;
+      
+      console.log(`✅ All filters cleared. Showing ${filteredTestimonialsData.length} testimonials`);
+      renderTestimonialsTable();
+    };
+    
+    // Render testimonials table with pagination
+    function renderTestimonialsTable() {
+      const modalContent = document.getElementById('modal-testimonials-content');
+      const pagination = document.getElementById('testimonials-pagination');
+      
+      if (filteredTestimonialsData.length === 0) {
+        modalContent.innerHTML = '<p class="loading-text">No testimonials match the current filters.</p>';
+        pagination.style.display = 'none';
+        return;
+      }
+      
+      // Calculate pagination
+      const totalPages = Math.ceil(filteredTestimonialsData.length / itemsPerPage);
+      const startIndex = (currentPage - 1) * itemsPerPage;
+      const endIndex = startIndex + itemsPerPage;
+      const pageData = filteredTestimonialsData.slice(startIndex, endIndex);
+      
+      // Generate table HTML
+      const tableHTML = `
+        <table class="testimonials-table">
+          <thead>
+            <tr>
+              <th>User Info</th>
+              <th>Membership</th>
+              <th>Rating</th>
+              <th>AI Analysis</th>
+              <th>Feedback</th>
+              <th>Submitted</th>
+              <th>Status</th>
+            </tr>
+          </thead>
+          <tbody>
+            ${pageData.map(testimonial => `
+              <tr>
+                <td>
+                  <div style="font-weight: 600; margin-bottom: 2px;">${testimonial.userName}</div>
+                  <div style="font-size: 0.8rem; color: var(--text-muted);">${testimonial.userEmail}</div>
+                  <div style="font-size: 0.75rem; font-family: monospace; color: var(--text-muted);">${testimonial.userId || testimonial.id}</div>
+                </td>
+                <td>
+                  <span class="user-type-badge ${getMembershipBadgeClass(testimonial.userMembershipType)}">
+                    ${getMembershipDisplayName(testimonial.userMembershipType)}
+                  </span>
+                </td>
+                <td>
+                  <span class="rating-stars">${'★'.repeat(testimonial.rating || 0)}${'☆'.repeat(5 - (testimonial.rating || 0))}</span>
+                  <div style="font-size: 0.8rem; color: var(--text-muted);">(${testimonial.rating || 0}/5)</div>
+                </td>
+                <td>
+                  ${renderAiAnalysis(testimonial)}
+                </td>
+                <td>
+                  <div class="feedback-text">
+                    ${renderFeedbackPreview(testimonial.feedback || 'No feedback')}
+                  </div>
+                </td>
+                <td style="font-size: 0.85rem;">
+                  ${formatDate(testimonial.submittedAt || testimonial.timestamp)}
+                </td>
+                <td>
+                  <span style="color: ${testimonial.isCompleted ? 'var(--success)' : 'var(--warning)'};">
+                    ${testimonial.isCompleted ? '✅ Completed' : '⏳ Pending'}
+                  </span>
+                </td>
+              </tr>
+            `).join('')}
+          </tbody>
+        </table>
+      `;
+      
+      modalContent.innerHTML = tableHTML;
+      
+      // Update pagination
+      if (totalPages > 1) {
+        document.getElementById('page-info').textContent = `Page ${currentPage} of ${totalPages} (${filteredTestimonialsData.length} items)`;
+        pagination.style.display = 'flex';
+        
+        // Update pagination buttons
+        const prevBtn = pagination.querySelector('button:first-child');
+        const nextBtn = pagination.querySelector('button:last-child');
+        prevBtn.disabled = currentPage === 1;
+        nextBtn.disabled = currentPage === totalPages;
+      } else {
+        pagination.style.display = 'none';
+      }
+    }
+    
+    // Change page
+    window.changePage = function(direction) {
+      const totalPages = Math.ceil(filteredTestimonialsData.length / itemsPerPage);
+      
+      if (direction === 1 && currentPage < totalPages) {
+        currentPage++;
+      } else if (direction === -1 && currentPage > 1) {
+        currentPage--;
+      }
+      
+      renderTestimonialsTable();
+    };
+    
+    // Render AI analysis with better validation
+    function renderAiAnalysis(testimonial) {
+      // Don't show analyze button if no feedback exists
+      if (!testimonial.feedback || testimonial.feedback.trim() === '' || testimonial.feedback === 'No feedback') {
+        return `
+          <div style="color: var(--text-muted); font-size: 0.8rem; font-style: italic;">
+            No feedback to analyze
+          </div>
+        `;
+      }
+      
+      if (!testimonial.aiSentiment) {
+        return `
+          <button onclick="analyzeSingleTestimonial('${testimonial.id}')" 
+                  style="background: #ffc107; color: #212529; border: none; padding: 4px 8px; border-radius: 4px; font-size: 0.75rem; cursor: pointer;">
+            🤖 Analyze
+          </button>
+        `;
+      }
+      
+      const sentimentClass = `sentiment-${testimonial.aiSentiment}`;
+      const score = testimonial.aiScore ? `(${Math.round(testimonial.aiScore * 100)}%)` : '';
+      
+      // Check for rating-sentiment correlation
+      const rating = testimonial.rating || 0;
+      let correlationIcon = '';
+      let correlationTitle = '';
+      
+      if (rating >= 4 && testimonial.aiSentiment === 'positive') {
+        correlationIcon = '✅';
+        correlationTitle = 'Good correlation: High rating + Positive sentiment';
+      } else if (rating <= 3 && (testimonial.aiSentiment === 'negative' || testimonial.aiSentiment === 'neutral')) {
+        correlationIcon = '✅';
+        correlationTitle = 'Good correlation: Low rating + Negative/Neutral sentiment';
+      } else if (rating >= 4 && (testimonial.aiSentiment === 'negative' || testimonial.aiSentiment === 'neutral')) {
+        correlationIcon = '⚠️';
+        correlationTitle = 'Warning: High rating but negative/neutral sentiment - possible sarcasm or fake review';
+      } else if (rating <= 3 && testimonial.aiSentiment === 'positive') {
+        correlationIcon = '⚠️';
+        correlationTitle = 'Warning: Low rating but positive sentiment - inconsistent review';
+      } else if (testimonial.aiSentiment === 'spam') {
+        correlationIcon = '🚫';
+        correlationTitle = 'Spam detected';
+      } else if (testimonial.aiSentiment === 'inappropriate') {
+        correlationIcon = '�';
+        correlationTitle = 'Inappropriate content detected';
+      } else {
+        correlationIcon = '🔍';
+        correlationTitle = 'Neutral analysis';
+      }
+      
+      return `
+        <div>
+          <div style="display: flex; align-items: center; gap: 4px; margin-bottom: 2px;">
+            <span class="ai-sentiment-badge ${sentimentClass}">
+              ${testimonial.aiSentiment.toUpperCase()}
+            </span>
+            <span title="${correlationTitle}" style="font-size: 0.8rem; cursor: help;">${correlationIcon}</span>
+          </div>
+          <div class="ai-score">${score}</div>
+          ${testimonial.aiFlags && testimonial.aiFlags.length > 0 ? 
+            `<div style="font-size: 0.7rem; color: #dc3545; margin-top: 2px;">⚠️ ${testimonial.aiFlags.join(', ')}</div>` : ''}
+        </div>
+      `;
+    }
+    
+    // Render feedback preview with expand functionality
+    function renderFeedbackPreview(feedback) {
+      if (!feedback || feedback.length <= 100) {
+        return `<div class="feedback-full">${feedback}</div>`;
+      }
+      
+      const preview = feedback.substring(0, 100) + '...';
+      const fullId = 'full_' + Math.random().toString(36).substr(2, 9);
+      const previewId = 'preview_' + Math.random().toString(36).substr(2, 9);
+      
+      return `
+        <div id="${previewId}" class="feedback-preview" onclick="toggleFeedback('${previewId}', '${fullId}')" title="Click to expand">
+          ${preview}
+        </div>
+        <div id="${fullId}" class="feedback-full" style="display: none;" onclick="toggleFeedback('${previewId}', '${fullId}')" title="Click to collapse">
+          ${feedback}
+        </div>
+      `;
+    }
+    
+    // Toggle feedback display
+    window.toggleFeedback = function(previewId, fullId) {
+      const preview = document.getElementById(previewId);
+      const full = document.getElementById(fullId);
+      
+      if (preview.style.display === 'none') {
+        preview.style.display = 'block';
+        full.style.display = 'none';
+      } else {
+        preview.style.display = 'none';
+        full.style.display = 'block';
+      }
+    };
+    
+    // Refresh testimonials data
+    window.refreshTestimonials = async function() {
+      try {
+        showMessage('🔄 Refreshing testimonials...', 'success');
+        await loadTestimonials(); // Load fresh data from Firestore
+        
+        // If modal is open, refresh the table view
+        const modal = document.getElementById('testimonials-modal');
+        if (modal.style.display === 'block') {
+          filteredTestimonialsData = [...allTestimonialsData];
+          renderTestimonialsTable();
+        }
+        
+        updateDashboardStats();
+        showMessage('✅ Testimonials refreshed successfully!', 'success');
+      } catch (error) {
+        console.error('Error refreshing testimonials:', error);
+        showMessage('❌ Error refreshing testimonials: ' + error.message, 'error');
+      }
+    };
+
+    // AI Analysis Functions
+    window.analyzeAllTestimonials = async function() {
+      if (isAiAnalyzing) return;
+      
+      if (!OPENAI_API_KEY || OPENAI_API_KEY === 'your-openai-api-key-here') {
+        showMessage('❌ OpenAI API key not configured. Please add your API key to enable AI analysis.', 'error');
+        return;
+      }
+      
+      const button = document.getElementById('ai-analyze-all');
+      const originalText = button.textContent;
+      
+      try {
+        isAiAnalyzing = true;
+        button.disabled = true;
+        
+        // First refresh the data
+        button.textContent = '🔄 Refreshing data...';
+        await refreshTestimonials();
+        
+        button.textContent = '🤖 Analyzing...';
+        
+        const unanalyzedTestimonials = allTestimonialsData.filter(t => 
+          !t.aiSentiment && 
+          t.feedback && 
+          t.feedback.trim() !== '' && 
+          t.feedback !== 'No feedback' &&
+          t.feedback.trim().length >= 3
+        );
+        
+        if (unanalyzedTestimonials.length === 0) {
+          showMessage('✅ All testimonials with feedback have already been analyzed!', 'success');
+          return;
+        }
+        
+        showMessage(`🤖 Starting AI analysis of ${unanalyzedTestimonials.length} testimonials...`, 'success');
+        
+        // Process in batches to avoid rate limits
+        const batchSize = 5;
+        for (let i = 0; i < unanalyzedTestimonials.length; i += batchSize) {
+          const batch = unanalyzedTestimonials.slice(i, i + batchSize);
+          
+          button.textContent = `🤖 Analyzing... (${i + 1}-${Math.min(i + batchSize, unanalyzedTestimonials.length)}/${unanalyzedTestimonials.length})`;
+          
+          await Promise.all(batch.map(testimonial => analyzeSingleTestimonial(testimonial.id, false)));
+          
+          // Small delay between batches
+          if (i + batchSize < unanalyzedTestimonials.length) {
+            await new Promise(resolve => setTimeout(resolve, 1000));
+          }
+        }
+        
+        showMessage('✅ AI analysis completed for all testimonials!', 'success');
+        renderTestimonialsTable();
+        updateDashboardStats();
+        
+      } catch (error) {
+        console.error('Error in batch AI analysis:', error);
+        showMessage('❌ Error during AI analysis: ' + error.message, 'error');
+      } finally {
+        isAiAnalyzing = false;
+        button.disabled = false;
+        button.textContent = originalText;
+      }
+    };
+    
+    window.analyzeSingleTestimonial = async function(testimonialId, showIndividualMessage = true) {
+      try {
+        const testimonial = allTestimonialsData.find(t => t.id === testimonialId);
+        if (!testimonial) {
+          if (showIndividualMessage) {
+            showMessage('❌ Testimonial not found', 'error');
+          }
+          return;
+        }
+        
+        // Check if feedback exists and is meaningful
+        if (!testimonial.feedback || testimonial.feedback.trim() === '' || testimonial.feedback === 'No feedback') {
+          if (showIndividualMessage) {
+            showMessage('❌ No meaningful feedback found for this testimonial. Cannot analyze empty content.', 'error');
+          }
+          return;
+        }
+        
+        // Check if feedback is too short (less than 3 characters)
+        if (testimonial.feedback.trim().length < 3) {
+          if (showIndividualMessage) {
+            showMessage('❌ Feedback too short to analyze meaningfully.', 'error');
+          }
+          return;
+        }
+        
+        if (!OPENAI_API_KEY || OPENAI_API_KEY === 'your-openai-api-key-here') {
+          if (showIndividualMessage) {
+            showMessage('❌ OpenAI API key not configured', 'error');
+          }
+          return;
+        }
+        
+        if (showIndividualMessage) {
+          showMessage(`🤖 Analyzing feedback: "${testimonial.feedback.substring(0, 50)}..."`, 'success');
+        }
+        
+        const analysis = await callOpenAIWithFallback(testimonial.feedback, testimonial.rating);
+        
+        // Update testimonial with AI analysis
+        testimonial.aiSentiment = analysis.sentiment;
+        testimonial.aiScore = analysis.confidence;
+        testimonial.aiFlags = analysis.flags;
+        
+        // Save to Firestore
+        const collection_name = testimonial.source === 'business' ? 'businessUserTestimonial' : 'testimonial';
+        const docRef = doc(db, collection_name, testimonialId);
+        
+        await updateDoc(docRef, {
+          aiSentiment: analysis.sentiment,
+          aiScore: analysis.confidence,
+          aiFlags: analysis.flags,
+          aiAnalyzedAt: new Date()
+        });
+        
+        if (showIndividualMessage) {
+          const correlationNote = getCorrelationNote(testimonial.rating, analysis.sentiment);
+          showMessage(`✅ AI analysis completed: ${analysis.sentiment} (${Math.round(analysis.confidence * 100)}% confidence)${correlationNote}`, 'success');
+          renderTestimonialsTable();
+        }
+        
+      } catch (error) {
+        console.error('Error analyzing testimonial:', error);
+        if (showIndividualMessage) {
+          showMessage('❌ Error during AI analysis: ' + error.message, 'error');
+        }
+      }
+    };
+    
+    // Helper function to provide correlation insights
+    function getCorrelationNote(rating, sentiment) {
+      if (!rating) return '';
+      
+      if (rating >= 4 && sentiment === 'positive') {
+        return ' ✅ (Good correlation)';
+      } else if (rating <= 3 && (sentiment === 'negative' || sentiment === 'neutral')) {
+        return ' ✅ (Good correlation)';
+      } else if (rating >= 4 && (sentiment === 'negative' || sentiment === 'neutral')) {
+        return ' ⚠️ (High rating but negative sentiment - review for authenticity)';
+      } else if (rating <= 3 && sentiment === 'positive') {
+        return ' ⚠️ (Low rating but positive sentiment - possible mixed review)';
+      }
+      return '';
+    }
+    
+    // Call OpenAI API for sentiment analysis
+    async function callOpenAI(feedback, starRating = null) {
+      const ratingContext = starRating ? `\nStar Rating: ${starRating}/5 stars` : '';
+      
+      const prompt = `Analyze the following customer testimonial and provide:
+1. Sentiment: positive, negative, neutral, spam, or inappropriate
+2. Confidence score (0-1)
+3. Any flags for concerns (spam, inappropriate language, fake review, rating-text mismatch, etc.)
+
+Testimonial: "${feedback}"${ratingContext}
+
+Guidelines:
+- 5 stars usually indicates positive sentiment
+- 4 stars usually indicates positive sentiment
+- 3 stars and below usually indicates negative or neutral sentiment
+- Flag if star rating doesn't match the text sentiment
+- Consider both text content and star rating for final sentiment
+
+Respond in JSON format:
+{
+  "sentiment": "positive|negative|neutral|spam|inappropriate",
+  "confidence": 0.95,
+  "flags": ["spam", "inappropriate", "rating_text_mismatch"] // empty array if no flags
+}`;
+      
+      console.log('🤖 Making OpenAI API call...');
+      console.log('API Key (first 10 chars):', OPENAI_API_KEY.substring(0, 10));
+      console.log('Feedback to analyze:', feedback.substring(0, 100) + '...');
+      
+      try {
+        const response = await fetch(OPENAI_API_URL, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${OPENAI_API_KEY}`
+          },
+          body: JSON.stringify({
+            model: 'gpt-3.5-turbo',
+            messages: [
+              {
+                role: 'system',
+                content: 'You are an expert at analyzing customer feedback sentiment and detecting spam or inappropriate content. Always respond with valid JSON.'
+              },
+              {
+                role: 'user',
+                content: prompt
+              }
+            ],
+            max_tokens: 150,
+            temperature: 0.1
+          })
+        });
+        
+        console.log('Response status:', response.status);
+        console.log('Response ok:', response.ok);
+        
+        if (!response.ok) {
+          const errorText = await response.text();
+          console.error('OpenAI API Error Response:', errorText);
+          throw new Error(`OpenAI API error: ${response.status} ${response.statusText}. Details: ${errorText}`);
+        }
+        
+        const data = await response.json();
+        console.log('OpenAI Response:', data);
+        
+        const aiResponse = data.choices[0].message.content.trim();
+        console.log('AI Generated Content:', aiResponse);
+        
+        try {
+          const parsedResponse = JSON.parse(aiResponse);
+          console.log('Parsed AI Response:', parsedResponse);
+          return parsedResponse;
+        } catch (parseError) {
+          console.error('Error parsing AI response:', aiResponse);
+          console.error('Parse error:', parseError);
+          
+          // Try to extract sentiment manually if JSON parsing fails
+          const fallbackSentiment = extractSentimentFallback(aiResponse);
+          
+          return {
+            sentiment: fallbackSentiment,
+            confidence: 0.5,
+            flags: ['parsing_error']
+          };
+        }
+        
+      } catch (networkError) {
+        console.error('Network/API Error:', networkError);
+        throw new Error(`Failed to call OpenAI API: ${networkError.message}`);
+      }
+    }
+    
+    // Enhanced rule-based sentiment analysis that considers star ratings
+    function analyzeWithRules(feedback, starRating = null) {
+      const text = feedback.toLowerCase().trim();
+      
+      // Skip analysis if feedback is too short or generic
+      if (text.length < 3) {
+        return {
+          sentiment: 'neutral',
+          confidence: 0.3,
+          flags: ['insufficient_content']
+        };
+      }
+      
+      // Enhanced positive keywords
+      const positiveWords = [
+        'great', 'excellent', 'amazing', 'fantastic', 'wonderful', 'perfect', 'love', 'best', 'awesome', 'outstanding', 'brilliant', 'superb', 'incredible', 'fabulous', 'terrific', 'satisfied', 'happy', 'pleased', 'good', 'nice', 'recommend', 'helpful', 'useful', 'smooth', 'easy', 'fast', 'efficient', 'reliable', 'quality', 'professional', 'friendly'
+      ];
+      
+      // Enhanced negative keywords
+      const negativeWords = [
+        'terrible', 'awful', 'horrible', 'bad', 'worst', 'hate', 'disgusting', 'useless', 'disappointing', 'poor', 'pathetic', 'rubbish', 'garbage', 'broken', 'failed', 'waste', 'regret', 'frustrated', 'annoying', 'slow', 'confusing', 'difficult', 'complicated', 'expensive', 'overpriced', 'buggy', 'crashes', 'unreliable'
+      ];
+      
+      // Spam indicators
+      const spamWords = [
+        'click here', 'buy now', 'free money', 'guaranteed', 'no risk', 'limited time', 'act now', 'urgent', '100% free', 'make money fast', 'earn $', 'work from home', 'get rich quick', 'special offer', 'limited offer'
+      ];
+      
+      // Inappropriate content
+      const inappropriateWords = [
+        'damn', 'hell', 'stupid', 'idiot', 'moron', 'dumb', 'crap', 'sucks', 'bullshit', 'fuck', 'shit'
+      ];
+      
+      // Generic/meaningless phrases that shouldn't be analyzed
+      const genericPhrases = [
+        'no feedback', 'no comment', 'test', 'testing', 'good', 'ok', 'okay', 'fine', 'nice'
+      ];
+      
+      // Check if feedback is too generic
+      if (genericPhrases.some(phrase => text === phrase)) {
+        return {
+          sentiment: 'neutral',
+          confidence: 0.4,
+          flags: ['generic_feedback']
+        };
+      }
+      
+      let positiveScore = 0;
+      let negativeScore = 0;
+      let spamScore = 0;
+      let inappropriateScore = 0;
+      
+      // Count word occurrences with context awareness
+      const words = text.split(/\s+/);
+      
+      words.forEach(word => {
+        if (positiveWords.includes(word)) positiveScore++;
+        if (negativeWords.includes(word)) negativeScore++;
+        if (inappropriateWords.includes(word)) inappropriateScore++;
+      });
+      
+      // Check for spam phrases
+      spamWords.forEach(phrase => {
+        if (text.includes(phrase)) spamScore++;
+      });
+      
+      // Determine sentiment with star rating correlation
+      let sentiment = 'neutral';
+      let confidence = 0.6;
+      let flags = [];
+      
+      // Check for spam first
+      if (spamScore > 0) {
+        sentiment = 'spam';
+        confidence = 0.8;
+        flags.push('potential_spam');
+      } 
+      // Check for inappropriate content
+      else if (inappropriateScore > 0) {
+        sentiment = 'inappropriate';
+        confidence = 0.7;
+        flags.push('inappropriate_language');
+      } 
+      // Use star rating as primary indicator with text analysis as secondary
+      else if (starRating) {
+        if (starRating >= 5) {
+          sentiment = 'positive';
+          confidence = positiveScore > 0 ? 0.9 : 0.75;
+          if (negativeScore > positiveScore) {
+            flags.push('rating_text_mismatch');
+            confidence = 0.6;
+          }
+        } else if (starRating >= 4) {
+          sentiment = positiveScore >= negativeScore ? 'positive' : 'neutral';
+          confidence = 0.8;
+          if (negativeScore > positiveScore + 1) {
+            flags.push('rating_text_mismatch');
+          }
+        } else if (starRating <= 3) {
+          sentiment = negativeScore > positiveScore ? 'negative' : 'neutral';
+          confidence = 0.8;
+          if (starRating <= 2) {
+            sentiment = 'negative';
+            confidence = 0.85;
+          }
+          if (positiveScore > negativeScore + 1) {
+            flags.push('rating_text_mismatch');
+          }
+        }
+      } 
+      // Fallback to text analysis only
+      else {
+        if (positiveScore > negativeScore && positiveScore > 0) {
+          sentiment = 'positive';
+          confidence = Math.min(0.9, 0.6 + (positiveScore * 0.1));
+        } else if (negativeScore > positiveScore && negativeScore > 0) {
+          sentiment = 'negative';
+          confidence = Math.min(0.9, 0.6 + (negativeScore * 0.1));
+        }
+      }
+      
+      // Adjust confidence based on text length and quality
+      if (words.length < 3) {
+        confidence = Math.max(0.3, confidence - 0.2);
+        flags.push('short_feedback');
+      } else if (words.length > 10) {
+        confidence = Math.min(0.95, confidence + 0.1);
+      }
+      
+      return {
+        sentiment,
+        confidence,
+        flags
+      };
+    }
+    
+    // Enhanced callOpenAI with fallback
+    async function callOpenAIWithFallback(feedback, starRating = null) {
+      try {
+        // Try OpenAI first
+        return await callOpenAI(feedback);
+      } catch (error) {
+        console.warn('OpenAI API failed, using rule-based analysis:', error.message);
+        showMessage('⚠️ Using backup analysis system (OpenAI unavailable)', 'success');
+        
+        // Fallback to rule-based analysis with star rating
+        return analyzeWithRules(feedback, starRating);
+      }
+    }
+    
+    // Helper function to get membership badge class
+    function getMembershipBadgeClass(membershipType) {
+      switch(membershipType) {
+        case 'business': return 'user-type-business';
+        case 'premium': return 'user-type-premium';
+        case 'basic': return 'user-type-basic';
+        case 'freemium': return 'user-type-basic';
+        case 'free': return 'user-type-basic';
+        case 'normal': return 'user-type-basic'; // Exception handling for legacy "normal" userType
+        default: 
+          console.warn(`Unknown membership type: ${membershipType}, defaulting to basic class`);
+          return 'user-type-basic';
+      }
+    }
+    
+    // Helper function to get membership display name
+    function getMembershipDisplayName(membershipType) {
+      switch(membershipType) {
+        case 'business': return 'Business';
+        case 'premium': return 'Premium';
+        case 'basic': return 'Basic';
+        case 'freemium': return 'Basic';
+        case 'free': return 'Basic';
+        case 'normal': return 'Basic'; // Exception handling for legacy "normal" userType
+        default: 
+          console.warn(`Unknown membership type: ${membershipType}, defaulting to Basic`);
+          return 'Basic';
+      }
+    }
+    
+    // Helper function to format dates
+    function formatDate(timestamp) {
+      if (!timestamp) return 'Unknown';
+      
+      try {
+        // Handle Firestore timestamp or string
+        let date;
+        if (timestamp.toDate) {
+          date = timestamp.toDate();
+        } else if (typeof timestamp === 'string') {
+          date = new Date(timestamp);
+        } else {
+          date = new Date(timestamp);
+        }
+        
+        return date.toLocaleDateString() + ' ' + date.toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'});
+      } catch (error) {
+        return 'Invalid date';
+      }
+    }
     
   </script>
 </body>

@@ -751,6 +751,24 @@
       border: 1px solid var(--primary-orange);
     }
 
+    /* Loading animation for testimonials */
+    .loading-dots {
+      color: var(--text-gray);
+      font-style: italic;
+    }
+    
+    .loading-dots::after {
+      content: '';
+      animation: dots 1.5s infinite;
+    }
+    
+    @keyframes dots {
+      0%, 20% { content: ''; }
+      40% { content: '.'; }
+      60% { content: '..'; }
+      80%, 100% { content: '...'; }
+    }
+
     /* FOOTER */
     footer {
       background: var(--card-bg);
@@ -1587,23 +1605,32 @@
       <div class="section-header">
         <h2 class="section-title">What Our Users Say</h2>
         <p class="section-subtitle">Real stories from real people who transformed their lives</p>
+        <p style="font-size: 0.9rem; color: var(--text-gray); margin-top: 1rem;">
+          🤖 AI-curated testimonials showing only positive feedback with 4+ star ratings
+        </p>
       </div>
       <div class="testimonials-grid">
         <div class="testimonial-item freemium scroll-reveal">
           <div class="testimonial-user-type freemium">Free User</div>
-          <p class="testimonial-quote" id="testimonial-text-freemium">Loading testimonials...</p>
+          <p class="testimonial-quote" id="testimonial-text-freemium">
+            <span class="loading-dots">Loading testimonials</span>
+          </p>
           <div class="testimonial-rating" id="testimonial-rating-freemium"></div>
           <div class="testimonial-author" id="testimonial-author-freemium"></div>
         </div>
         <div class="testimonial-item premium scroll-reveal">
           <div class="testimonial-user-type premium">Premium User</div>
-          <p class="testimonial-quote" id="testimonial-text-premium">Loading testimonials...</p>
+          <p class="testimonial-quote" id="testimonial-text-premium">
+            <span class="loading-dots">Loading testimonials</span>
+          </p>
           <div class="testimonial-rating" id="testimonial-rating-premium"></div>
           <div class="testimonial-author" id="testimonial-author-premium"></div>
         </div>
         <div class="testimonial-item business scroll-reveal">
           <div class="testimonial-user-type business">Business User</div>
-          <p class="testimonial-quote" id="testimonial-text-business">Loading testimonials...</p>
+          <p class="testimonial-quote" id="testimonial-text-business">
+            <span class="loading-dots">Loading testimonials</span>
+          </p>
           <div class="testimonial-rating" id="testimonial-rating-business"></div>
           <div class="testimonial-author" id="testimonial-author-business"></div>
         </div>
@@ -1841,9 +1868,9 @@
       const ratingElement = document.getElementById(`testimonial-rating-${type}`);
       const authorElement = document.getElementById(`testimonial-author-${type}`);
       
-      if (textElement) textElement.textContent = `"${t.text}"`;
-      if (ratingElement) ratingElement.textContent = showStars(t.rating);
-      if (authorElement) authorElement.textContent = `- ${t.author}`;
+      if (textElement) textElement.textContent = `"${t.feedback || t.text}"`;
+      if (ratingElement) ratingElement.textContent = showStars(t.rating || t.starRating);
+      if (authorElement) authorElement.textContent = `- ${t.userName || t.author}`;
     }
 
     function rotateTestimonials() {
@@ -1866,70 +1893,137 @@
       }
     }
 
-    // Load testimonials by user type
-    function loadTestimonialsByType() {
-      // Load freemium user testimonials
-      testimonialsRef.where("userType", "==", "freemium").where("rating", ">=", 4).get()
-        .then(snapshot => {
-          snapshot.forEach(doc => {
-            freemiumTestimonials.push(doc.data());
+    // Enhanced testimonials loading with AI filtering
+    async function loadTestimonialsByType() {
+      try {
+        console.log('Loading AI-filtered testimonials...');
+        
+        // Load all testimonials first
+        const allTestimonialsSnapshot = await testimonialsRef.get();
+        const allTestimonials = [];
+        
+        allTestimonialsSnapshot.forEach(doc => {
+          const data = doc.data();
+          console.log('Raw testimonial data:', doc.id, data); // Debug log
+          allTestimonials.push({
+            id: doc.id,
+            ...data
           });
-          if (freemiumTestimonials.length > 0) {
-            showTestimonial('freemium', freemiumTestimonials, 0);
-          } else {
-            document.getElementById('testimonial-text-freemium').textContent = "Great app for getting started with fitness!";
-            document.getElementById('testimonial-rating-freemium').textContent = showStars(5);
-            document.getElementById('testimonial-author-freemium').textContent = "- Free User";
-          }
-        })
-        .catch(error => {
-          console.error("Error fetching freemium testimonials:", error);
-          document.getElementById('testimonial-text-freemium').textContent = "Amazing free features to kickstart my fitness journey!";
+        });
+        
+        console.log(`Loaded ${allTestimonials.length} total testimonials`);
+        
+        // Debug: Show first few testimonials structure
+        if (allTestimonials.length > 0) {
+          console.log('Sample testimonial structure:', allTestimonials[0]);
+          console.log('Available fields:', Object.keys(allTestimonials[0]));
+        }
+        
+        // Filter testimonials by AI criteria and user type
+        function filterTestimonials(userType) {
+          return allTestimonials.filter(testimonial => {
+            // Check user membership type
+            let membershipType = testimonial.userMembershipType || testimonial.userType;
+            
+            // Exception handling for legacy "normal" userType
+            if (membershipType === 'normal') {
+              membershipType = 'basic'; // Treat "normal" as "basic" user
+              console.log(`Converting legacy userType "normal" to "basic" for testimonial ${testimonial.id}`);
+            }
+            
+            let matchesUserType = false;
+            
+            if (userType === 'freemium') {
+              matchesUserType = membershipType === 'basic' || membershipType === 'freemium' || membershipType === 'free' || membershipType === 'normal';
+            } else if (userType === 'premium') {
+              matchesUserType = membershipType === 'premium';
+            } else if (userType === 'business') {
+              matchesUserType = membershipType === 'business';
+            }
+            
+            // Check rating (4+ stars)
+            const rating = testimonial.rating || testimonial.starRating;
+            const hasGoodRating = rating && rating >= 4;
+            
+            // Check AI sentiment (positive only)
+            const hasPositiveSentiment = testimonial.aiSentiment === 'positive' || 
+                                       (!testimonial.aiSentiment && hasGoodRating); // Fallback for unanalyzed
+            
+            // Check if feedback exists and is meaningful
+            const hasFeedback = testimonial.feedback && 
+                              testimonial.feedback.trim() !== '' && 
+                              testimonial.feedback !== 'No feedback' &&
+                              testimonial.feedback.trim().length > 10;
+            
+            // Check for inappropriate flags
+            const isClean = !testimonial.aiSentiment || 
+                           (testimonial.aiSentiment !== 'spam' && 
+                            testimonial.aiSentiment !== 'inappropriate');
+            
+            return matchesUserType && hasGoodRating && hasPositiveSentiment && hasFeedback && isClean;
+          });
+        }
+        
+        // Load freemium/basic user testimonials
+        freemiumTestimonials = filterTestimonials('freemium');
+        console.log(`Filtered freemium testimonials: ${freemiumTestimonials.length}`);
+        
+        if (freemiumTestimonials.length > 0) {
+          showTestimonial('freemium', freemiumTestimonials, 0);
+        } else {
+          console.log('⚠️ No freemium testimonials found, using fallback');
+          // Fallback to default content
+          document.getElementById('testimonial-text-freemium').textContent = "Great app for getting started with fitness! The free features are amazing.";
           document.getElementById('testimonial-rating-freemium').textContent = showStars(5);
-          document.getElementById('testimonial-author-freemium').textContent = "- Sarah M.";
-        });
+          document.getElementById('testimonial-author-freemium').textContent = "- Free User (Demo)";
+        }
 
-      // Load premium user testimonials
-      testimonialsRef.where("userType", "==", "premium").where("rating", ">=", 4).get()
-        .then(snapshot => {
-          snapshot.forEach(doc => {
-            premiumTestimonials.push(doc.data());
-          });
-          if (premiumTestimonials.length > 0) {
-            showTestimonial('premium', premiumTestimonials, 0);
-          } else {
-            document.getElementById('testimonial-text-premium').textContent = "The premium features transformed my workout routine completely!";
-            document.getElementById('testimonial-rating-premium').textContent = showStars(5);
-            document.getElementById('testimonial-author-premium').textContent = "- Premium User";
-          }
-        })
-        .catch(error => {
-          console.error("Error fetching premium testimonials:", error);
-          document.getElementById('testimonial-text-premium').textContent = "The personalized plans and nutrition guidance are game-changers!";
+        // Load premium user testimonials
+        premiumTestimonials = filterTestimonials('premium');
+        console.log(`Filtered premium testimonials: ${premiumTestimonials.length}`);
+        
+        if (premiumTestimonials.length > 0) {
+          showTestimonial('premium', premiumTestimonials, 0);
+        } else {
+          console.log('⚠️ No premium testimonials found, using fallback');
+          // Fallback to default content
+          document.getElementById('testimonial-text-premium').textContent = "The premium features transformed my workout routine completely! Worth every penny.";
           document.getElementById('testimonial-rating-premium').textContent = showStars(5);
-          document.getElementById('testimonial-author-premium').textContent = "- Mike D.";
-        });
+          document.getElementById('testimonial-author-premium').textContent = "- Premium User (Demo)";
+        }
 
-      // Load business user testimonials
-      testimonialsRef.where("userType", "==", "business").where("rating", ">=", 4).get()
-        .then(snapshot => {
-          snapshot.forEach(doc => {
-            businessTestimonials.push(doc.data());
-          });
-          if (businessTestimonials.length > 0) {
-            showTestimonial('business', businessTestimonials, 0);
-          } else {
-            document.getElementById('testimonial-text-business').textContent = "Perfect solution for managing our corporate wellness program!";
-            document.getElementById('testimonial-rating-business').textContent = showStars(5);
-            document.getElementById('testimonial-author-business').textContent = "- Business User";
-          }
-        })
-        .catch(error => {
-          console.error("Error fetching business testimonials:", error);
-          document.getElementById('testimonial-text-business').textContent = "Our employees love the comprehensive business features and analytics!";
+        // Load business user testimonials
+        businessTestimonials = filterTestimonials('business');
+        console.log(`Filtered business testimonials: ${businessTestimonials.length}`);
+        
+        if (businessTestimonials.length > 0) {
+          showTestimonial('business', businessTestimonials, 0);
+        } else {
+          console.log('⚠️ No business testimonials found, using fallback');
+          // Fallback to default content
+          document.getElementById('testimonial-text-business').textContent = "Perfect solution for managing our corporate wellness program! Great analytics and features.";
           document.getElementById('testimonial-rating-business').textContent = showStars(5);
-          document.getElementById('testimonial-author-business').textContent = "- Jennifer L., HR Director";
-        });
+          document.getElementById('testimonial-author-business').textContent = "- Business User (Demo)";
+        }
+        
+        console.log('Testimonials loaded successfully with AI filtering');
+        
+      } catch (error) {
+        console.error("Error loading AI-filtered testimonials:", error);
+        
+        // Fallback to default testimonials if loading fails
+        document.getElementById('testimonial-text-freemium').textContent = "Amazing free features to kickstart my fitness journey!";
+        document.getElementById('testimonial-rating-freemium').textContent = showStars(5);
+        document.getElementById('testimonial-author-freemium').textContent = "- Sarah M.";
+        
+        document.getElementById('testimonial-text-premium').textContent = "The personalized plans and nutrition guidance are game-changers!";
+        document.getElementById('testimonial-rating-premium').textContent = showStars(5);
+        document.getElementById('testimonial-author-premium').textContent = "- Mike D.";
+        
+        document.getElementById('testimonial-text-business').textContent = "Our employees love the comprehensive business features and analytics!";
+        document.getElementById('testimonial-rating-business').textContent = showStars(5);
+        document.getElementById('testimonial-author-business').textContent = "- Jennifer L., HR Director";
+      }
     }
 
     // Initialize testimonials
@@ -1937,6 +2031,63 @@
 
     // Set up rotation interval (every 8 seconds to give users time to read)
     setInterval(rotateTestimonials, 8000);
+
+    // Debug function to check testimonials in database
+    window.debugTestimonials = async function() {
+      try {
+        console.log('=== DEBUG: Checking testimonials database ===');
+        const snapshot = await testimonialsRef.get();
+        
+        if (snapshot.empty) {
+          console.log('❌ No testimonials found in database');
+          alert('No testimonials found in the database. Please add some testimonials through the app first.');
+          return;
+        }
+        
+        console.log(`✅ Found ${snapshot.size} testimonials in database`);
+        
+        snapshot.forEach(doc => {
+          const data = doc.data();
+          console.log(`📝 Testimonial ID: ${doc.id}`);
+          console.log(`   User: ${data.userName || data.author || 'Unknown'}`);
+          console.log(`   Rating: ${data.rating || data.starRating || 'No rating'}`);
+          console.log(`   User Type: ${data.userMembershipType || data.userType || 'Unknown'}`);
+          console.log(`   Feedback: ${(data.feedback || 'No feedback').substring(0, 50)}...`);
+          console.log(`   AI Sentiment: ${data.aiSentiment || 'Not analyzed'}`);
+          console.log('   ---');
+        });
+        
+        // Test filtering
+        const allTestimonials = [];
+        snapshot.forEach(doc => {
+          allTestimonials.push({ id: doc.id, ...doc.data() });
+        });
+        
+        const filtered = allTestimonials.filter(t => {
+          const rating = t.rating || t.starRating;
+          const hasGoodRating = rating && rating >= 4;
+          const hasPositiveSentiment = t.aiSentiment === 'positive' || (!t.aiSentiment && hasGoodRating);
+          const hasFeedback = t.feedback && t.feedback.trim() !== '' && t.feedback !== 'No feedback' && t.feedback.trim().length > 10;
+          const isClean = !t.aiSentiment || (t.aiSentiment !== 'spam' && t.aiSentiment !== 'inappropriate');
+          
+          return hasGoodRating && hasPositiveSentiment && hasFeedback && isClean;
+        });
+        
+        console.log(`🔍 After filtering: ${filtered.length} testimonials meet criteria`);
+        alert(`Database check complete! Found ${snapshot.size} total testimonials, ${filtered.length} meet display criteria. Check console for details.`);
+        
+      } catch (error) {
+        console.error('❌ Error checking testimonials:', error);
+        alert('Error checking testimonials: ' + error.message);
+      }
+    };
+
+    // Add debug button to page (temporary)
+    const debugButton = document.createElement('button');
+    debugButton.textContent = '🔍 Debug Testimonials';
+    debugButton.style.cssText = 'position: fixed; top: 10px; right: 10px; z-index: 9999; background: #ff6b35; color: white; border: none; padding: 10px; border-radius: 5px; cursor: pointer;';
+    debugButton.onclick = window.debugTestimonials;
+    document.body.appendChild(debugButton);
 
 
   </script>
