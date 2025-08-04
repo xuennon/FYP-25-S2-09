@@ -409,7 +409,7 @@
   <div class="container">
     <div class="filter-bar">
       <input type="text" id="searchInput" placeholder="Search users...">
-      <select id="sortMembership">
+      <select id="sortUserType">
         <option value="">Sort by Membership</option>
         <option value="basic">Basic</option>
         <option value="premium">Premium</option>
@@ -527,24 +527,24 @@
       const gender = filterGender.value;
       const ageRange = filterAge.value;
       const suspension = filterSuspension.value;
-      const membership = sortMembership.value;
+      const userType = sortUserType.value;
 
       let filtered = allUsers.filter(u => {
         const matchesSearch = [u.fullName, u.email, u.username].some(f => f && f.toLowerCase().includes(search));
         const matchesGender = !gender || (u.gender && u.gender.toLowerCase() === gender);
         const matchesSuspension = !suspension || (u.suspensionStatus && u.suspensionStatus === suspension);
-        const matchesMembership = !membership || (u.membershipType && u.membershipType === membership);
+        const matchesUserType = !userType || (u.userType && u.userType === userType);
 
         let matchesAge = true;
         if (ageRange) {
           matchesAge = u.ageRange === ageRange;
         }
 
-        return matchesSearch && matchesGender && matchesSuspension && matchesAge && matchesMembership;
+        return matchesSearch && matchesGender && matchesSuspension && matchesAge && matchesUserType;
       });
 
-      if (membership) {
-        filtered.sort((a, b) => (a.membershipType || "").localeCompare(b.membershipType || ""));
+      if (userType) {
+        filtered.sort((a, b) => (a.userType || "").localeCompare(b.userType || ""));
       }
 
       renderUsers(filtered);
@@ -559,7 +559,7 @@
             <div class="user-info" style="grid-template-columns: 150px 1fr;">
               <span class="label">Full Name:</span><span class="value">${u.fullName || "—"}</span>
               <span class="label">Email:</span><span class="value">${u.email || "—"}</span>
-              <span class="label">Membership:</span><span class="value">${u.membershipType ? u.membershipType.charAt(0).toUpperCase() + u.membershipType.slice(1) : "Basic"}</span>
+              <span class="label">Membership Type:</span><span class="value">${u.userType ? u.userType.charAt(0).toUpperCase() + u.userType.slice(1) : "Basic"}</span>
               <span class="label">Status:</span><span class="value">${suspended ? "Suspended" : "Active"}</span>
             </div>
             <div class="btn-group">
@@ -587,7 +587,7 @@
         <p><strong>Username:</strong> ${user.username || "—"}</p>
         <p><strong>Gender:</strong> ${user.gender || "—"}</p>
         <p><strong>Age Range:</strong> ${user.ageRange || "—"}</p>
-        <p><strong>Membership:</strong> ${user.membershipType || "—"}</p>
+        <p><strong>User Type:</strong> ${user.userType || "—"}</p>
         <p><strong>Status:</strong> ${user.suspensionStatus === "yes" ? "Suspended" : "Active"}</p>
       `;
       userModal.style.display = "flex";
@@ -619,7 +619,7 @@
       location.href = "Login.html";
     };
 
-    ["searchInput", "sortMembership", "filterGender", "filterAge", "filterSuspension"].forEach(id =>
+    ["searchInput", "sortUserType", "filterGender", "filterAge", "filterSuspension"].forEach(id =>
       document.getElementById(id).addEventListener("input", applyFilters)
     );
   </script>
