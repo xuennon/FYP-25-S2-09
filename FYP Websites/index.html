@@ -688,8 +688,12 @@
       background: var(--gradient-orange);
     }
 
-    .testimonial-item.premium::before {
-      background: var(--gradient-purple);
+    .testimonial-item.user::before {
+      background: var(--gradient-orange);
+    }
+
+    .testimonial-item.user-purple::before {
+      background: linear-gradient(90deg, #8b45db, #a855f7);
     }
 
     .testimonial-item.business::before {
@@ -699,6 +703,11 @@
     .testimonial-item:hover {
       transform: translateY(-5px);
       box-shadow: var(--shadow-lg);
+    }
+
+    /* Smooth transitions for testimonial rotation */
+    .testimonial-item {
+      transition: opacity 0.3s ease, transform 0.3s ease;
     }
 
     .testimonial-quote {
@@ -733,16 +742,16 @@
       margin-bottom: 1.5rem;
     }
 
-    .testimonial-user-type.freemium {
+    .testimonial-user-type.user {
       background: rgba(16, 185, 129, 0.2);
       color: var(--accent-green);
       border: 1px solid var(--accent-green);
     }
 
-    .testimonial-user-type.premium {
-      background: rgba(99, 102, 241, 0.2);
-      color: var(--primary-purple);
-      border: 1px solid var(--primary-purple);
+    .testimonial-user-type.user-purple {
+      background: rgba(139, 69, 219, 0.2);
+      color: #8b45db;
+      border: 1px solid #8b45db;
     }
 
     .testimonial-user-type.business {
@@ -1606,25 +1615,25 @@
         <h2 class="section-title">What Our Users Say</h2>
         <p class="section-subtitle">Real stories from real people who transformed their lives</p>
         <p style="font-size: 0.9rem; color: var(--text-gray); margin-top: 1rem;">
-          🤖 AI-curated testimonials showing only positive feedback with 4+ star ratings
+          🤖 AI-curated testimonials showing only positive feedback with 3+ star ratings
         </p>
       </div>
       <div class="testimonials-grid">
-        <div class="testimonial-item freemium scroll-reveal">
-          <div class="testimonial-user-type freemium">Free User</div>
-          <p class="testimonial-quote" id="testimonial-text-freemium">
+        <div class="testimonial-item user scroll-reveal">
+          <div class="testimonial-user-type user">User</div>
+          <p class="testimonial-quote" id="testimonial-text-user1">
             <span class="loading-dots">Loading testimonials</span>
           </p>
-          <div class="testimonial-rating" id="testimonial-rating-freemium"></div>
-          <div class="testimonial-author" id="testimonial-author-freemium"></div>
+          <div class="testimonial-rating" id="testimonial-rating-user1"></div>
+          <div class="testimonial-author" id="testimonial-author-user1"></div>
         </div>
-        <div class="testimonial-item premium scroll-reveal">
-          <div class="testimonial-user-type premium">Premium User</div>
-          <p class="testimonial-quote" id="testimonial-text-premium">
+        <div class="testimonial-item user-purple scroll-reveal">
+          <div class="testimonial-user-type user-purple">User</div>
+          <p class="testimonial-quote" id="testimonial-text-user2">
             <span class="loading-dots">Loading testimonials</span>
           </p>
-          <div class="testimonial-rating" id="testimonial-rating-premium"></div>
-          <div class="testimonial-author" id="testimonial-author-premium"></div>
+          <div class="testimonial-rating" id="testimonial-rating-user2"></div>
+          <div class="testimonial-author" id="testimonial-author-user2"></div>
         </div>
         <div class="testimonial-item business scroll-reveal">
           <div class="testimonial-user-type business">Business User</div>
@@ -1850,11 +1859,11 @@
     });
 
 
-    const testimonialsRef = db.collection("testimonials");
-    let freemiumTestimonials = [];
-    let premiumTestimonials = [];
+    const testimonialsRef = db.collection("testimonial");
+    const businessTestimonialsRef = db.collection("businessUserTestimonial");
+    let userTestimonials = []; // Combined premium and basic users
     let businessTestimonials = [];
-    let currentIndices = { freemium: 0, premium: 0, business: 0 };
+    let currentIndices = { user1: 0, user2: 0, business: 0 };
 
     function showStars(rating) {
       return '★'.repeat(rating) + '☆'.repeat(5 - rating);
@@ -1867,162 +1876,418 @@
       const textElement = document.getElementById(`testimonial-text-${type}`);
       const ratingElement = document.getElementById(`testimonial-rating-${type}`);
       const authorElement = document.getElementById(`testimonial-author-${type}`);
+      const containerElement = document.querySelector(`#testimonial-${type}`);
       
-      if (textElement) textElement.textContent = `"${t.feedback || t.text}"`;
-      if (ratingElement) ratingElement.textContent = showStars(t.rating || t.starRating);
-      if (authorElement) authorElement.textContent = `- ${t.userName || t.author}`;
-    }
-
-    function rotateTestimonials() {
-      // Rotate freemium testimonials
-      if (freemiumTestimonials.length > 0) {
-        showTestimonial('freemium', freemiumTestimonials, currentIndices.freemium);
-        currentIndices.freemium = (currentIndices.freemium + 1) % freemiumTestimonials.length;
+      // Add fade-out effect
+      if (containerElement) {
+        containerElement.style.opacity = '0.5';
+        containerElement.style.transform = 'scale(0.95)';
       }
       
-      // Rotate premium testimonials
-      if (premiumTestimonials.length > 0) {
-        showTestimonial('premium', premiumTestimonials, currentIndices.premium);
-        currentIndices.premium = (currentIndices.premium + 1) % premiumTestimonials.length;
+      // Update content after brief delay
+      setTimeout(() => {
+        if (textElement) textElement.textContent = `"${t.feedback || t.text || 'Great experience!'}"`;
+        if (ratingElement) ratingElement.textContent = showStars(t.rating || t.starRating || 5);
+        
+        // Use resolved name with fallback
+        let username = t.resolvedName || 'Loading...';
+        
+        console.log('=== TESTIMONIAL DISPLAY ===');
+        console.log('Container:', type);
+        console.log('Index:', index);
+        console.log('Document ID:', t.id);
+        console.log('Source:', t.source);
+        console.log('Resolved Name:', t.resolvedName);
+        console.log('========================');
+        
+        if (authorElement) authorElement.textContent = `- ${username}`;
+        
+        // Fade back in
+        if (containerElement) {
+          containerElement.style.opacity = '1';
+          containerElement.style.transform = 'scale(1)';
+        }
+      }, 200);
+    }
+
+    // Enhanced function to resolve usernames from proper collections
+    async function resolveUsername(testimonial) {
+      try {
+        console.log('🔍 === DEBUGGING USERNAME RESOLUTION ===');
+        console.log('📋 Full testimonial object:', JSON.stringify(testimonial, null, 2));
+        console.log('🆔 Testimonial document ID:', testimonial.id);
+        console.log('📊 Source:', testimonial.source);
+        
+        // Check all possible user ID fields
+        const possibleUserFields = [
+          'userId', 'uid', 'userUid', 'user_id', 'businessUserId', 'business_user_id',
+          'authorId', 'author_id', 'createdBy', 'created_by', 'submittedBy', 'submitted_by'
+        ];
+        
+        console.log('🔍 Checking for user ID fields...');
+        let userId = null;
+        for (const field of possibleUserFields) {
+          if (testimonial[field]) {
+            userId = testimonial[field];
+            console.log(`✅ Found user ID in field '${field}': ${userId}`);
+            break;
+          }
+        }
+        
+        // If no user ID field found, try using document ID as fallback
+        if (!userId) {
+          console.log('⚠️ No user ID field found, trying document ID as user ID...');
+          userId = testimonial.id;
+        }
+        
+        console.log('👤 Final user ID to lookup:', userId);
+        
+        let resolvedName = 'Anonymous User';
+        
+        if (testimonial.source === 'businessUserTestimonial' || testimonial.userType === 'business') {
+          // For business users: look up businessUsers collection -> businessName field
+          console.log(`🏢 Looking up business user in businessUsers collection with ID: ${userId}`);
+          try {
+            const businessUserDoc = await db.collection('businessUsers').doc(userId).get();
+            if (businessUserDoc.exists) {
+              const businessData = businessUserDoc.data();
+              console.log('📄 Business document data:', JSON.stringify(businessData, null, 2));
+              resolvedName = businessData.businessName || businessData.name || businessData.companyName || 'Business User';
+              console.log(`✅ Found business name: ${resolvedName}`);
+            } else {
+              console.log(`❌ Business user document not found for ID: ${userId}`);
+              // Try querying by email or other identifier if available
+              if (testimonial.email) {
+                console.log(`🔄 Trying to find business user by email: ${testimonial.email}`);
+                const emailQuery = await db.collection('businessUsers').where('email', '==', testimonial.email).get();
+                if (!emailQuery.empty) {
+                  const businessData = emailQuery.docs[0].data();
+                  resolvedName = businessData.businessName || businessData.name || 'Business User';
+                  console.log(`✅ Found business by email: ${resolvedName}`);
+                }
+              }
+            }
+          } catch (businessError) {
+            console.error('❌ Error looking up business user:', businessError);
+          }
+        } else {
+          // For regular users: look up users collection -> fullName field
+          console.log(`👤 Looking up regular user in users collection with ID: ${userId}`);
+          try {
+            const userDoc = await db.collection('users').doc(userId).get();
+            if (userDoc.exists) {
+              const userData = userDoc.data();
+              console.log('📄 User document data:', JSON.stringify(userData, null, 2));
+              resolvedName = userData.fullName || userData.name || userData.displayName || userData.username || 'User';
+              console.log(`✅ Found user name: ${resolvedName}`);
+            } else {
+              console.log(`❌ User document not found for ID: ${userId}`);
+              // Try querying by email or other identifier if available
+              if (testimonial.email) {
+                console.log(`🔄 Trying to find user by email: ${testimonial.email}`);
+                const emailQuery = await db.collection('users').where('email', '==', testimonial.email).get();
+                if (!emailQuery.empty) {
+                  const userData = emailQuery.docs[0].data();
+                  resolvedName = userData.fullName || userData.name || 'User';
+                  console.log(`✅ Found user by email: ${resolvedName}`);
+                }
+              }
+            }
+          } catch (userError) {
+            console.error('❌ Error looking up user:', userError);
+          }
+        }
+        
+        // Clean up and format the name
+        if (resolvedName && resolvedName !== 'Anonymous User') {
+          // Capitalize first letter for better presentation
+          if (resolvedName.includes(' ') || resolvedName.length > 15) {
+            // Keep names with spaces as-is (business names, full names)
+            resolvedName = resolvedName;
+          } else {
+            // Capitalize single word names
+            resolvedName = resolvedName.charAt(0).toUpperCase() + resolvedName.slice(1);
+          }
+        }
+        
+        console.log(`🎯 Final resolved name: ${resolvedName}`);
+    console.log('=== END USERNAME RESOLUTION DEBUG ===\n');
+        
+        return resolvedName;
+      } catch (error) {
+        console.error('❌ Error resolving username:', error);
+        return 'Anonymous User';
+      }
+    }
+
+    // Debug function to inspect testimonial data - run this in browser console
+    window.debugTestimonials = function() {
+      console.log('🔍 === TESTIMONIAL DEBUG FUNCTION ===');
+      console.log('📊 User testimonials count:', userTestimonials?.length || 0);
+      console.log('🏢 Business testimonials count:', businessTestimonials?.length || 0);
+      
+      if (userTestimonials && userTestimonials.length > 0) {
+        console.log('👤 First user testimonial:');
+        console.log(JSON.stringify(userTestimonials[0], null, 2));
+      }
+      
+      if (businessTestimonials && businessTestimonials.length > 0) {
+        console.log('🏢 First business testimonial:');
+        console.log(JSON.stringify(businessTestimonials[0], null, 2));
+      }
+      
+      console.log('=== END TESTIMONIAL DEBUG ===');
+    };
+
+    // Debug function to manually test username resolution
+    window.debugUsernameResolution = async function(testimonialIndex = 0, type = 'user') {
+      const testimonials = type === 'user' ? userTestimonials : businessTestimonials;
+      if (!testimonials || testimonials.length === 0) {
+        console.log('❌ No testimonials available for type:', type);
+        return;
+      }
+      
+      const testimonial = testimonials[testimonialIndex];
+      console.log('🧪 Testing username resolution for:', testimonial);
+      const resolved = await resolveUsername(testimonial);
+      console.log('✅ Resolved name:', resolved);
+      return resolved;
+    };
+
+    // Debug function to manually trigger rotation
+    window.debugRotate = function() {
+      console.log('🔄 Manually triggering testimonial rotation...');
+      rotateTestimonials();
+    };
+
+    // Debug function to check current state
+    window.debugCurrentState = function() {
+      console.log('📊 Current testimonial state:');
+      console.log('User testimonials:', userTestimonials?.length || 0);
+      console.log('Business testimonials:', businessTestimonials?.length || 0);
+      console.log('Current indices:', currentIndices);
+      console.log('User testimonials with names:', userTestimonials?.map(t => t.resolvedName));
+      console.log('Business testimonials with names:', businessTestimonials?.map(t => t.resolvedName));
+    };
+
+    function rotateTestimonials() {
+      console.log('🔄 Rotating testimonials...');
+      
+      // Rotate user testimonials (first container)
+      if (userTestimonials && userTestimonials.length > 0) {
+        currentIndices.user1 = (currentIndices.user1 + 1) % userTestimonials.length;
+        showTestimonial('user1', userTestimonials, currentIndices.user1);
+        console.log(`User1 container: showing testimonial ${currentIndices.user1} from ${userTestimonials[currentIndices.user1]?.resolvedName}`);
+      }
+      
+      // Rotate user testimonials (second container) - ensure different from first
+      if (userTestimonials && userTestimonials.length > 1) {
+        // Move to next testimonial
+        currentIndices.user2 = (currentIndices.user2 + 1) % userTestimonials.length;
+        
+        // Ensure it's different from user1 container
+        if (currentIndices.user2 === currentIndices.user1 && userTestimonials.length > 1) {
+          currentIndices.user2 = (currentIndices.user2 + 1) % userTestimonials.length;
+        }
+        
+        showTestimonial('user2', userTestimonials, currentIndices.user2);
+        console.log(`User2 container: showing testimonial ${currentIndices.user2} from ${userTestimonials[currentIndices.user2]?.resolvedName}`);
+      } else if (userTestimonials && userTestimonials.length === 1) {
+        // If only one testimonial, show the same one but we already ensured uniqueness
+        showTestimonial('user2', userTestimonials, 0);
       }
       
       // Rotate business testimonials
-      if (businessTestimonials.length > 0) {
-        showTestimonial('business', businessTestimonials, currentIndices.business);
+      if (businessTestimonials && businessTestimonials.length > 0) {
         currentIndices.business = (currentIndices.business + 1) % businessTestimonials.length;
+        showTestimonial('business', businessTestimonials, currentIndices.business);
+        console.log(`Business container: showing testimonial ${currentIndices.business} from ${businessTestimonials[currentIndices.business]?.resolvedName}`);
       }
+      
+      console.log('✅ Testimonial rotation complete');
     }
 
-    // Enhanced testimonials loading with AI filtering
+    // Enhanced testimonials loading with AI filtering from both collections
     async function loadTestimonialsByType() {
       try {
-        console.log('Loading AI-filtered testimonials...');
+        console.log('Loading AI-filtered testimonials from both collections...');
         
-        // Load all testimonials first
-        const allTestimonialsSnapshot = await testimonialsRef.get();
+        // Load testimonials from both collections in parallel
+        const [regularSnapshot, businessSnapshot] = await Promise.all([
+          testimonialsRef.get(),
+          businessTestimonialsRef.get()
+        ]);
+        
         const allTestimonials = [];
         
-        allTestimonialsSnapshot.forEach(doc => {
+        // Process regular testimonials
+        regularSnapshot.forEach(doc => {
           const data = doc.data();
-          console.log('Raw testimonial data:', doc.id, data); // Debug log
           allTestimonials.push({
             id: doc.id,
+            source: 'testimonial',
             ...data
           });
         });
         
-        console.log(`Loaded ${allTestimonials.length} total testimonials`);
+        // Process business testimonials
+        businessSnapshot.forEach(doc => {
+          const data = doc.data();
+          allTestimonials.push({
+            id: doc.id,
+            source: 'businessUserTestimonial',
+            ...data
+          });
+        });
         
-        // Debug: Show first few testimonials structure
-        if (allTestimonials.length > 0) {
-          console.log('Sample testimonial structure:', allTestimonials[0]);
-          console.log('Available fields:', Object.keys(allTestimonials[0]));
-        }
+        console.log(`Loaded ${allTestimonials.length} total testimonials from both collections`);
         
-        // Filter testimonials by AI criteria and user type
-        function filterTestimonials(userType) {
+        // Filter testimonials with new criteria: 3+ stars AND positive sentiment
+        function filterTestimonials(isBusinessUser = false) {
           return allTestimonials.filter(testimonial => {
-            // Check user membership type
-            let membershipType = testimonial.userMembershipType || testimonial.userType;
-            
-            // Exception handling for legacy "normal" userType
-            if (membershipType === 'normal') {
-              membershipType = 'basic'; // Treat "normal" as "basic" user
-              console.log(`Converting legacy userType "normal" to "basic" for testimonial ${testimonial.id}`);
+            // Check if this is for business users or regular users
+            if (isBusinessUser) {
+              // For business container: only business users
+              return testimonial.source === 'businessUserTestimonial' &&
+                     isValidTestimonial(testimonial);
+            } else {
+              // For user containers: both premium and basic users (not business)
+              return testimonial.source === 'testimonial' &&
+                     isValidTestimonial(testimonial);
             }
-            
-            let matchesUserType = false;
-            
-            if (userType === 'freemium') {
-              matchesUserType = membershipType === 'basic' || membershipType === 'freemium' || membershipType === 'free' || membershipType === 'normal';
-            } else if (userType === 'premium') {
-              matchesUserType = membershipType === 'premium';
-            } else if (userType === 'business') {
-              matchesUserType = membershipType === 'business';
-            }
-            
-            // Check rating (4+ stars)
-            const rating = testimonial.rating || testimonial.starRating;
-            const hasGoodRating = rating && rating >= 4;
-            
-            // Check AI sentiment (positive only)
-            const hasPositiveSentiment = testimonial.aiSentiment === 'positive' || 
-                                       (!testimonial.aiSentiment && hasGoodRating); // Fallback for unanalyzed
-            
-            // Check if feedback exists and is meaningful
-            const hasFeedback = testimonial.feedback && 
-                              testimonial.feedback.trim() !== '' && 
-                              testimonial.feedback !== 'No feedback' &&
-                              testimonial.feedback.trim().length > 10;
-            
-            // Check for inappropriate flags
-            const isClean = !testimonial.aiSentiment || 
-                           (testimonial.aiSentiment !== 'spam' && 
-                            testimonial.aiSentiment !== 'inappropriate');
-            
-            return matchesUserType && hasGoodRating && hasPositiveSentiment && hasFeedback && isClean;
           });
         }
         
-        // Load freemium/basic user testimonials
-        freemiumTestimonials = filterTestimonials('freemium');
-        console.log(`Filtered freemium testimonials: ${freemiumTestimonials.length}`);
-        
-        if (freemiumTestimonials.length > 0) {
-          showTestimonial('freemium', freemiumTestimonials, 0);
-        } else {
-          console.log('⚠️ No freemium testimonials found, using fallback');
-          // Fallback to default content
-          document.getElementById('testimonial-text-freemium').textContent = "Great app for getting started with fitness! The free features are amazing.";
-          document.getElementById('testimonial-rating-freemium').textContent = showStars(5);
-          document.getElementById('testimonial-author-freemium').textContent = "- Free User (Demo)";
+        function isValidTestimonial(testimonial) {
+          // Check rating (3+ stars)
+          const rating = testimonial.rating || testimonial.starRating || 0;
+          const hasGoodRating = rating >= 3;
+          
+          // Check AI sentiment (positive only)
+          const hasPositiveSentiment = testimonial.aiSentiment === 'positive' || 
+                                     (!testimonial.aiSentiment && rating >= 4); // Fallback for unanalyzed high-rated
+          
+          // Check if feedback exists and is meaningful
+          const hasFeedback = testimonial.feedback && 
+                            testimonial.feedback.trim() !== '' && 
+                            testimonial.feedback !== 'No feedback' &&
+                            testimonial.feedback.trim().length > 10;
+          
+          // Check for inappropriate flags
+          const isClean = !testimonial.aiSentiment || 
+                         (testimonial.aiSentiment !== 'spam' && 
+                          testimonial.aiSentiment !== 'inappropriate');
+          
+          return hasGoodRating && hasPositiveSentiment && hasFeedback && isClean;
         }
-
-        // Load premium user testimonials
-        premiumTestimonials = filterTestimonials('premium');
-        console.log(`Filtered premium testimonials: ${premiumTestimonials.length}`);
         
-        if (premiumTestimonials.length > 0) {
-          showTestimonial('premium', premiumTestimonials, 0);
+        // Load user testimonials (combined premium and basic)
+        userTestimonials = filterTestimonials(false);
+        console.log(`Filtered user testimonials: ${userTestimonials.length}`);
+        
+        // Resolve usernames for user testimonials
+        console.log('Resolving usernames for user testimonials...');
+        for (let testimonial of userTestimonials) {
+          testimonial.resolvedName = await resolveUsername(testimonial);
+        }
+        
+        // Filter for unique usernames to avoid duplicates
+        console.log('Filtering for unique usernames...');
+        const uniqueUserTestimonials = [];
+        const seenUsernames = new Set();
+        
+        for (let testimonial of userTestimonials) {
+          const username = testimonial.resolvedName;
+          if (username && username !== 'Anonymous User' && !seenUsernames.has(username)) {
+            seenUsernames.add(username);
+            uniqueUserTestimonials.push(testimonial);
+          }
+        }
+        
+        // If we don't have enough unique users, add anonymous ones as fallback
+        while (uniqueUserTestimonials.length < Math.min(2, userTestimonials.length)) {
+          const remainingTestimonials = userTestimonials.filter(t => 
+            !uniqueUserTestimonials.includes(t) && t.resolvedName
+          );
+          if (remainingTestimonials.length > 0) {
+            uniqueUserTestimonials.push(remainingTestimonials[0]);
+          } else {
+            break;
+          }
+        }
+        
+        userTestimonials = uniqueUserTestimonials;
+        console.log(`Filtered to ${userTestimonials.length} unique user testimonials`);
+        
+        // Shuffle user testimonials for randomization
+        for (let i = userTestimonials.length - 1; i > 0; i--) {
+          const j = Math.floor(Math.random() * (i + 1));
+          [userTestimonials[i], userTestimonials[j]] = [userTestimonials[j], userTestimonials[i]];
+        }
+        
+        // Show testimonials in user containers
+        if (userTestimonials.length > 0) {
+          showTestimonial('user1', userTestimonials, 0);
+          currentIndices.user1 = 0;
+          
+          if (userTestimonials.length > 1) {
+            showTestimonial('user2', userTestimonials, 1);
+            currentIndices.user2 = 1;
+          } else {
+            // If only one user testimonial, show the same one
+            showTestimonial('user2', userTestimonials, 0);
+            currentIndices.user2 = 0;
+          }
         } else {
-          console.log('⚠️ No premium testimonials found, using fallback');
-          // Fallback to default content
-          document.getElementById('testimonial-text-premium').textContent = "The premium features transformed my workout routine completely! Worth every penny.";
-          document.getElementById('testimonial-rating-premium').textContent = showStars(5);
-          document.getElementById('testimonial-author-premium').textContent = "- Premium User (Demo)";
+          console.log('⚠️ No user testimonials found, using fallback');
+          // Fallback to default content for both user containers
+          document.getElementById('testimonial-text-user1').textContent = "Great app for getting started with fitness! The features are amazing.";
+          document.getElementById('testimonial-rating-user1').textContent = showStars(5);
+          document.getElementById('testimonial-author-user1').textContent = "- Cm";
+          
+          document.getElementById('testimonial-text-user2').textContent = "The personalized plans and guidance are game-changers!";
+          document.getElementById('testimonial-rating-user2').textContent = showStars(5);
+          document.getElementById('testimonial-author-user2').textContent = "- Jindu";
         }
 
         // Load business user testimonials
-        businessTestimonials = filterTestimonials('business');
+        businessTestimonials = filterTestimonials(true);
         console.log(`Filtered business testimonials: ${businessTestimonials.length}`);
+        
+        // Resolve usernames for business testimonials
+        console.log('Resolving usernames for business testimonials...');
+        for (let testimonial of businessTestimonials) {
+          testimonial.resolvedName = await resolveUsername(testimonial);
+        }
         
         if (businessTestimonials.length > 0) {
           showTestimonial('business', businessTestimonials, 0);
+          currentIndices.business = 0;
         } else {
           console.log('⚠️ No business testimonials found, using fallback');
           // Fallback to default content
           document.getElementById('testimonial-text-business').textContent = "Perfect solution for managing our corporate wellness program! Great analytics and features.";
           document.getElementById('testimonial-rating-business').textContent = showStars(5);
-          document.getElementById('testimonial-author-business').textContent = "- Business User (Demo)";
+          document.getElementById('testimonial-author-business').textContent = "- Premasala Thosai";
         }
         
-        console.log('Testimonials loaded successfully with AI filtering');
+        console.log('Testimonials loaded successfully with new filtering criteria');
         
       } catch (error) {
-        console.error("Error loading AI-filtered testimonials:", error);
+        console.error("Error loading testimonials:", error);
         
         // Fallback to default testimonials if loading fails
-        document.getElementById('testimonial-text-freemium').textContent = "Amazing free features to kickstart my fitness journey!";
-        document.getElementById('testimonial-rating-freemium').textContent = showStars(5);
-        document.getElementById('testimonial-author-freemium').textContent = "- Sarah M.";
+        document.getElementById('testimonial-text-user1').textContent = "Amazing features to kickstart my fitness journey!";
+        document.getElementById('testimonial-rating-user1').textContent = showStars(5);
+        document.getElementById('testimonial-author-user1').textContent = "- Cm";
         
-        document.getElementById('testimonial-text-premium').textContent = "The personalized plans and nutrition guidance are game-changers!";
-        document.getElementById('testimonial-rating-premium').textContent = showStars(5);
-        document.getElementById('testimonial-author-premium').textContent = "- Mike D.";
+        document.getElementById('testimonial-text-user2').textContent = "The personalized plans and nutrition guidance are game-changers!";
+        document.getElementById('testimonial-rating-user2').textContent = showStars(5);
+        document.getElementById('testimonial-author-user2').textContent = "- Jindu";
         
         document.getElementById('testimonial-text-business').textContent = "Our employees love the comprehensive business features and analytics!";
         document.getElementById('testimonial-rating-business').textContent = showStars(5);
-        document.getElementById('testimonial-author-business').textContent = "- Jennifer L., HR Director";
+        document.getElementById('testimonial-author-business').textContent = "- Premasala Thosai";
       }
     }
 
@@ -2032,24 +2297,33 @@
     // Set up rotation interval (every 8 seconds to give users time to read)
     setInterval(rotateTestimonials, 8000);
 
-    // Debug function to check testimonials in database
+    // Debug function to check testimonials in both databases
     window.debugTestimonials = async function() {
       try {
-        console.log('=== DEBUG: Checking testimonials database ===');
-        const snapshot = await testimonialsRef.get();
+        console.log('=== DEBUG: Checking testimonials in both collections ===');
         
-        if (snapshot.empty) {
-          console.log('❌ No testimonials found in database');
-          alert('No testimonials found in the database. Please add some testimonials through the app first.');
+        const [regularSnapshot, businessSnapshot] = await Promise.all([
+          testimonialsRef.get(),
+          businessTestimonialsRef.get()
+        ]);
+        
+        console.log(`✅ Found ${regularSnapshot.size} regular testimonials`);
+        console.log(`✅ Found ${businessSnapshot.size} business testimonials`);
+        
+        if (regularSnapshot.empty && businessSnapshot.empty) {
+          console.log('❌ No testimonials found in either database');
+          alert('No testimonials found in either database. Please add some testimonials through the app first.');
           return;
         }
         
-        console.log(`✅ Found ${snapshot.size} testimonials in database`);
-        
-        snapshot.forEach(doc => {
+        console.log('\n--- REGULAR TESTIMONIALS ---');
+        regularSnapshot.forEach(doc => {
           const data = doc.data();
-          console.log(`📝 Testimonial ID: ${doc.id}`);
-          console.log(`   User: ${data.userName || data.author || 'Unknown'}`);
+          console.log(`📝 ID: ${doc.id}`);
+          console.log(`   Document keys:`, Object.keys(data));
+          console.log(`   Raw document:`, data);
+          console.log(`   User: ${data.userName || data.author || data.name || data.user || data.email || 'Unknown'}`);
+          console.log(`   All name fields: userName="${data.userName}", author="${data.author}", name="${data.name}", user="${data.user}", email="${data.email}"`);
           console.log(`   Rating: ${data.rating || data.starRating || 'No rating'}`);
           console.log(`   User Type: ${data.userMembershipType || data.userType || 'Unknown'}`);
           console.log(`   Feedback: ${(data.feedback || 'No feedback').substring(0, 50)}...`);
@@ -2057,24 +2331,48 @@
           console.log('   ---');
         });
         
+        console.log('\n--- BUSINESS TESTIMONIALS ---');
+        businessSnapshot.forEach(doc => {
+          const data = doc.data();
+          console.log(`📝 ID: ${doc.id}`);
+          console.log(`   Document keys:`, Object.keys(data));
+          console.log(`   Raw document:`, data);
+          console.log(`   User: ${data.userName || data.author || data.name || data.user || data.email || 'Unknown'}`);
+          console.log(`   All name fields: userName="${data.userName}", author="${data.author}", name="${data.name}", user="${data.user}", email="${data.email}"`);
+          console.log(`   Rating: ${data.rating || data.starRating || 'No rating'}`);
+          console.log(`   User Type: Business`);
+          console.log(`   Feedback: ${(data.feedback || 'No feedback').substring(0, 50)}...`);
+          console.log(`   AI Sentiment: ${data.aiSentiment || 'Not analyzed'}`);
+          console.log('   ---');
+        });
+        
         // Test filtering
         const allTestimonials = [];
-        snapshot.forEach(doc => {
-          allTestimonials.push({ id: doc.id, ...doc.data() });
+        regularSnapshot.forEach(doc => {
+          allTestimonials.push({ id: doc.id, source: 'testimonial', ...doc.data() });
+        });
+        businessSnapshot.forEach(doc => {
+          allTestimonials.push({ id: doc.id, source: 'businessUserTestimonial', ...doc.data() });
         });
         
         const filtered = allTestimonials.filter(t => {
-          const rating = t.rating || t.starRating;
-          const hasGoodRating = rating && rating >= 4;
-          const hasPositiveSentiment = t.aiSentiment === 'positive' || (!t.aiSentiment && hasGoodRating);
+          const rating = t.rating || t.starRating || 0;
+          const hasGoodRating = rating >= 3;
+          const hasPositiveSentiment = t.aiSentiment === 'positive' || (!t.aiSentiment && rating >= 4);
           const hasFeedback = t.feedback && t.feedback.trim() !== '' && t.feedback !== 'No feedback' && t.feedback.trim().length > 10;
           const isClean = !t.aiSentiment || (t.aiSentiment !== 'spam' && t.aiSentiment !== 'inappropriate');
           
           return hasGoodRating && hasPositiveSentiment && hasFeedback && isClean;
         });
         
-        console.log(`🔍 After filtering: ${filtered.length} testimonials meet criteria`);
-        alert(`Database check complete! Found ${snapshot.size} total testimonials, ${filtered.length} meet display criteria. Check console for details.`);
+        const userFiltered = filtered.filter(t => t.source === 'testimonial');
+        const businessFiltered = filtered.filter(t => t.source === 'businessUserTestimonial');
+        
+        console.log(`🔍 After filtering: ${filtered.length} total testimonials meet criteria`);
+        console.log(`   - ${userFiltered.length} user testimonials`);
+        console.log(`   - ${businessFiltered.length} business testimonials`);
+        
+        alert(`Database check complete!\nTotal: ${regularSnapshot.size + businessSnapshot.size} testimonials\nMeet criteria: ${filtered.length} (${userFiltered.length} user, ${businessFiltered.length} business)\nCheck console for details.`);
         
       } catch (error) {
         console.error('❌ Error checking testimonials:', error);
