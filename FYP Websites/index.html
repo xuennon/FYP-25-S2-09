@@ -1892,14 +1892,6 @@
         // Use resolved name with fallback
         let username = t.resolvedName || 'Loading...';
         
-        console.log('=== TESTIMONIAL DISPLAY ===');
-        console.log('Container:', type);
-        console.log('Index:', index);
-        console.log('Document ID:', t.id);
-        console.log('Source:', t.source);
-        console.log('Resolved Name:', t.resolvedName);
-        console.log('========================');
-        
         if (authorElement) authorElement.textContent = `- ${username}`;
         
         // Fade back in
@@ -1913,57 +1905,41 @@
     // Enhanced function to resolve usernames from proper collections
     async function resolveUsername(testimonial) {
       try {
-        console.log('🔍 === DEBUGGING USERNAME RESOLUTION ===');
-        console.log('📋 Full testimonial object:', JSON.stringify(testimonial, null, 2));
-        console.log('🆔 Testimonial document ID:', testimonial.id);
-        console.log('📊 Source:', testimonial.source);
-        
         // Check all possible user ID fields
         const possibleUserFields = [
           'userId', 'uid', 'userUid', 'user_id', 'businessUserId', 'business_user_id',
           'authorId', 'author_id', 'createdBy', 'created_by', 'submittedBy', 'submitted_by'
         ];
         
-        console.log('🔍 Checking for user ID fields...');
         let userId = null;
         for (const field of possibleUserFields) {
           if (testimonial[field]) {
             userId = testimonial[field];
-            console.log(`✅ Found user ID in field '${field}': ${userId}`);
             break;
           }
         }
         
         // If no user ID field found, try using document ID as fallback
         if (!userId) {
-          console.log('⚠️ No user ID field found, trying document ID as user ID...');
           userId = testimonial.id;
         }
-        
-        console.log('👤 Final user ID to lookup:', userId);
         
         let resolvedName = 'Anonymous User';
         
         if (testimonial.source === 'businessUserTestimonial' || testimonial.userType === 'business') {
           // For business users: look up businessUsers collection -> businessName field
-          console.log(`🏢 Looking up business user in businessUsers collection with ID: ${userId}`);
           try {
             const businessUserDoc = await db.collection('businessUsers').doc(userId).get();
             if (businessUserDoc.exists) {
               const businessData = businessUserDoc.data();
-              console.log('📄 Business document data:', JSON.stringify(businessData, null, 2));
               resolvedName = businessData.businessName || businessData.name || businessData.companyName || 'Business User';
-              console.log(`✅ Found business name: ${resolvedName}`);
             } else {
-              console.log(`❌ Business user document not found for ID: ${userId}`);
               // Try querying by email or other identifier if available
               if (testimonial.email) {
-                console.log(`🔄 Trying to find business user by email: ${testimonial.email}`);
                 const emailQuery = await db.collection('businessUsers').where('email', '==', testimonial.email).get();
                 if (!emailQuery.empty) {
                   const businessData = emailQuery.docs[0].data();
                   resolvedName = businessData.businessName || businessData.name || 'Business User';
-                  console.log(`✅ Found business by email: ${resolvedName}`);
                 }
               }
             }
@@ -1972,24 +1948,18 @@
           }
         } else {
           // For regular users: look up users collection -> fullName field
-          console.log(`👤 Looking up regular user in users collection with ID: ${userId}`);
           try {
             const userDoc = await db.collection('users').doc(userId).get();
             if (userDoc.exists) {
               const userData = userDoc.data();
-              console.log('📄 User document data:', JSON.stringify(userData, null, 2));
               resolvedName = userData.fullName || userData.name || userData.displayName || userData.username || 'User';
-              console.log(`✅ Found user name: ${resolvedName}`);
             } else {
-              console.log(`❌ User document not found for ID: ${userId}`);
               // Try querying by email or other identifier if available
               if (testimonial.email) {
-                console.log(`🔄 Trying to find user by email: ${testimonial.email}`);
                 const emailQuery = await db.collection('users').where('email', '==', testimonial.email).get();
                 if (!emailQuery.empty) {
                   const userData = emailQuery.docs[0].data();
                   resolvedName = userData.fullName || userData.name || 'User';
-                  console.log(`✅ Found user by email: ${resolvedName}`);
                 }
               }
             }
@@ -2010,9 +1980,6 @@
           }
         }
         
-        console.log(`🎯 Final resolved name: ${resolvedName}`);
-    console.log('=== END USERNAME RESOLUTION DEBUG ===\n');
-        
         return resolvedName;
       } catch (error) {
         console.error('❌ Error resolving username:', error);
@@ -2020,64 +1987,11 @@
       }
     }
 
-    // Debug function to inspect testimonial data - run this in browser console
-    window.debugTestimonials = function() {
-      console.log('🔍 === TESTIMONIAL DEBUG FUNCTION ===');
-      console.log('📊 User testimonials count:', userTestimonials?.length || 0);
-      console.log('🏢 Business testimonials count:', businessTestimonials?.length || 0);
-      
-      if (userTestimonials && userTestimonials.length > 0) {
-        console.log('👤 First user testimonial:');
-        console.log(JSON.stringify(userTestimonials[0], null, 2));
-      }
-      
-      if (businessTestimonials && businessTestimonials.length > 0) {
-        console.log('🏢 First business testimonial:');
-        console.log(JSON.stringify(businessTestimonials[0], null, 2));
-      }
-      
-      console.log('=== END TESTIMONIAL DEBUG ===');
-    };
-
-    // Debug function to manually test username resolution
-    window.debugUsernameResolution = async function(testimonialIndex = 0, type = 'user') {
-      const testimonials = type === 'user' ? userTestimonials : businessTestimonials;
-      if (!testimonials || testimonials.length === 0) {
-        console.log('❌ No testimonials available for type:', type);
-        return;
-      }
-      
-      const testimonial = testimonials[testimonialIndex];
-      console.log('🧪 Testing username resolution for:', testimonial);
-      const resolved = await resolveUsername(testimonial);
-      console.log('✅ Resolved name:', resolved);
-      return resolved;
-    };
-
-    // Debug function to manually trigger rotation
-    window.debugRotate = function() {
-      console.log('🔄 Manually triggering testimonial rotation...');
-      rotateTestimonials();
-    };
-
-    // Debug function to check current state
-    window.debugCurrentState = function() {
-      console.log('📊 Current testimonial state:');
-      console.log('User testimonials:', userTestimonials?.length || 0);
-      console.log('Business testimonials:', businessTestimonials?.length || 0);
-      console.log('Current indices:', currentIndices);
-      console.log('User testimonials with names:', userTestimonials?.map(t => t.resolvedName));
-      console.log('Business testimonials with names:', businessTestimonials?.map(t => t.resolvedName));
-    };
-
     function rotateTestimonials() {
-      console.log('🔄 Rotating testimonials...');
-      
       // Rotate user testimonials (first container)
       if (userTestimonials && userTestimonials.length > 0) {
         currentIndices.user1 = (currentIndices.user1 + 1) % userTestimonials.length;
         showTestimonial('user1', userTestimonials, currentIndices.user1);
-        console.log(`User1 container: showing testimonial ${currentIndices.user1} from ${userTestimonials[currentIndices.user1]?.resolvedName}`);
       }
       
       // Rotate user testimonials (second container) - ensure different from first
@@ -2091,7 +2005,6 @@
         }
         
         showTestimonial('user2', userTestimonials, currentIndices.user2);
-        console.log(`User2 container: showing testimonial ${currentIndices.user2} from ${userTestimonials[currentIndices.user2]?.resolvedName}`);
       } else if (userTestimonials && userTestimonials.length === 1) {
         // If only one testimonial, show the same one but we already ensured uniqueness
         showTestimonial('user2', userTestimonials, 0);
@@ -2101,17 +2014,12 @@
       if (businessTestimonials && businessTestimonials.length > 0) {
         currentIndices.business = (currentIndices.business + 1) % businessTestimonials.length;
         showTestimonial('business', businessTestimonials, currentIndices.business);
-        console.log(`Business container: showing testimonial ${currentIndices.business} from ${businessTestimonials[currentIndices.business]?.resolvedName}`);
       }
-      
-      console.log('✅ Testimonial rotation complete');
     }
 
     // Enhanced testimonials loading with AI filtering from both collections
     async function loadTestimonialsByType() {
       try {
-        console.log('Loading AI-filtered testimonials from both collections...');
-        
         // Load testimonials from both collections in parallel
         const [regularSnapshot, businessSnapshot] = await Promise.all([
           testimonialsRef.get(),
@@ -2139,8 +2047,6 @@
             ...data
           });
         });
-        
-        console.log(`Loaded ${allTestimonials.length} total testimonials from both collections`);
         
         // Filter testimonials with new criteria: 3+ stars AND positive sentiment
         function filterTestimonials(isBusinessUser = false) {
@@ -2183,16 +2089,13 @@
         
         // Load user testimonials (combined premium and basic)
         userTestimonials = filterTestimonials(false);
-        console.log(`Filtered user testimonials: ${userTestimonials.length}`);
         
         // Resolve usernames for user testimonials
-        console.log('Resolving usernames for user testimonials...');
         for (let testimonial of userTestimonials) {
           testimonial.resolvedName = await resolveUsername(testimonial);
         }
         
         // Filter for unique usernames to avoid duplicates
-        console.log('Filtering for unique usernames...');
         const uniqueUserTestimonials = [];
         const seenUsernames = new Set();
         
@@ -2217,7 +2120,6 @@
         }
         
         userTestimonials = uniqueUserTestimonials;
-        console.log(`Filtered to ${userTestimonials.length} unique user testimonials`);
         
         // Shuffle user testimonials for randomization
         for (let i = userTestimonials.length - 1; i > 0; i--) {
@@ -2239,7 +2141,6 @@
             currentIndices.user2 = 0;
           }
         } else {
-          console.log('⚠️ No user testimonials found, using fallback');
           // Fallback to default content for both user containers
           document.getElementById('testimonial-text-user1').textContent = "Great app for getting started with fitness! The features are amazing.";
           document.getElementById('testimonial-rating-user1').textContent = showStars(5);
@@ -2252,10 +2153,8 @@
 
         // Load business user testimonials
         businessTestimonials = filterTestimonials(true);
-        console.log(`Filtered business testimonials: ${businessTestimonials.length}`);
         
         // Resolve usernames for business testimonials
-        console.log('Resolving usernames for business testimonials...');
         for (let testimonial of businessTestimonials) {
           testimonial.resolvedName = await resolveUsername(testimonial);
         }
@@ -2264,14 +2163,11 @@
           showTestimonial('business', businessTestimonials, 0);
           currentIndices.business = 0;
         } else {
-          console.log('⚠️ No business testimonials found, using fallback');
           // Fallback to default content
           document.getElementById('testimonial-text-business').textContent = "Perfect solution for managing our corporate wellness program! Great analytics and features.";
           document.getElementById('testimonial-rating-business').textContent = showStars(5);
           document.getElementById('testimonial-author-business').textContent = "- Premasala Thosai";
         }
-        
-        console.log('Testimonials loaded successfully with new filtering criteria');
         
       } catch (error) {
         console.error("Error loading testimonials:", error);
@@ -2296,97 +2192,6 @@
 
     // Set up rotation interval (every 8 seconds to give users time to read)
     setInterval(rotateTestimonials, 8000);
-
-    // Debug function to check testimonials in both databases
-    window.debugTestimonials = async function() {
-      try {
-        console.log('=== DEBUG: Checking testimonials in both collections ===');
-        
-        const [regularSnapshot, businessSnapshot] = await Promise.all([
-          testimonialsRef.get(),
-          businessTestimonialsRef.get()
-        ]);
-        
-        console.log(`✅ Found ${regularSnapshot.size} regular testimonials`);
-        console.log(`✅ Found ${businessSnapshot.size} business testimonials`);
-        
-        if (regularSnapshot.empty && businessSnapshot.empty) {
-          console.log('❌ No testimonials found in either database');
-          alert('No testimonials found in either database. Please add some testimonials through the app first.');
-          return;
-        }
-        
-        console.log('\n--- REGULAR TESTIMONIALS ---');
-        regularSnapshot.forEach(doc => {
-          const data = doc.data();
-          console.log(`📝 ID: ${doc.id}`);
-          console.log(`   Document keys:`, Object.keys(data));
-          console.log(`   Raw document:`, data);
-          console.log(`   User: ${data.userName || data.author || data.name || data.user || data.email || 'Unknown'}`);
-          console.log(`   All name fields: userName="${data.userName}", author="${data.author}", name="${data.name}", user="${data.user}", email="${data.email}"`);
-          console.log(`   Rating: ${data.rating || data.starRating || 'No rating'}`);
-          console.log(`   User Type: ${data.userMembershipType || data.userType || 'Unknown'}`);
-          console.log(`   Feedback: ${(data.feedback || 'No feedback').substring(0, 50)}...`);
-          console.log(`   AI Sentiment: ${data.aiSentiment || 'Not analyzed'}`);
-          console.log('   ---');
-        });
-        
-        console.log('\n--- BUSINESS TESTIMONIALS ---');
-        businessSnapshot.forEach(doc => {
-          const data = doc.data();
-          console.log(`📝 ID: ${doc.id}`);
-          console.log(`   Document keys:`, Object.keys(data));
-          console.log(`   Raw document:`, data);
-          console.log(`   User: ${data.userName || data.author || data.name || data.user || data.email || 'Unknown'}`);
-          console.log(`   All name fields: userName="${data.userName}", author="${data.author}", name="${data.name}", user="${data.user}", email="${data.email}"`);
-          console.log(`   Rating: ${data.rating || data.starRating || 'No rating'}`);
-          console.log(`   User Type: Business`);
-          console.log(`   Feedback: ${(data.feedback || 'No feedback').substring(0, 50)}...`);
-          console.log(`   AI Sentiment: ${data.aiSentiment || 'Not analyzed'}`);
-          console.log('   ---');
-        });
-        
-        // Test filtering
-        const allTestimonials = [];
-        regularSnapshot.forEach(doc => {
-          allTestimonials.push({ id: doc.id, source: 'testimonial', ...doc.data() });
-        });
-        businessSnapshot.forEach(doc => {
-          allTestimonials.push({ id: doc.id, source: 'businessUserTestimonial', ...doc.data() });
-        });
-        
-        const filtered = allTestimonials.filter(t => {
-          const rating = t.rating || t.starRating || 0;
-          const hasGoodRating = rating >= 3;
-          const hasPositiveSentiment = t.aiSentiment === 'positive' || (!t.aiSentiment && rating >= 4);
-          const hasFeedback = t.feedback && t.feedback.trim() !== '' && t.feedback !== 'No feedback' && t.feedback.trim().length > 10;
-          const isClean = !t.aiSentiment || (t.aiSentiment !== 'spam' && t.aiSentiment !== 'inappropriate');
-          
-          return hasGoodRating && hasPositiveSentiment && hasFeedback && isClean;
-        });
-        
-        const userFiltered = filtered.filter(t => t.source === 'testimonial');
-        const businessFiltered = filtered.filter(t => t.source === 'businessUserTestimonial');
-        
-        console.log(`🔍 After filtering: ${filtered.length} total testimonials meet criteria`);
-        console.log(`   - ${userFiltered.length} user testimonials`);
-        console.log(`   - ${businessFiltered.length} business testimonials`);
-        
-        alert(`Database check complete!\nTotal: ${regularSnapshot.size + businessSnapshot.size} testimonials\nMeet criteria: ${filtered.length} (${userFiltered.length} user, ${businessFiltered.length} business)\nCheck console for details.`);
-        
-      } catch (error) {
-        console.error('❌ Error checking testimonials:', error);
-        alert('Error checking testimonials: ' + error.message);
-      }
-    };
-
-    // Add debug button to page (temporary)
-    const debugButton = document.createElement('button');
-    debugButton.textContent = '🔍 Debug Testimonials';
-    debugButton.style.cssText = 'position: fixed; top: 10px; right: 10px; z-index: 9999; background: #ff6b35; color: white; border: none; padding: 10px; border-radius: 5px; cursor: pointer;';
-    debugButton.onclick = window.debugTestimonials;
-    document.body.appendChild(debugButton);
-
 
   </script>
 
