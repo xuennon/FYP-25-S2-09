@@ -71,6 +71,10 @@
       cursor: pointer;
       user-select: none;
     }
+    #backBtn {
+      font-size: 24px;
+      padding: 4px 8px;
+    }
     #modeToggle {
       font-size: 20px;
     }
@@ -451,6 +455,7 @@
   </aside>
   <header class="toolbar" role="banner" aria-label="Page toolbar">
     <div>
+      <button id="backBtn" aria-label="Go back" title="Go back">←</button>
       <span class="title" id="adminName">Welcome, Admin</span>
     </div>
     <div>
@@ -555,6 +560,11 @@
     closeMenuBtn.addEventListener("click", () => {
       sideMenu.classList.remove("active");
       sideMenuOverlay.classList.remove("active");
+    });
+
+    // Back button functionality
+    document.getElementById("backBtn").addEventListener("click", () => {
+      window.location.href = "SystemAdmin.html";
     });
 
     sideMenuOverlay.addEventListener("click", () => {

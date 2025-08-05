@@ -43,6 +43,8 @@
       background: var(--dark-bg);
       color: var(--text-dark);
     }
+
+    * {
       box-sizing: border-box;
     }
 
@@ -1310,6 +1312,7 @@
   </aside>
   <header class="toolbar" role="banner" aria-label="Page toolbar">
     <div>
+      <button id="backBtn" aria-label="Go back" title="Go back">←</button>
       <span class="title" id="adminName">Welcome, Admin</span>
     </div>
     <div>
@@ -1744,6 +1747,11 @@
       deleteDoc,
       writeBatch 
     } from "https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore.js";
+
+    // Back button functionality
+    document.getElementById("backBtn").addEventListener("click", () => {
+      window.location.href = "SystemAdmin.html";
+    });
 
     // ===========================================================================
     // IMPORTANT: AI FILTERING CONFIGURATION
