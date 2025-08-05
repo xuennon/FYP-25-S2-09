@@ -1,0 +1,61 @@
+# Docker ignore file for RunPulse deployment
+# Ignore development files and directories
+
+# Flutter app (not needed for web deployment)
+wise_workout_app/
+!wise_workout_app/build/web
+
+# Git files
+.git/
+.gitignore
+
+# Documentation
+*.md
+!README.md
+
+# IDE files
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# Log files
+*.log
+logs/
+
+# Temporary files
+tmp/
+temp/
+.tmp/
+
+# Node modules (if any)
+node_modules/
+
+# Build artifacts (except web build)
+build/
+dist/
+!build/web
+
+# Cache directories
+.cache/
+.npm/
+.yarn/
+
+# Environment files
+.env
+.env.local
+.env.production
+.env.staging
+
+# Backup files
+*.bak
+*.backup
+
+# Archive files
+*.tar
+*.tar.gz
+*.zip
