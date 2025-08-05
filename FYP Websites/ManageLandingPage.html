@@ -43,8 +43,6 @@
       background: var(--dark-bg);
       color: var(--text-dark);
     }
-
-    * {
       box-sizing: border-box;
     }
 
@@ -1311,8 +1309,7 @@
     </nav>
   </aside>
   <header class="toolbar" role="banner" aria-label="Page toolbar">
-    <div style="display: flex; align-items: center; gap: 8px;">
-      <button id="backBtn" aria-label="Back" title="Back" style="background: none; border: none; color: white; font-size: 22px; cursor: pointer;">←</button>
+    <div>
       <span class="title" id="adminName">Welcome, Admin</span>
     </div>
     <div>
@@ -1780,12 +1777,6 @@
     const sideMenu = document.getElementById("sideMenu");
     const sideMenuOverlay = document.getElementById("sideMenuOverlay");
     const menuBtn = document.getElementById("menuBtn");
-    
-    // Back button functionality
-    const backBtn = document.getElementById("backBtn");
-    if (backBtn) {
-      backBtn.onclick = () => window.history.back();
-    }
     const closeMenuBtn = document.getElementById("closeMenuBtn");
     const modeToggle = document.getElementById("modeToggle");
 
@@ -2681,15 +2672,14 @@ Services Section:
     const itemsPerPage = 15;
     let isAiAnalyzing = false;
     
-    // AI Configuration - Replace with your OpenAI API key
-    const OPENAI_API_KEY = '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'; // Your OpenAI API key
+    // AI Configuration - SECURITY: Use environment variable or configure in admin settings
+    const OPENAI_API_KEY = 'your-openai-api-key-here'; // Configure this securely via environment variables
     const OPENAI_API_URL = 'https://api.openai.com/v1/chat/completions';
     
     // Test OpenAI API connection
     window.testOpenAI = async function() {
       try {
         showMessage('🧪 Testing OpenAI API connection...', 'success');
-        console.log('Testing OpenAI API with key:', OPENAI_API_KEY.substring(0, 10) + '...');
         
         // Test with different scenarios
         const testCases = [
@@ -2699,9 +2689,7 @@ Services Section:
         ];
         
         for (const testCase of testCases) {
-          console.log(`Testing: "${testCase.feedback}" (${testCase.rating} stars)`);
           const analysis = await callOpenAIWithFallback(testCase.feedback, testCase.rating);
-          console.log('Analysis Result:', analysis);
         }
         
         showMessage(`✅ API Test Successful! All test cases completed.`, 'success');
@@ -2794,16 +2782,8 @@ Services Section:
           
           // EXCEPTION: Skip specific user who should be in premium category
           if (data.userId === '5bP0koGL6cSqNPQfpDH5uJUMSqH2') {
-            console.log(`🎯 EXCEPTION: Skipping user ${data.userId} from business testimonials (should be premium)`);
             return; // Skip this iteration
           }
-          
-          // Debug log for business testimonials
-          console.log(`Processing business testimonial ${doc.id}:`, {
-            userId: data.userId,
-            userData: userData,
-            hasBusinessData: !!userData
-          });
           
           allTestimonialsData.push({
             id: doc.id,
@@ -2844,7 +2824,6 @@ Services Section:
           // EXCEPTION CASE: Handle specific user with inconsistent data
           if (userId === '5bP0koGL6cSqNPQfpDH5uJUMSqH2') {
             membershipType = 'premium';
-            console.log(`🎯 EXCEPTION: Applied premium membership for user ${userId} (data inconsistency override)`);
           } else {
             // Check multiple sources for membership type
             if (userData) {
@@ -2868,25 +2847,8 @@ Services Section:
             // Handle "normal" userType from old data structure
             if (data.userType === 'normal' || membershipType === 'normal') {
               membershipType = 'basic'; // Treat "normal" as "basic" user
-              console.log(`Converting legacy userType "normal" to "basic" for testimonial ${doc.id}`);
             }
           }
-          
-          // Debug log for regular testimonials
-          console.log(`Processing regular testimonial ${doc.id}:`, {
-            originalUserId: data.userId,
-            finalUserId: userId,
-            userDataExists: !!userData,
-            userDataFields: userData ? Object.keys(userData) : [],
-            originalMembershipType: userData?.membershipType,
-            userDataMembership: userData?.membership,
-            userDataUserType: userData?.userType,
-            userDataAccountType: userData?.accountType,
-            testimonialMembershipType: data.membershipType,
-            testimonialUserMembershipType: data.userMembershipType,
-            finalMembershipType: membershipType,
-            userName: userData?.fullName || userData?.username
-          });
           
           // Ensure this testimonial is NOT marked as business
           if (membershipType === 'business') {
@@ -2915,28 +2877,6 @@ Services Section:
           basic: allTestimonialsData.filter(t => t.userMembershipType === 'basic').length,
           premium: allTestimonialsData.filter(t => t.userMembershipType === 'premium').length
         };
-        
-        // Debug log for final statistics
-        console.log('Final testimonial statistics:', stats);
-        console.log('Business testimonials:', allTestimonialsData.filter(t => t.userMembershipType === 'business').map(t => ({
-          id: t.id,
-          userName: t.userName,
-          source: t.source,
-          membershipType: t.userMembershipType
-        })));
-        console.log('Basic testimonials:', allTestimonialsData.filter(t => t.userMembershipType === 'basic').map(t => ({
-          id: t.id,
-          userName: t.userName,
-          source: t.source,
-          membershipType: t.userMembershipType
-        })));
-        console.log('Premium testimonials:', allTestimonialsData.filter(t => t.userMembershipType === 'premium').map(t => ({
-          id: t.id,
-          userName: t.userName,
-          source: t.source,
-          membershipType: t.userMembershipType,
-          userId: t.userId
-        })));
         
         // Check for testimonials with unexpected membership types
         const unknownTypes = allTestimonialsData.filter(t => 
@@ -3016,40 +2956,18 @@ Services Section:
       const ratingFilter = document.getElementById('filter-rating').value;
       const searchFilter = document.getElementById('filter-search').value.toLowerCase();
       
-      console.log('🔍 STARTING FILTER with priority order:', {
-        '1. Membership (HIGHEST)': membershipFilter || 'None',
-        '2. Rating': ratingFilter || 'None', 
-        '3. AI Sentiment': sentimentFilter || 'None',
-        '4. Search (LOWEST)': searchFilter || 'None'
-      });
-      
       // ALWAYS start fresh from all testimonials
       filteredTestimonialsData = [...allTestimonialsData];
-      console.log(`Starting with ${filteredTestimonialsData.length} total testimonials`);
       
       // PRIORITY 1: Membership filter (HIGHEST PRIORITY - MUST BE EXACT MATCH)
       if (membershipFilter && membershipFilter !== '') {
-        console.log(`🎯 APPLYING MEMBERSHIP FILTER: "${membershipFilter}"`);
-        
-        const beforeFilter = filteredTestimonialsData.length;
         filteredTestimonialsData = filteredTestimonialsData.filter(testimonial => {
           const userType = testimonial.userMembershipType;
-          const isMatch = userType === membershipFilter;
-          
-          if (!isMatch) {
-            console.log(`   ❌ EXCLUDED: ${testimonial.userName} (${userType} ≠ ${membershipFilter})`);
-          } else {
-            console.log(`   ✅ INCLUDED: ${testimonial.userName} (${userType})`);
-          }
-          
-          return isMatch;
+          return userType === membershipFilter;
         });
-        
-        console.log(`📊 MEMBERSHIP FILTER RESULT: ${beforeFilter} → ${filteredTestimonialsData.length} testimonials`);
         
         // If membership filter results in 0 testimonials, stop here
         if (filteredTestimonialsData.length === 0) {
-          console.log(`⚠️ No testimonials match membership "${membershipFilter}" - stopping filter chain`);
           currentPage = 1;
           renderTestimonialsTable();
           return;
@@ -3058,9 +2976,6 @@ Services Section:
       
       // PRIORITY 2: Rating filter (SECOND PRIORITY)
       if (ratingFilter && ratingFilter !== '' && filteredTestimonialsData.length > 0) {
-        console.log(`⭐ APPLYING RATING FILTER: "${ratingFilter}"`);
-        
-        const beforeFilter = filteredTestimonialsData.length;
         filteredTestimonialsData = filteredTestimonialsData.filter(testimonial => {
           const rating = testimonial.rating || 0;
           let isMatch = false;
@@ -3074,71 +2989,24 @@ Services Section:
             isMatch = rating === 5;
           }
           
-          if (!isMatch) {
-            console.log(`   ❌ EXCLUDED: ${testimonial.userName} (rating: ${rating})`);
-          } else {
-            console.log(`   ✅ INCLUDED: ${testimonial.userName} (rating: ${rating})`);
-          }
-          
           return isMatch;
         });
-        
-        console.log(`📊 RATING FILTER RESULT: ${beforeFilter} → ${filteredTestimonialsData.length} testimonials`);
       }
       
       // PRIORITY 3: AI Sentiment filter (THIRD PRIORITY)
       if (sentimentFilter && sentimentFilter !== '' && filteredTestimonialsData.length > 0) {
-        console.log(`🤖 APPLYING SENTIMENT FILTER: "${sentimentFilter}"`);
-        
-        const beforeFilter = filteredTestimonialsData.length;
         filteredTestimonialsData = filteredTestimonialsData.filter(testimonial => {
           const sentiment = testimonial.aiSentiment;
-          const isMatch = sentiment === sentimentFilter;
-          
-          if (!isMatch) {
-            console.log(`   ❌ EXCLUDED: ${testimonial.userName} (sentiment: ${sentiment})`);
-          } else {
-            console.log(`   ✅ INCLUDED: ${testimonial.userName} (sentiment: ${sentiment})`);
-          }
-          
-          return isMatch;
+          return sentiment === sentimentFilter;
         });
-        
-        console.log(`📊 SENTIMENT FILTER RESULT: ${beforeFilter} → ${filteredTestimonialsData.length} testimonials`);
       }
       
       // PRIORITY 4: Search filter (LOWEST PRIORITY)
       if (searchFilter && searchFilter.trim() !== '' && filteredTestimonialsData.length > 0) {
-        console.log(`🔎 APPLYING SEARCH FILTER: "${searchFilter}"`);
-        
-        const beforeFilter = filteredTestimonialsData.length;
         filteredTestimonialsData = filteredTestimonialsData.filter(testimonial => {
           const searchText = `${testimonial.feedback || ''} ${testimonial.userName || ''} ${testimonial.userEmail || ''}`.toLowerCase();
-          const isMatch = searchText.includes(searchFilter);
-          
-          if (!isMatch) {
-            console.log(`   ❌ EXCLUDED: ${testimonial.userName} (no search match)`);
-          } else {
-            console.log(`   ✅ INCLUDED: ${testimonial.userName} (search match)`);
-          }
-          
-          return isMatch;
+          return searchText.includes(searchFilter);
         });
-        
-        console.log(`📊 SEARCH FILTER RESULT: ${beforeFilter} → ${filteredTestimonialsData.length} testimonials`);
-      }
-      
-      // Final results summary
-      console.log(`🎯 FINAL FILTER RESULTS: ${filteredTestimonialsData.length} testimonials`);
-      
-      if (filteredTestimonialsData.length > 0) {
-        console.log('📋 FINAL TESTIMONIALS:', filteredTestimonialsData.map(t => ({
-          name: t.userName,
-          membership: t.userMembershipType,
-          rating: t.rating,
-          sentiment: t.aiSentiment,
-          feedback: (t.feedback || '').substring(0, 50) + '...'
-        })));
       }
       
       // Reset to page 1 and render
@@ -3148,8 +3016,6 @@ Services Section:
     
     // Clear all filters and show all testimonials
     window.clearAllFilters = function() {
-      console.log('🧹 CLEARING ALL FILTERS');
-      
       // Reset all filter controls
       document.getElementById('filter-membership').value = '';
       document.getElementById('filter-rating').value = '';
@@ -3160,7 +3026,6 @@ Services Section:
       filteredTestimonialsData = [...allTestimonialsData];
       currentPage = 1;
       
-      console.log(`✅ All filters cleared. Showing ${filteredTestimonialsData.length} testimonials`);
       renderTestimonialsTable();
     };
     
@@ -3561,10 +3426,6 @@ Respond in JSON format:
   "flags": ["spam", "inappropriate", "rating_text_mismatch"] // empty array if no flags
 }`;
       
-      console.log('🤖 Making OpenAI API call...');
-      console.log('API Key (first 10 chars):', OPENAI_API_KEY.substring(0, 10));
-      console.log('Feedback to analyze:', feedback.substring(0, 100) + '...');
-      
       try {
         const response = await fetch(OPENAI_API_URL, {
           method: 'POST',
@@ -3589,9 +3450,6 @@ Respond in JSON format:
           })
         });
         
-        console.log('Response status:', response.status);
-        console.log('Response ok:', response.ok);
-        
         if (!response.ok) {
           const errorText = await response.text();
           console.error('OpenAI API Error Response:', errorText);
@@ -3599,14 +3457,10 @@ Respond in JSON format:
         }
         
         const data = await response.json();
-        console.log('OpenAI Response:', data);
-        
         const aiResponse = data.choices[0].message.content.trim();
-        console.log('AI Generated Content:', aiResponse);
         
         try {
           const parsedResponse = JSON.parse(aiResponse);
-          console.log('Parsed AI Response:', parsedResponse);
           return parsedResponse;
         } catch (parseError) {
           console.error('Error parsing AI response:', aiResponse);
