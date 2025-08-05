@@ -421,7 +421,16 @@
         window.location.href = "Login.html";
       } else {
         const adminData = adminDoc.data();
-        const adminName = adminData.name || "Admin";
+        console.log('Admin data:', adminData); // Debug log
+        
+        // Try multiple potential field names
+        const adminName = adminData.name || 
+                         adminData.fullName || 
+                         adminData.displayName || 
+                         adminData.adminName || 
+                         "Admin";
+        
+        console.log('Resolved admin name:', adminName); // Debug log
         document.getElementById("adminName").textContent = `Welcome, ${adminName}`;
 
         loadDashboardStats();
