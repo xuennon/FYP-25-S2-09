@@ -333,19 +333,19 @@
   <div class="container">
     <div class="stats">
       <div class="card">
-        <div>Total Users</div>
+        <div>👥 Total Users</div>
         <div><strong id="totalUsers">...</strong></div>
       </div>
       <div class="card">
-        <div>Suspended</div>
+        <div>⚠️ Suspended</div>
         <div><strong id="suspendedUsers">...</strong></div>
       </div>
       <div class="card" onclick="location.href='pendingApplications.html'" style="cursor: pointer;">
-        <div>Pending Applications <span class="badge" id="pendingCount">...</span></div>
+        <div>⏳ Pending Applications <span class="badge" id="pendingCount">...</span></div>
         <div><strong id="pendingAppsMain">...</strong></div>
       </div>
       <div class="card">
-        <div>Feedback</div>
+        <div>💬 Feedback</div>
         <div><strong id="feedbackCount">...</strong></div>
       </div>
     </div>
@@ -471,7 +471,10 @@
     try {
       const usersCol = collection(db, "users");
       const businessCol = collection(db, "businessUsers");
-      const feedbackCol = collection(db, "feedback");  // adjust if collection name is different
+      
+      // Testimonials collections (same as ManageLandingPage.html)
+      const businessTestimonialsCol = collection(db, "businessUserTestimonial");
+      const regularTestimonialsCol = collection(db, "testimonial");
 
       // Total users = users + businessUsers count
       const [usersCount, businessCount] = await Promise.all([
@@ -493,9 +496,13 @@
       document.getElementById("pendingCount").textContent = pendingAppsCount;
       document.getElementById("pendingAppsMain").textContent = pendingAppsCount;
 
-      // Feedback count
-      const feedbackCount = await getCollectionCount(feedbackCol);
-      document.getElementById("feedbackCount").textContent = feedbackCount;
+      // Feedback count (testimonials from both collections)
+      const [businessTestimonialsCount, regularTestimonialsCount] = await Promise.all([
+        getCollectionCount(businessTestimonialsCol),
+        getCollectionCount(regularTestimonialsCol),
+      ]);
+      const totalFeedbackCount = businessTestimonialsCount + regularTestimonialsCount;
+      document.getElementById("feedbackCount").textContent = totalFeedbackCount;
 
     } catch (error) {
       console.error("Error loading dashboard stats:", error);
