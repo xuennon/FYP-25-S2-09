@@ -81,7 +81,6 @@
       font-weight: 600;
       font-size: 18px;
     }
-
     /* Side Menu styles (from SystemAdmin.html) */
     #sideMenuOverlay {
       display: none;
@@ -451,8 +450,7 @@
     </nav>
   </aside>
   <header class="toolbar" role="banner" aria-label="Page toolbar">
-    <div style="display: flex; align-items: center; gap: 8px;">
-      <button id="backBtn" aria-label="Back to Dashboard" title="Back to Dashboard" style="background: none; border: none; color: white; font-size: 22px; cursor: pointer;" onclick="location.href='SystemAdmin.html'">←</button>
+    <div>
       <span class="title" id="adminName">Welcome, Admin</span>
     </div>
     <div>
@@ -566,7 +564,8 @@
 
     // Mode toggle functionality
     modeToggle.addEventListener("click", () => {
-      const isDark = document.body.classList.toggle("dark");
+      document.body.classList.toggle("dark");
+      const isDark = document.body.classList.contains("dark");
       modeToggle.textContent = isDark ? "☀️" : "🌙";
       localStorage.setItem("theme", isDark ? "dark" : "light");
     });

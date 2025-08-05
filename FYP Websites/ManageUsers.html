@@ -390,7 +390,7 @@
   </aside>
   <header class="toolbar" role="banner" aria-label="Page toolbar">
     <div style="display: flex; align-items: center; gap: 8px;">
-      <button id="backBtn" aria-label="Back to Dashboard" title="Back to Dashboard" style="background: none; border: none; color: white; font-size: 22px; cursor: pointer;" onclick="location.href='SystemAdmin.html'">←</button>
+      <button id="backBtn" aria-label="Back" title="Back" style="background: none; border: none; color: white; font-size: 22px; cursor: pointer;">←</button>
       <span class="title">Manage Users</span>
     </div>
     <div>
@@ -398,6 +398,13 @@
       <button id="menuBtn" aria-label="Open menu" title="Open menu">☰</button>
     </div>
   </header>
+    // Back button functionality
+    const backBtn = document.getElementById("backBtn");
+    if (backBtn) {
+      backBtn.onclick = () => window.history.back();
+    }
+
+
 
   <div class="container">
     <div class="filter-bar">
@@ -476,6 +483,12 @@
     menuBtn.addEventListener("click", openMenu);
     closeMenuBtn.addEventListener("click", closeMenu);
     sideMenuOverlay.addEventListener("click", closeMenu);
+
+    // Back button functionality
+    const backBtn = document.getElementById("backBtn");
+    if (backBtn) {
+      backBtn.onclick = () => window.history.back();
+    }
 
     const modeToggle = document.getElementById("modeToggle");
     modeToggle.onclick = () => {
