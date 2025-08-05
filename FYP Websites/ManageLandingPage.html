@@ -43,8 +43,6 @@
       background: var(--dark-bg);
       color: var(--text-dark);
     }
-
-    * {
       box-sizing: border-box;
     }
 
@@ -1311,8 +1309,8 @@
     </nav>
   </aside>
   <header class="toolbar" role="banner" aria-label="Page toolbar">
-    <div>
-      <button id="backBtn" aria-label="Go back" title="Go back">←</button>
+    <div style="display: flex; align-items: center; gap: 8px;">
+      <button id="backBtn" aria-label="Back" title="Back" style="background: none; border: none; color: white; font-size: 22px; cursor: pointer;">←</button>
       <span class="title" id="adminName">Welcome, Admin</span>
     </div>
     <div>
@@ -1748,11 +1746,6 @@
       writeBatch 
     } from "https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore.js";
 
-    // Back button functionality
-    document.getElementById("backBtn").addEventListener("click", () => {
-      window.location.href = "SystemAdmin.html";
-    });
-
     // ===========================================================================
     // IMPORTANT: AI FILTERING CONFIGURATION
     // ===========================================================================
@@ -1805,6 +1798,11 @@
     sideMenuOverlay.addEventListener("click", () => {
       sideMenu.classList.remove("active");
       sideMenuOverlay.classList.remove("active");
+    });
+
+    // Back button functionality
+    document.getElementById("backBtn").addEventListener("click", () => {
+      window.location.href = "SystemAdmin.html";
     });
 
     // Mode toggle functionality
