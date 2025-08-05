@@ -1,5 +1,10 @@
 import 'package:flutter/material.dart';
-import 'user_follow_state.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
+import 'services/firebase_friend_service.dart';
+import 'activities_page.dart';
+import 'user_posts_page.dart';
+import 'user_teams_page.dart';
+import 'user_events_page.dart';
 
 class UserProfilePage extends StatefulWidget {
   final String username;
@@ -11,7 +16,168 @@ class UserProfilePage extends StatefulWidget {
 }
 
 class _UserProfilePageState extends State<UserProfilePage> {
-  final UserFollowState _userFollowState = UserFollowState();
+  final FirebaseFriendService _friendService = FirebaseFriendService();
+  final FirebaseFirestore _firestore = FirebaseFirestore.instance;
+  
+  bool _isFollowing = false;
+  int _postsCount = 0;
+  int _followingCount = 0;
+  int _followersCount = 0;
+  int _teamsCount = 0;
+  int _eventsCount = 0;
+  String? _targetUserId;
+
+  @override
+  void initState() {
+    super.initState();
+    _loadUserData();
+  }
+
+  Future<void> _loadUserData() async {
+    try {
+      // Get user ID by username
+      final userData = await _friendService.searchUsers(widget.username);
+      if (userData.isNotEmpty) {
+        _targetUserId = userData[0]['userId'];
+        
+        // Load follow status
+        final isFollowing = await _friendService.isFollowing(_targetUserId!);
+        
+        // Get real posts count for this user
+        int postsCount = await _getPostsCountForUser(_targetUserId!);
+        
+        // Get real following/followers count for this user
+        Map<String, int> followCounts = await _getFollowCountsForUser(_targetUserId!);
+        
+        // Get real teams and events count for this user
+        int teamsCount = await _getTeamsCountForUser(_targetUserId!);
+        int eventsCount = await _getEventsCountForUser(_targetUserId!);
+        
+        setState(() {
+          _isFollowing = isFollowing;
+          _postsCount = postsCount;
+          _followingCount = followCounts['following'] ?? 0;
+          _followersCount = followCounts['followers'] ?? 0;
+          _teamsCount = teamsCount;
+          _eventsCount = eventsCount;
+        });
+      }
+    } catch (e) {
+      print('Error loading user data: $e');
+    }
+  }
+
+  // Get posts count for a specific user
+  Future<int> _getPostsCountForUser(String userId) async {
+    try {
+      final querySnapshot = await _firestore
+          .collection('posts')
+          .where('userId', isEqualTo: userId)
+          .get();
+      return querySnapshot.docs.length;
+    } catch (e) {
+      print('Error getting posts count: $e');
+      return 0;
+    }
+  }
+
+  // Get follow counts for a specific user
+  Future<Map<String, int>> _getFollowCountsForUser(String userId) async {
+    try {
+      // Get following count
+      final followingSnapshot = await _firestore
+          .collection('users')
+          .doc(userId)
+          .collection('following')
+          .get();
+
+      // Get followers count
+      final followersSnapshot = await _firestore
+          .collection('users')
+          .doc(userId)
+          .collection('followers')
+          .get();
+
+      return {
+        'following': followingSnapshot.docs.length,
+        'followers': followersSnapshot.docs.length,
+      };
+    } catch (e) {
+      print('Error getting follow counts: $e');
+      return {'following': 0, 'followers': 0};
+    }
+  }
+
+  // Get teams count for a specific user (both created and joined teams)
+  Future<int> _getTeamsCountForUser(String userId) async {
+    print('🔍 Getting teams count for user: $userId');
+    try {
+      final querySnapshot = await _firestore
+          .collection('teams')
+          .where('members', arrayContains: userId)
+          .get();
+      print('📊 Found ${querySnapshot.docs.length} teams for user $userId in profile count');
+      return querySnapshot.docs.length;
+    } catch (e) {
+      print('❌ Error getting teams count: $e');
+      return 0;
+    }
+  }
+
+  // Get events count for a specific user  
+  Future<int> _getEventsCountForUser(String userId) async {
+    try {
+      final querySnapshot = await _firestore
+          .collection('events')
+          .where('createdBy', isEqualTo: userId)
+          .get();
+      return querySnapshot.docs.length;
+    } catch (e) {
+      print('Error getting events count: $e');
+      return 0;
+    }
+  }
+
+  Future<void> _toggleFollow() async {
+    if (_targetUserId == null) return;
+    
+    try {
+      if (_isFollowing) {
+        await _friendService.unfollowUser(_targetUserId!);
+      } else {
+        await _friendService.followUser(_targetUserId!, widget.username);
+      }
+      
+      setState(() {
+        _isFollowing = !_isFollowing;
+        // Update followers count immediately for better UX
+        _followersCount += _isFollowing ? 1 : -1;
+      });
+      
+      // Reload actual data from Firebase to ensure accuracy
+      _reloadFollowCounts();
+    } catch (e) {
+      print('Error toggling follow: $e');
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Error: ${e.toString()}')),
+      );
+    }
+  }
+
+  // Reload follow counts from Firebase
+  Future<void> _reloadFollowCounts() async {
+    if (_targetUserId == null) return;
+    
+    try {
+      Map<String, int> followCounts = await _getFollowCountsForUser(_targetUserId!);
+      setState(() {
+        _followingCount = followCounts['following'] ?? 0;
+        _followersCount = followCounts['followers'] ?? 0;
+      });
+    } catch (e) {
+      print('Error reloading follow counts: $e');
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -72,26 +238,15 @@ class _UserProfilePageState extends State<UserProfilePage> {
                       fontWeight: FontWeight.bold,
                     ),
                   ),
-                  const SizedBox(height: 8),
-                  
-                  // Bio
-                  const Text(
-                    'Fitness enthusiast | Running lover | Gym regular',
-                    style: TextStyle(
-                      fontSize: 16,
-                      color: Colors.grey,
-                    ),
-                    textAlign: TextAlign.center,
-                  ),
                   const SizedBox(height: 20),
                   
                   // Stats Row
                   Row(
                     mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                     children: [
-                      _buildStatColumn('Posts', '42'),
-                      _buildStatColumn('Following', '156'),
-                      _buildStatColumn('Followers', '234'),
+                      _buildStatColumn('Posts', '$_postsCount'),
+                      _buildStatColumn('Following', '$_followingCount'),
+                      _buildStatColumn('Followers', '$_followersCount'),
                     ],
                   ),
                   const SizedBox(height: 20),
@@ -101,27 +256,19 @@ class _UserProfilePageState extends State<UserProfilePage> {
                     width: double.infinity,
                     height: 45,
                     child: ElevatedButton(
-                      onPressed: () {
-                        setState(() {
-                          if (_userFollowState.isFollowing(widget.username)) {
-                            _userFollowState.unfollowUser(widget.username);
-                          } else {
-                            _userFollowState.followUser(widget.username);
-                          }
-                        });
-                      },
+                      onPressed: _toggleFollow,
                       style: ElevatedButton.styleFrom(
-                        backgroundColor: _userFollowState.isFollowing(widget.username) 
-                            ? Colors.grey[200] 
+                        backgroundColor: _isFollowing 
+                            ? Colors.grey[300] 
                             : Colors.orange,
                         shape: RoundedRectangleBorder(
                           borderRadius: BorderRadius.circular(8),
                         ),
                       ),
                       child: Text(
-                        _userFollowState.isFollowing(widget.username) ? 'Following' : 'Follow',
+                        _isFollowing ? 'Following' : 'Follow',
                         style: TextStyle(
-                          color: _userFollowState.isFollowing(widget.username) 
+                          color: _isFollowing 
                               ? Colors.black 
                               : Colors.white,
                           fontSize: 16,
@@ -134,28 +281,98 @@ class _UserProfilePageState extends State<UserProfilePage> {
               ),
             ),
             
-            // Tabs for Posts/Activity
-            DefaultTabController(
-              length: 2,
+            const SizedBox(height: 20),
+            
+            // Menu Items Section (like my profile page)
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 20),
               child: Column(
                 children: [
-                  const TabBar(
-                    labelColor: Colors.black,
-                    unselectedLabelColor: Colors.grey,
-                    indicatorColor: Colors.orange,
-                    tabs: [
-                      Tab(text: 'Posts'),
-                      Tab(text: 'Activity'),
-                    ],
+                  // Menu Items
+                  _buildMenuItem(
+                    icon: Icons.timeline,
+                    title: 'Activities',
+                    onTap: () {
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(builder: (context) => const ActivitiesPage()),
+                      );
+                    },
                   ),
-                  SizedBox(
-                    height: 400,
-                    child: TabBarView(
+                  _buildMenuItem(
+                    icon: Icons.bar_chart,
+                    title: 'Statistics',
+                    onTap: () {
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        const SnackBar(content: Text('Statistics coming soon!')),
+                      );
+                    },
+                  ),
+                  _buildMenuItemWithCount(
+                    icon: Icons.article,
+                    title: 'Posts',
+                    count: _postsCount,
+                    onTap: () {
+                      if (_targetUserId != null) {
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder: (context) => UserPostsPage(
+                              username: widget.username,
+                              userId: _targetUserId!,
+                            ),
+                          ),
+                        );
+                      }
+                    },
+                  ),
+                  
+                  const SizedBox(height: 24),
+                  
+                  // Teams and Events Section with counts
+                  Container(
+                    padding: const EdgeInsets.all(20),
+                    decoration: BoxDecoration(
+                      color: Colors.white,
+                      borderRadius: BorderRadius.circular(16),
+                      boxShadow: [
+                        BoxShadow(
+                          color: Colors.black.withOpacity(0.1),
+                          blurRadius: 10,
+                          offset: const Offset(0, 5),
+                        ),
+                      ],
+                    ),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        // Posts Tab
-                        _buildPostsGrid(),
-                        // Activity Tab
-                        _buildActivityList(),
+                        _buildSectionHeaderWithCount('Teams', _teamsCount, () {
+                          if (_targetUserId != null) {
+                            Navigator.push(
+                              context,
+                              MaterialPageRoute(
+                                builder: (context) => UserTeamsPage(
+                                  username: widget.username,
+                                  userId: _targetUserId!,
+                                ),
+                              ),
+                            );
+                          }
+                        }),
+                        const SizedBox(height: 16),
+                        _buildSectionHeaderWithCount('Events', _eventsCount, () {
+                          if (_targetUserId != null) {
+                            Navigator.push(
+                              context,
+                              MaterialPageRoute(
+                                builder: (context) => UserEventsPage(
+                                  username: widget.username,
+                                  userId: _targetUserId!,
+                                ),
+                              ),
+                            );
+                          }
+                        }),
                       ],
                     ),
                   ),
@@ -190,86 +407,129 @@ class _UserProfilePageState extends State<UserProfilePage> {
     );
   }
 
-  Widget _buildPostsGrid() {
-    return GridView.builder(
-      padding: const EdgeInsets.all(16),
-      gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-        crossAxisCount: 3,
-        crossAxisSpacing: 8,
-        mainAxisSpacing: 8,
-      ),
-      itemCount: 9,
-      itemBuilder: (context, index) {
-        return Container(
-          decoration: BoxDecoration(
-            color: Colors.grey[300],
-            borderRadius: BorderRadius.circular(8),
+  Widget _buildMenuItem({
+    required IconData icon,
+    required String title,
+    required VoidCallback onTap,
+  }) {
+    return Container(
+      margin: const EdgeInsets.only(bottom: 8),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(12),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withOpacity(0.05),
+            blurRadius: 5,
+            offset: const Offset(0, 2),
           ),
-          child: const Icon(Icons.photo, size: 40, color: Colors.grey),
-        );
-      },
+        ],
+      ),
+      child: ListTile(
+        leading: Icon(icon, color: Colors.grey[700]),
+        title: Text(
+          title,
+          style: const TextStyle(
+            fontWeight: FontWeight.w500,
+            fontSize: 16,
+          ),
+        ),
+        trailing: const Icon(Icons.arrow_forward_ios, size: 16, color: Colors.grey),
+        onTap: onTap,
+      ),
     );
   }
 
-  Widget _buildActivityList() {
-    final activities = [
-      'Completed 5km run in Central Park',
-      'Joined Morning Yoga class',
-      'Achieved personal best in deadlift',
-      'Completed weekly challenge',
-      'Joined Team Alpha for basketball',
-    ];
-
-    return ListView.builder(
-      padding: const EdgeInsets.all(16),
-      itemCount: activities.length,
-      itemBuilder: (context, index) {
-        return Container(
-          margin: const EdgeInsets.only(bottom: 12),
-          padding: const EdgeInsets.all(16),
-          decoration: BoxDecoration(
-            color: Colors.grey[50],
-            borderRadius: BorderRadius.circular(8),
-            border: Border.all(color: Colors.grey[200]!),
+  Widget _buildMenuItemWithCount({
+    required IconData icon,
+    required String title,
+    required int count,
+    required VoidCallback onTap,
+  }) {
+    return Container(
+      margin: const EdgeInsets.only(bottom: 8),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(12),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withOpacity(0.05),
+            blurRadius: 5,
+            offset: const Offset(0, 2),
           ),
-          child: Row(
-            children: [
-              Container(
-                width: 40,
-                height: 40,
-                decoration: const BoxDecoration(
-                  shape: BoxShape.circle,
-                  color: Colors.orange,
-                ),
-                child: const Icon(Icons.fitness_center, color: Colors.white, size: 20),
+        ],
+      ),
+      child: ListTile(
+        leading: Icon(icon, color: Colors.grey[700]),
+        title: Row(
+          children: [
+            Text(
+              title,
+              style: const TextStyle(
+                fontWeight: FontWeight.w500,
+                fontSize: 16,
               ),
-              const SizedBox(width: 12),
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      activities[index],
-                      style: const TextStyle(
-                        fontSize: 14,
-                        fontWeight: FontWeight.w500,
-                      ),
-                    ),
-                    const SizedBox(height: 4),
-                    Text(
-                      '${index + 1} day${index == 0 ? '' : 's'} ago',
-                      style: TextStyle(
-                        fontSize: 12,
-                        color: Colors.grey[600],
-                      ),
-                    ),
-                  ],
+            ),
+            const SizedBox(width: 8),
+            Container(
+              padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
+              decoration: BoxDecoration(
+                color: Colors.orange.withOpacity(0.1),
+                borderRadius: BorderRadius.circular(12),
+              ),
+              child: Text(
+                '$count',
+                style: TextStyle(
+                  color: Colors.orange[700],
+                  fontSize: 12,
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
+            ),
+          ],
+        ),
+        trailing: const Icon(Icons.arrow_forward_ios, size: 16, color: Colors.grey),
+        onTap: onTap,
+      ),
+    );
+  }
+
+  Widget _buildSectionHeaderWithCount(String title, int count, VoidCallback onTap) {
+    return GestureDetector(
+      onTap: onTap,
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+        children: [
+          Row(
+            children: [
+              Text(
+                title,
+                style: const TextStyle(
+                  fontSize: 20,
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
+              const SizedBox(width: 8),
+              Container(
+                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
+                decoration: BoxDecoration(
+                  color: Colors.blue.withOpacity(0.1),
+                  borderRadius: BorderRadius.circular(12),
+                ),
+                child: Text(
+                  '$count',
+                  style: TextStyle(
+                    color: Colors.blue[700],
+                    fontSize: 12,
+                    fontWeight: FontWeight.bold,
+                  ),
                 ),
               ),
             ],
           ),
-        );
-      },
+          const Icon(Icons.arrow_forward_ios, size: 16, color: Colors.grey),
+        ],
+      ),
     );
   }
 

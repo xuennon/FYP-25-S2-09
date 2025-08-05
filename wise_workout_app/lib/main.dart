@@ -6,6 +6,7 @@ import 'firebase_options.dart';
 import 'user_home_page.dart';
 import 'services/firebase_auth_service.dart';
 import 'services/user_profile_service.dart';
+import 'services/firebase_user_profile_service.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -40,6 +41,7 @@ class _LoginPageState extends State<LoginPage> {
   final _usernameController = TextEditingController();
   final _passwordController = TextEditingController();
   final FirebaseAuthService _authService = FirebaseAuthService();
+  final FirebaseUserProfileService _profileService = FirebaseUserProfileService();
   bool _isLoading = false;
 
   void _handleLogin() async {
@@ -62,16 +64,43 @@ class _LoginPageState extends State<LoginPage> {
 
     // Check for demo credentials first (for testing)
     if (email == 'user@demo.com' && password == 'user123') {
-      setState(() {
-        _isLoading = false;
-      });
-      Navigator.pushReplacement(
-        context,
-        MaterialPageRoute(
-          builder: (context) => const UserHomePage(),
-        ),
-      );
-      return;
+      try {
+        print('🔄 Demo login detected - using anonymous authentication...');
+        
+        // Sign in anonymously to get Firebase authentication
+        UserCredential credential = await FirebaseAuth.instance.signInAnonymously();
+        
+        if (credential.user != null) {
+          print('✅ Anonymous authentication successful');
+          
+          // For demo accounts, we'll skip suspension check since they're temporary
+          // But in a real scenario, you might want to check a demo user's suspension status too
+          
+          setState(() {
+            _isLoading = false;
+          });
+          
+          Navigator.pushReplacement(
+            context,
+            MaterialPageRoute(
+              builder: (context) => const UserHomePage(),
+            ),
+          );
+          return;
+        }
+      } catch (e) {
+        print('❌ Anonymous authentication failed: $e');
+        setState(() {
+          _isLoading = false;
+        });
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Demo login failed: $e'),
+            backgroundColor: Colors.red,
+          ),
+        );
+        return;
+      }
     }
 
     try {
@@ -92,7 +121,7 @@ class _LoginPageState extends State<LoginPage> {
         );
         return;
       }
-  
+
       setState(() {
         _isLoading = false;
       });
@@ -100,7 +129,24 @@ class _LoginPageState extends State<LoginPage> {
       print('Firebase auth result: $result');
 
       if (result['success']) {
-        // Load user profile after successful login
+        // Check suspension status after successful authentication
+        bool isSuspended = await _profileService.isUserSuspended();
+        
+        if (isSuspended) {
+          // Sign out the user immediately if suspended
+          await FirebaseAuth.instance.signOut();
+          
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(
+              content: Text('Your account has been suspended. Please contact support for assistance.'),
+              backgroundColor: Colors.red,
+              duration: Duration(seconds: 5),
+            ),
+          );
+          return;
+        }
+
+        // Load user profile after successful login and suspension check
         UserProfileService().loadProfile();
 
         // All authenticated users go to UserHomePage

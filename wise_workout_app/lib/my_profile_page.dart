@@ -7,10 +7,12 @@ import 'activities_page.dart';
 import 'widgets/user_avatar.dart';
 import 'all_teams_page.dart';
 import 'edit_profile_page.dart';
-import 'write_post_page.dart';
 import 'my_posts_page.dart';
 import 'all_events_page.dart';
+import 'feedback_page.dart';
 import 'services/firebase_user_profile_service.dart';
+import 'services/firebase_friend_service.dart';
+import 'workout_record_page.dart';
 
 class MyProfilePage extends StatefulWidget {
   const MyProfilePage({super.key});
@@ -21,10 +23,13 @@ class MyProfilePage extends StatefulWidget {
 
 class _MyProfilePageState extends State<MyProfilePage> {
   final FirebaseUserProfileService _profileService = FirebaseUserProfileService();
+  final FirebaseFriendService _friendService = FirebaseFriendService();
   
   String _username = 'User';
   bool _isLoading = true;
   bool _profileWasUpdated = false; // Track if profile was updated
+  int _followingCount = 0;
+  int _followersCount = 0;
 
   @override
   void initState() {
@@ -34,9 +39,19 @@ class _MyProfilePageState extends State<MyProfilePage> {
 
   Future<void> _loadUserProfile() async {
     try {
-      String username = await _profileService.getUsername();
+      // Load username and follow counts in parallel
+      final results = await Future.wait([
+        _profileService.getUsername(),
+        _friendService.getFollowCounts(),
+      ]);
+      
+      String username = results[0] as String;
+      Map<String, int> followCounts = results[1] as Map<String, int>;
+      
       setState(() {
         _username = username;
+        _followingCount = followCounts['following'] ?? 0;
+        _followersCount = followCounts['followers'] ?? 0;
         _isLoading = false;
       });
     } catch (e) {
@@ -86,71 +101,144 @@ class _MyProfilePageState extends State<MyProfilePage> {
           Row(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Column(
-                children: [
-                  // Profile Picture with initial
-                  const UserAvatar(
-                    radius: 40,
-                    fontSize: 36,
-                  ),
-                  const SizedBox(height: 12),
-                  
-                  // Username
-                  _isLoading
-                      ? const SizedBox(
-                          width: 20,
-                          height: 20,
-                          child: CircularProgressIndicator(strokeWidth: 2),
-                        )
-                      : Text(
-                          _username,
-                          style: const TextStyle(
-                            fontSize: 20,
-                            fontWeight: FontWeight.bold,
-                          ),
-                        ),
-                  const SizedBox(height: 8),
-                  
-                  // Edit Profile Button
-                  OutlinedButton.icon(
-                    onPressed: () async {
-                      final result = await Navigator.push(
-                        context,
-                        MaterialPageRoute(builder: (context) => const EditProfilePage()),
-                      );
-                      // Refresh username when returning from edit page
-                      await _loadUserProfile();
-                      
-                      // Track if profile was updated but stay on this page
-                      if (result == true) {
-                        _profileWasUpdated = true;
-                        // Show success message and stay on profile page
-                        if (mounted) {
-                          ScaffoldMessenger.of(context).showSnackBar(
-                            const SnackBar(
-                              content: Text('Profile updated successfully!'),
-                              backgroundColor: Colors.green,
+              // Profile Picture with initial
+              const UserAvatar(
+                radius: 40,
+                fontSize: 36,
+              ),
+              const SizedBox(width: 16),
+              
+              // Username on the right side
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    const SizedBox(height: 8),
+                    _isLoading
+                        ? const SizedBox(
+                            width: 20,
+                            height: 20,
+                            child: CircularProgressIndicator(strokeWidth: 2),
+                          )
+                        : Text(
+                            _username,
+                            style: const TextStyle(
+                              fontSize: 20,
+                              fontWeight: FontWeight.bold,
                             ),
-                          );
-                        }
-                      }
-                    },
-                    icon: const Icon(Icons.edit, size: 16, color: Colors.orange),
-                    label: const Text(
-                      'Edit',
-                      style: TextStyle(color: Colors.orange, fontSize: 14),
-                    ),
-                    style: OutlinedButton.styleFrom(
-                      side: const BorderSide(color: Colors.orange),
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(20),
-                      ),
-                      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
-                    ),
-                  ),
-                ],
+                          ),
+                  ],
+                ),
               ),
             ],
+          ),
+          const SizedBox(height: 20),
+          
+          // Following/Followers Section
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+            children: [
+              GestureDetector(
+                onTap: () {
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(builder: (context) => const FriendListPage()),
+                  );
+                },
+                child: Column(
+                  children: [
+                    const Text(
+                      'Following',
+                      style: TextStyle(
+                        fontSize: 14,
+                        color: Colors.grey,
+                      ),
+                    ),
+                    const SizedBox(height: 4),
+                    Text(
+                      '$_followingCount',
+                      style: const TextStyle(
+                        fontSize: 18,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+              Container(
+                height: 30,
+                width: 1,
+                color: Colors.grey[300],
+              ),
+              GestureDetector(
+                onTap: () {
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(builder: (context) => const FriendListPage()),
+                  );
+                },
+                child: Column(
+                  children: [
+                    const Text(
+                      'Followers',
+                      style: TextStyle(
+                        fontSize: 14,
+                        color: Colors.grey,
+                      ),
+                    ),
+                    const SizedBox(height: 4),
+                    Text(
+                      '$_followersCount',
+                      style: const TextStyle(
+                        fontSize: 18,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 20),
+          
+          // Edit Profile Button - moved below following/followers
+          Center(
+            child: OutlinedButton.icon(
+              onPressed: () async {
+                final result = await Navigator.push(
+                  context,
+                  MaterialPageRoute(builder: (context) => const EditProfilePage()),
+                );
+                // Refresh username when returning from edit page
+                await _loadUserProfile();
+                
+                // Track if profile was updated but stay on this page
+                if (result == true) {
+                  _profileWasUpdated = true;
+                  // Show success message and stay on profile page
+                  if (mounted) {
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      const SnackBar(
+                        content: Text('Profile updated successfully!'),
+                        backgroundColor: Colors.green,
+                      ),
+                    );
+                  }
+                }
+              },
+              icon: const Icon(Icons.edit, size: 16, color: Colors.orange),
+              label: const Text(
+                'Edit',
+                style: TextStyle(color: Colors.orange, fontSize: 14),
+              ),
+              style: OutlinedButton.styleFrom(
+                side: const BorderSide(color: Colors.orange),
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(20),
+                ),
+                padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
+              ),
+            ),
           ),
           const SizedBox(height: 32),
           
@@ -217,6 +305,64 @@ class _MyProfilePageState extends State<MyProfilePage> {
                     MaterialPageRoute(builder: (context) => const AllEventsPage()),
                   );
                 }),
+              ],
+            ),
+          ),
+          
+          const SizedBox(height: 24),
+          
+          // Feedback Section
+          Container(
+            padding: const EdgeInsets.all(20),
+            decoration: BoxDecoration(
+              color: Colors.white,
+              borderRadius: BorderRadius.circular(16),
+              boxShadow: [
+                BoxShadow(
+                  color: Colors.black.withOpacity(0.1),
+                  blurRadius: 10,
+                  offset: const Offset(0, 5),
+                ),
+              ],
+            ),
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                const Expanded(
+                  child: Text(
+                    'Interested in sharing your feedback?',
+                    style: TextStyle(
+                      fontSize: 16,
+                      fontWeight: FontWeight.w500,
+                      color: Colors.black87,
+                    ),
+                  ),
+                ),
+                const SizedBox(width: 16),
+                ElevatedButton(
+                  onPressed: () {
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(builder: (context) => const FeedbackPage()),
+                    );
+                  },
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: Colors.orange,
+                    foregroundColor: Colors.white,
+                    padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(25),
+                    ),
+                    elevation: 2,
+                  ),
+                  child: const Text(
+                    'Give Feedback',
+                    style: TextStyle(
+                      fontWeight: FontWeight.bold,
+                      fontSize: 14,
+                    ),
+                  ),
+                ),
               ],
             ),
           ),
@@ -328,15 +474,15 @@ class _MyProfilePageState extends State<MyProfilePage> {
             onTap: () {
               Navigator.push(
                 context,
-                MaterialPageRoute(builder: (context) => const WritePostPage()),
+                MaterialPageRoute(builder: (context) => const WorkoutRecordPage()),
               );
             },
             child: Column(
               mainAxisSize: MainAxisSize.min,
               children: [
-                Icon(Icons.add_circle_outline, color: Colors.grey[600], size: 28),
+                Icon(Icons.fitness_center, color: Colors.grey[600], size: 28),
                 const Text(
-                  'Post',
+                  'Record',
                   style: TextStyle(fontSize: 12, color: Colors.grey),
                 ),
               ],

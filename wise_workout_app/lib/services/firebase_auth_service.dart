@@ -116,6 +116,7 @@ class FirebaseAuthService {
       'email': user.email,
       'role': role,
       'displayName': user.displayName ?? 'User',
+      'userType': 'normal', // Default to normal (free) subscription
       'createdAt': FieldValue.serverTimestamp(),
       'lastLoginAt': FieldValue.serverTimestamp(),
     });

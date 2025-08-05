@@ -450,7 +450,8 @@
     </nav>
   </aside>
   <header class="toolbar" role="banner" aria-label="Page toolbar">
-    <div>
+    <div style="display: flex; align-items: center; gap: 8px;">
+      <button id="backBtn" aria-label="Back" title="Back" style="background: none; border: none; color: white; font-size: 22px; cursor: pointer;">←</button>
       <span class="title" id="adminName">Welcome, Admin</span>
     </div>
     <div>
@@ -752,6 +753,12 @@
       await signOut(auth);
       location.href = "Login.html";
     };
+
+    // Back button functionality
+    const backBtn = document.getElementById("backBtn");
+    if (backBtn) {
+      backBtn.onclick = () => window.history.back();
+    }
 
     // Apply filters on input/select change
     searchInput.addEventListener("input", applyFilters);

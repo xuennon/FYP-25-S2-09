@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'integration_page.dart';
 
 class SettingsPage extends StatefulWidget {
   const SettingsPage({super.key});
@@ -8,8 +9,6 @@ class SettingsPage extends StatefulWidget {
 }
 
 class _SettingsPageState extends State<SettingsPage> {
-  bool notificationsEnabled = true;
-  bool darkModeEnabled = false;
   bool privacyModeEnabled = false;
   String selectedLanguage = 'English';
 
@@ -38,32 +37,6 @@ class _SettingsPageState extends State<SettingsPage> {
       body: ListView(
         padding: const EdgeInsets.all(16),
         children: [
-          _buildSectionHeader('Notifications'),
-          _buildSwitchTile(
-            title: 'Push Notifications',
-            subtitle: 'Receive notifications about activities',
-            value: notificationsEnabled,
-            onChanged: (value) {
-              setState(() {
-                notificationsEnabled = value;
-              });
-            },
-          ),
-          
-          const SizedBox(height: 24),
-          _buildSectionHeader('Appearance'),
-          _buildSwitchTile(
-            title: 'Dark Mode',
-            subtitle: 'Use dark theme',
-            value: darkModeEnabled,
-            onChanged: (value) {
-              setState(() {
-                darkModeEnabled = value;
-              });
-            },
-          ),
-          
-          const SizedBox(height: 24),
           _buildSectionHeader('Privacy'),
           _buildSwitchTile(
             title: 'Private Account',
@@ -86,10 +59,15 @@ class _SettingsPageState extends State<SettingsPage> {
             },
           ),
           _buildSettingsTile(
-            title: 'Connect an device',
+            title: 'Connect an app or device',
             subtitle: 'Upload directly to Workout Fitness',
             onTap: () {
-              _showConnectDeviceDialog();
+              Navigator.push(
+                context,
+                MaterialPageRoute(
+                  builder: (context) => const IntegrationPage(),
+                ),
+              );
             },
           ),
           _buildSettingsTile(
@@ -389,73 +367,6 @@ class _SettingsPageState extends State<SettingsPage> {
                 'Upgrade',
                 style: TextStyle(color: Colors.white),
               ),
-            ),
-          ],
-        );
-      },
-    );
-  }
-
-  void _showConnectDeviceDialog() {
-    showDialog(
-      context: context,
-      builder: (BuildContext context) {
-        return AlertDialog(
-          title: Row(
-            children: [
-              Container(
-                width: 40,
-                height: 40,
-                decoration: BoxDecoration(
-                  shape: BoxShape.circle,
-                  color: Colors.grey[200],
-                ),
-                child: const Icon(Icons.watch, size: 24),
-              ),
-              const SizedBox(width: 12),
-              const Text(
-                'Connect a device',
-                style: TextStyle(fontSize: 18),
-              ),
-            ],
-          ),
-          content: const Column(
-            mainAxisSize: MainAxisSize.min,
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Text(
-                'Upload directly to Workout Fitness',
-                style: TextStyle(fontSize: 16, color: Colors.grey),
-              ),
-              SizedBox(height: 16),
-              Text('Supported devices:'),
-              SizedBox(height: 8),
-              Text('• Fitness trackers'),
-              Text('• Smart watches'),
-              Text('• Heart rate monitors'),
-              Text('• Running apps'),
-              SizedBox(height: 16),
-              Text(
-                'Connect your device to automatically sync your workout data.',
-                style: TextStyle(fontSize: 14),
-              ),
-            ],
-          ),
-          actions: [
-            TextButton(
-              onPressed: () {
-                Navigator.of(context).pop();
-              },
-              child: const Text('Cancel'),
-            ),
-            ElevatedButton(
-              onPressed: () {
-                Navigator.of(context).pop();
-                ScaffoldMessenger.of(context).showSnackBar(
-                  const SnackBar(content: Text('Device connection coming soon!')),
-                );
-              },
-              child: const Text('Connect Device'),
             ),
           ],
         );

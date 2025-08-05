@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 import 'activity_details_page.dart';
+import 'services/workout_service.dart';
+import 'services/firebase_user_profile_service.dart';
 
 class ActivitiesPage extends StatefulWidget {
   const ActivitiesPage({super.key});
@@ -9,87 +11,43 @@ class ActivitiesPage extends StatefulWidget {
 }
 
 class _ActivitiesPageState extends State<ActivitiesPage> {
-  // Mock activities data
-  final List<Activity> activities = [
-    Activity(
-      id: '1',
-      userName: 'jindu yang',
-      userInitial: 'j',
-      activityType: 'Lunch Walk',
-      date: 'July 20, 2025 at 11:38 AM',
-      distance: '2.95 km',
-      elevationGain: '69 m',
-      time: '31m 11s',
-      movingTime: '31:11',
-      steps: '4,082',
-      calories: '255 Cal',
-      avgHeartRate: '128 bpm',
-      userColor: Colors.blue,
-    ),
-    Activity(
-      id: '2',
-      userName: 'jindu yang',
-      userInitial: 'j',
-      activityType: 'Morning Run',
-      date: 'July 19, 2025 at 7:15 AM',
-      distance: '5.2 km',
-      elevationGain: '45 m',
-      time: '28m 35s',
-      movingTime: '28:35',
-      steps: '6,850',
-      calories: '420 Cal',
-      avgHeartRate: '156 bpm',
-      userColor: Colors.blue,
-    ),
-    Activity(
-      id: '3',
-      userName: 'jindu yang',
-      userInitial: 'j',
-      activityType: 'Evening Bike Ride',
-      date: 'July 18, 2025 at 6:30 PM',
-      distance: '12.8 km',
-      elevationGain: '120 m',
-      time: '45m 22s',
-      movingTime: '45:22',
-      steps: '0',
-      calories: '380 Cal',
-      avgHeartRate: '142 bpm',
-      userColor: Colors.blue,
-    ),
-    Activity(
-      id: '4',
-      userName: 'jindu yang',
-      userInitial: 'j',
-      activityType: 'Gym Session',
-      date: 'July 17, 2025 at 8:00 AM',
-      distance: '0 km',
-      elevationGain: '0 m',
-      time: '1h 15m',
-      movingTime: '1:15:00',
-      steps: '2,150',
-      calories: '485 Cal',
-      avgHeartRate: '135 bpm',
-      userColor: Colors.blue,
-    ),
-    Activity(
-      id: '5',
-      userName: 'jindu yang',
-      userInitial: 'j',
-      activityType: 'Weekend Hike',
-      date: 'July 16, 2025 at 9:45 AM',
-      distance: '8.7 km',
-      elevationGain: '350 m',
-      time: '2h 18m',
-      movingTime: '2:18:00',
-      steps: '12,450',
-      calories: '680 Cal',
-      avgHeartRate: '148 bpm',
-      userColor: Colors.blue,
-    ),
-  ];
+  final WorkoutService _workoutService = WorkoutService();
+  final FirebaseUserProfileService _profileService = FirebaseUserProfileService();
+  String _username = 'You';
+
+  @override
+  void initState() {
+    super.initState();
+    _workoutService.addListener(_onActivitiesChanged);
+    _loadUsername();
+  }
+
+  @override
+  void dispose() {
+    _workoutService.removeListener(_onActivitiesChanged);
+    super.dispose();
+  }
+
+  void _onActivitiesChanged() {
+    setState(() {});
+  }
+
+  Future<void> _loadUsername() async {
+    try {
+      final username = await _profileService.getUsername();
+      setState(() {
+        _username = username;
+      });
+    } catch (e) {
+      // Keep default 'You' if error loading username
+      print('Error loading username: $e');
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
+    final activities = _workoutService.activities;
+    
     return Scaffold(
       backgroundColor: Colors.white,
       appBar: AppBar(
@@ -157,23 +115,23 @@ class _ActivitiesPageState extends State<ActivitiesPage> {
     );
   }
 
-  Widget _buildActivityCard(Activity activity) {
+  Widget _buildActivityCard(WorkoutActivity activity) {
     return GestureDetector(
       onTap: () {
-        // Convert Activity to ActivityDetail for the details page
+        // Convert WorkoutActivity to ActivityDetail for the details page
         final activityDetail = ActivityDetail(
           id: activity.id,
-          userName: activity.userName,
-          userInitial: activity.userInitial,
-          activityType: activity.activityType,
-          date: activity.date,
-          distance: activity.distance,
-          elevationGain: activity.elevationGain,
-          movingTime: activity.movingTime,
-          steps: activity.steps,
-          calories: activity.calories,
-          avgHeartRate: activity.avgHeartRate,
-          userColor: activity.userColor,
+          userName: _username,
+          userInitial: _username.isNotEmpty ? _username[0].toUpperCase() : 'U',
+          activityType: activity.activityTitle,
+          date: activity.formattedDate,
+          distance: activity.formattedDistance,
+          elevationGain: '0 m', // Not tracked in current workout
+          movingTime: activity.formattedDuration,
+          steps: activity.steps.toString(),
+          calories: activity.formattedCalories,
+          avgHeartRate: '-- bpm', // Not tracked in current workout
+          userColor: activity.activityColor,
         );
         
         Navigator.push(
@@ -208,16 +166,13 @@ class _ActivitiesPageState extends State<ActivitiesPage> {
                   height: 50,
                   decoration: BoxDecoration(
                     shape: BoxShape.circle,
-                    color: activity.userColor,
+                    color: activity.activityColor,
                   ),
                   child: Center(
-                    child: Text(
-                      activity.userInitial,
-                      style: const TextStyle(
-                        color: Colors.white,
-                        fontSize: 20,
-                        fontWeight: FontWeight.bold,
-                      ),
+                    child: Icon(
+                      activity.sportIcon,
+                      color: Colors.white,
+                      size: 24,
                     ),
                   ),
                 ),
@@ -227,7 +182,7 @@ class _ActivitiesPageState extends State<ActivitiesPage> {
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       Text(
-                        activity.userName,
+                        _username,
                         style: const TextStyle(
                           fontSize: 16,
                           fontWeight: FontWeight.w600,
@@ -236,7 +191,7 @@ class _ActivitiesPageState extends State<ActivitiesPage> {
                       ),
                       const SizedBox(height: 2),
                       Text(
-                        activity.date,
+                        activity.formattedDate,
                         style: TextStyle(
                           fontSize: 14,
                           color: Colors.grey[600],
@@ -245,6 +200,33 @@ class _ActivitiesPageState extends State<ActivitiesPage> {
                     ],
                   ),
                 ),
+                PopupMenuButton<String>(
+                  icon: Icon(
+                    Icons.more_vert,
+                    color: Colors.grey[600],
+                    size: 20,
+                  ),
+                  onSelected: (value) {
+                    if (value == 'delete') {
+                      _showDeleteConfirmation(activity);
+                    }
+                  },
+                  itemBuilder: (BuildContext context) => [
+                    const PopupMenuItem<String>(
+                      value: 'delete',
+                      child: Row(
+                        children: [
+                          Icon(Icons.delete, color: Colors.red, size: 20),
+                          SizedBox(width: 8),
+                          Text(
+                            'Delete',
+                            style: TextStyle(color: Colors.red),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ],
+                ),
               ],
             ),
             
@@ -252,7 +234,7 @@ class _ActivitiesPageState extends State<ActivitiesPage> {
             
             // Activity title
             Text(
-              activity.activityType,
+              activity.activityTitle,
               style: const TextStyle(
                 fontSize: 28,
                 fontWeight: FontWeight.bold,
@@ -262,25 +244,25 @@ class _ActivitiesPageState extends State<ActivitiesPage> {
             
             const SizedBox(height: 24),
             
-            // Activity metrics
+            // Activity metrics - showing Distance, Calories, and Time
             Row(
               children: [
                 Expanded(
                   child: _buildMetric(
                     'Distance',
-                    activity.distance,
+                    activity.formattedDistance,
                   ),
                 ),
                 Expanded(
                   child: _buildMetric(
-                    'Elev Gain',
-                    activity.elevationGain,
+                    'Calories',
+                    activity.formattedCalories,
                   ),
                 ),
                 Expanded(
                   child: _buildMetric(
                     'Time',
-                    activity.time,
+                    activity.formattedDuration,
                   ),
                 ),
               ],
@@ -315,36 +297,40 @@ class _ActivitiesPageState extends State<ActivitiesPage> {
       ],
     );
   }
-}
 
-class Activity {
-  final String id;
-  final String userName;
-  final String userInitial;
-  final String activityType;
-  final String date;
-  final String distance;
-  final String elevationGain;
-  final String time;
-  final String movingTime;
-  final String steps;
-  final String calories;
-  final String avgHeartRate;
-  final Color userColor;
-
-  Activity({
-    required this.id,
-    required this.userName,
-    required this.userInitial,
-    required this.activityType,
-    required this.date,
-    required this.distance,
-    required this.elevationGain,
-    required this.time,
-    required this.movingTime,
-    required this.steps,
-    required this.calories,
-    required this.avgHeartRate,
-    required this.userColor,
-  });
+  void _showDeleteConfirmation(WorkoutActivity activity) {
+    showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          title: const Text('Delete Activity'),
+          content: Text('Are you sure you want to delete this ${activity.sportType} activity?'),
+          actions: [
+            TextButton(
+              onPressed: () {
+                Navigator.of(context).pop();
+              },
+              child: const Text('Cancel'),
+            ),
+            TextButton(
+              onPressed: () {
+                _workoutService.removeActivity(activity.id);
+                Navigator.of(context).pop();
+                ScaffoldMessenger.of(context).showSnackBar(
+                  const SnackBar(
+                    content: Text('Activity deleted'),
+                    duration: Duration(seconds: 2),
+                  ),
+                );
+              },
+              child: const Text(
+                'Delete',
+                style: TextStyle(color: Colors.red),
+              ),
+            ),
+          ],
+        );
+      },
+    );
+  }
 }

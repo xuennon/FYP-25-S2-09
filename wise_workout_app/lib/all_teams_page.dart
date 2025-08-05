@@ -140,7 +140,7 @@ class _AllTeamsPageState extends State<AllTeamsPage> {
         onRefresh: _loadTeams,
         child: SingleChildScrollView(
           physics: const AlwaysScrollableScrollPhysics(),
-          child: Container(
+          child: SizedBox(
             height: MediaQuery.of(context).size.height * 0.6,
             child: const Center(
               child: Column(

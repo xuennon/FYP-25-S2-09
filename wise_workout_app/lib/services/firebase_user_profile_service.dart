@@ -61,6 +61,8 @@ class FirebaseUserProfileService {
         'displayName': displayName,
         'gender': 'Male',
         'role': 'user',
+        'userType': 'normal', // Default to normal (free) subscription
+        'suspensionStatus': 'no', // Default to not suspended
         'createdAt': FieldValue.serverTimestamp(),
         'lastLoginAt': FieldValue.serverTimestamp(),
       }, SetOptions(merge: true)); // Use merge to avoid overwriting existing data
@@ -218,5 +220,39 @@ class FirebaseUserProfileService {
       print('Error manually syncing username across posts: $e');
       return false;
     }
+  }
+
+  // Get user subscription type
+  Future<String> getUserType() async {
+    try {
+      Map<String, dynamic>? profile = await getUserProfile();
+      return profile?['userType'] ?? 'normal';
+    } catch (e) {
+      print('Error getting user type: $e');
+      return 'normal';
+    }
+  }
+
+  // Check if user has premium subscription
+  Future<bool> hasPremiumSubscription() async {
+    String userType = await getUserType();
+    return userType == 'premium';
+  }
+
+  // Get user suspension status
+  Future<String> getSuspensionStatus() async {
+    try {
+      Map<String, dynamic>? profile = await getUserProfile();
+      return profile?['suspensionStatus'] ?? 'no';
+    } catch (e) {
+      print('Error getting suspension status: $e');
+      return 'no'; // Default to not suspended if error occurs
+    }
+  }
+
+  // Check if user is suspended
+  Future<bool> isUserSuspended() async {
+    String suspensionStatus = await getSuspensionStatus();
+    return suspensionStatus == 'yes';
   }
 }

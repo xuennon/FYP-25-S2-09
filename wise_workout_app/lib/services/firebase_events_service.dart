@@ -1,6 +1,7 @@
 import 'package:flutter/foundation.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'dart:async';
 import '../models/event.dart';
 
 class FirebaseEventsService extends ChangeNotifier {
@@ -15,6 +16,7 @@ class FirebaseEventsService extends ChangeNotifier {
   List<Event> _activeEvents = [];
   List<Event> _availableEvents = [];
   bool _isLoading = false;
+  StreamSubscription<QuerySnapshot>? _eventsSubscription;
 
   List<Event> get allEvents => List.unmodifiable(_allEvents);
   List<Event> get activeEvents => List.unmodifiable(_activeEvents);
@@ -56,13 +58,21 @@ class FirebaseEventsService extends ChangeNotifier {
           print('Document ID: ${doc.id}');
           print('Data: $data');
           
-          Event event = await _convertFirebaseDataToEvent(doc.id, data);
+          // Use the Event.fromMap factory constructor with better error handling
+          Event event = Event.fromMap(doc.id, data);
+          
+          // Check if current user has joined this event
+          if (currentUserId != null && event.participants.contains(currentUserId)) {
+            event.isActive = true;
+          }
+          
           loadedEvents.add(event);
           
           print('✅ Successfully converted event: ${event.name}');
         } catch (e) {
           print('❌ Error converting event ${doc.id}: $e');
           print('❌ Error details: ${e.toString()}');
+          // Continue with other events even if one fails
         }
       }
 
@@ -104,8 +114,12 @@ class FirebaseEventsService extends ChangeNotifier {
           startDate = (data['start'] as Timestamp).toDate();
         }
       } else if (data['startDate'] != null) {
-        // Mobile app format (Timestamp)
-        startDate = (data['startDate'] as Timestamp).toDate();
+        // Mobile app format (Timestamp or String)
+        if (data['startDate'] is String) {
+          startDate = DateTime.parse(data['startDate']);
+        } else {
+          startDate = (data['startDate'] as Timestamp).toDate();
+        }
       } else {
         startDate = DateTime.now();
       }
@@ -118,20 +132,34 @@ class FirebaseEventsService extends ChangeNotifier {
           endDate = (data['end'] as Timestamp).toDate();
         }
       } else if (data['endDate'] != null) {
-        // Mobile app format (Timestamp)
-        endDate = (data['endDate'] as Timestamp).toDate();
+        // Mobile app format (Timestamp or String)
+        if (data['endDate'] is String) {
+          endDate = DateTime.parse(data['endDate']);
+        } else {
+          endDate = (data['endDate'] as Timestamp).toDate();
+        }
       } else {
         endDate = startDate.add(const Duration(hours: 2)); // Default 2 hours
       }
 
       // Extract basic fields
       String eventName = data['name'] ?? 'Unnamed Event';
-      String businessId = data['businessId'] ?? data['uid'] ?? '';
+      String businessId = data['businessId'] ?? data['uid'] ?? data['createdBy'] ?? '';
       String businessName = data['businessName'] ?? 'Unknown Business';
       String description = data['description'] ?? '';
+      String createdBy = data['createdBy'] ?? businessId;
       
-      // Determine sport type - use provided sportType or infer from name
-      String sportType = data['sportType'] ?? _inferSportTypeFromName(eventName);
+      // Handle sports array (new format) or fallback to sportType (old format)
+      List<String> sports = [];
+      if (data['sports'] != null && data['sports'] is List) {
+        sports = List<String>.from(data['sports']);
+      } else if (data['sportType'] != null) {
+        // Convert old sportType to sports array
+        sports = [data['sportType'].toString().toLowerCase()];
+      } else {
+        // Infer from name if no sport data available
+        sports = [_inferSportTypeFromName(eventName).toLowerCase()];
+      }
       
       // Handle participants
       List<String> participants = [];
@@ -142,15 +170,25 @@ class FirebaseEventsService extends ChangeNotifier {
       // Handle other optional fields
       int? maxParticipants = data['maxParticipants'];
       
+      // Handle metrics
+      Map<String, dynamic>? metrics;
+      if (data['metrics'] != null) {
+        metrics = Map<String, dynamic>.from(data['metrics']);
+      }
+      
       // Handle createdAt
       DateTime createdAt;
       if (data['createdAt'] != null) {
-        createdAt = (data['createdAt'] as Timestamp).toDate();
+        if (data['createdAt'] is String) {
+          createdAt = DateTime.parse(data['createdAt']);
+        } else {
+          createdAt = (data['createdAt'] as Timestamp).toDate();
+        }
       } else {
         createdAt = DateTime.now(); // Default for business events without createdAt
       }
 
-      print('🎯 Converting event: $eventName (Sport: $sportType) by $businessName');
+      print('🎯 Converting event: $eventName (Sports: ${sports.join(', ')}) by $businessName');
       print('📅 Event dates: ${startDate.toString()} to ${endDate.toString()}');
 
       return Event(
@@ -159,13 +197,15 @@ class FirebaseEventsService extends ChangeNotifier {
         description: description,
         businessId: businessId,
         businessName: businessName,
-        sportType: sportType,
+        createdBy: createdBy,
+        sports: sports,
         startDate: startDate,
         endDate: endDate,
         participants: participants,
         maxParticipants: maxParticipants,
         isActive: isJoined,
         createdAt: createdAt,
+        metrics: metrics,
       );
       
     } catch (e) {
@@ -275,7 +315,8 @@ class FirebaseEventsService extends ChangeNotifier {
     if (sportType == 'All') {
       return _availableEvents;
     }
-    return _availableEvents.where((event) => event.sportType == sportType).toList();
+    return _availableEvents.where((event) => 
+        event.containsSport(sportType) || event.sportType == sportType).toList();
   }
 
   // Get active events by sport type
@@ -283,14 +324,117 @@ class FirebaseEventsService extends ChangeNotifier {
     if (sportType == 'All') {
       return _activeEvents;
     }
-    return _activeEvents.where((event) => event.sportType == sportType).toList();
+    return _activeEvents.where((event) => 
+        event.containsSport(sportType) || event.sportType == sportType).toList();
+  }
+
+  // Start real-time listening for events
+  void startListening() {
+    print('🔄 Starting real-time events listener...');
+    _eventsSubscription?.cancel(); // Cancel any existing subscription
+    
+    _eventsSubscription = _firestore
+        .collection('events')
+        .snapshots()
+        .listen(
+      (QuerySnapshot snapshot) async {
+        print('🔄 Real-time events update received: ${snapshot.docs.length} events');
+        await _processEventsSnapshot(snapshot);
+      },
+      onError: (error) {
+        print('❌ Real-time events listener error: $error');
+      },
+    );
+  }
+
+  // Stop real-time listening
+  void stopListening() {
+    print('⏹️ Stopping real-time events listener...');
+    _eventsSubscription?.cancel();
+    _eventsSubscription = null;
+  }
+
+  // Process events snapshot from real-time listener
+  Future<void> _processEventsSnapshot(QuerySnapshot snapshot) async {
+    try {
+      List<Event> loadedEvents = [];
+
+      for (QueryDocumentSnapshot doc in snapshot.docs) {
+        try {
+          Map<String, dynamic> data = doc.data() as Map<String, dynamic>;
+          Event event = await _convertFirebaseDataToEvent(doc.id, data);
+          loadedEvents.add(event);
+        } catch (e) {
+          print('❌ Error converting real-time event ${doc.id}: $e');
+        }
+      }
+
+      _allEvents = loadedEvents;
+      _categorizeEvents();
+
+      print('✅ Real-time update: ${_allEvents.length} events loaded');
+      print('📊 Active: ${_activeEvents.length}, Available: ${_availableEvents.length}');
+
+      notifyListeners();
+    } catch (e) {
+      print('❌ Error processing real-time events: $e');
+    }
   }
 
   // Clear all local events (useful for logout)
   void clearEvents() {
+    stopListening(); // Stop listening when clearing
     _allEvents = [];
     _activeEvents = [];
     _availableEvents = [];
     notifyListeners();
+  }
+
+  // Debug method to check Firebase collection directly
+  Future<void> debugEventsCollection() async {
+    try {
+      print('🔍 DEBUG: Checking events collection directly...');
+      
+      // First check authentication
+      User? currentUser = _auth.currentUser;
+      print('🔍 Current user: ${currentUser?.uid ?? 'NOT AUTHENTICATED'}');
+      print('🔍 User email: ${currentUser?.email ?? 'NO EMAIL'}');
+      print('🔍 User anonymous: ${currentUser?.isAnonymous ?? 'UNKNOWN'}');
+      
+      if (currentUser == null) {
+        print('❌ User is not authenticated! This is likely the issue.');
+        return;
+      }
+      
+      // Try to read a simple collection first
+      print('🔍 Testing basic Firestore access...');
+      await _firestore.collection('test').limit(1).get();
+      print('✅ Basic Firestore access works');
+      
+      QuerySnapshot snapshot = await _firestore.collection('events').get();
+      
+      print('📊 Total documents in events collection: ${snapshot.docs.length}');
+      
+      for (var doc in snapshot.docs) {
+        var data = doc.data() as Map<String, dynamic>;
+        print('📄 Document ID: ${doc.id}');
+        print('📄 Document data: $data');
+        print('---');
+      }
+      
+      // Also check for any business-specific collections
+      print('🔍 Checking for business-events collection...');
+      QuerySnapshot businessSnapshot = await _firestore.collection('business-events').get();
+      print('📊 Total documents in business-events collection: ${businessSnapshot.docs.length}');
+      
+    } catch (e) {
+      print('❌ Debug check failed: $e');
+      if (e.toString().contains('permission-denied')) {
+        print('❌ This is a permissions issue. Check:');
+        print('   1. User authentication status');
+        print('   2. Firebase security rules');
+        print('   3. Firebase project configuration');
+      }
+    }
   }
 }

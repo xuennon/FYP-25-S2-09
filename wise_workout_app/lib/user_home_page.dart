@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/rendering.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'search_page.dart';
 import 'friend_list_page.dart';
 import 'settings_page.dart';
@@ -8,7 +10,11 @@ import 'models/post.dart';
 import 'widgets/user_avatar.dart';
 import 'write_post_page.dart';
 import 'services/firebase_posts_service.dart';
+import 'services/firebase_user_profile_service.dart';
 import 'individual_post_page.dart';
+import 'subscription_page.dart';
+import 'workout_record_page.dart';
+import 'main.dart';
 
 class UserHomePage extends StatefulWidget {
   const UserHomePage({super.key});
@@ -19,22 +25,80 @@ class UserHomePage extends StatefulWidget {
 
 class _UserHomePageState extends State<UserHomePage> {
   final FirebasePostsService _postsService = FirebasePostsService();
+  final FirebaseUserProfileService _profileService = FirebaseUserProfileService();
+  final ScrollController _scrollController = ScrollController();
+  bool _isFabVisible = true;
 
   @override
   void initState() {
     super.initState();
+    // Check suspension status when the page loads
+    _checkSuspensionStatus();
+    
     // Listen to posts service changes
     _postsService.addListener(_onPostsChanged);
     // Load posts from Firebase after the frame is built
     WidgetsBinding.instance.addPostFrameCallback((_) {
       _loadPosts();
     });
+    
+    // Add scroll listener to show/hide FAB
+    _scrollController.addListener(_onScroll);
+  }
+
+  // Check if user is suspended and redirect to login if needed
+  Future<void> _checkSuspensionStatus() async {
+    try {
+      bool isSuspended = await _profileService.isUserSuspended();
+      if (isSuspended) {
+        // Sign out the user and redirect to login
+        await FirebaseAuth.instance.signOut();
+        
+        if (mounted) {
+          Navigator.pushAndRemoveUntil(
+            context,
+            MaterialPageRoute(builder: (context) => const LoginPage()),
+            (route) => false,
+          );
+          
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(
+              content: Text('Your account has been suspended. Please contact support.'),
+              backgroundColor: Colors.red,
+              duration: Duration(seconds: 5),
+            ),
+          );
+        }
+      }
+    } catch (e) {
+      print('Error checking suspension status: $e');
+    }
   }
 
   @override
   void dispose() {
     _postsService.removeListener(_onPostsChanged);
+    _scrollController.removeListener(_onScroll);
+    _scrollController.dispose();
     super.dispose();
+  }
+
+  void _onScroll() {
+    if (_scrollController.position.userScrollDirection == ScrollDirection.reverse) {
+      // Scrolling down - hide FAB
+      if (_isFabVisible) {
+        setState(() {
+          _isFabVisible = false;
+        });
+      }
+    } else if (_scrollController.position.userScrollDirection == ScrollDirection.forward) {
+      // Scrolling up - show FAB
+      if (!_isFabVisible) {
+        setState(() {
+          _isFabVisible = true;
+        });
+      }
+    }
   }
 
   void _onPostsChanged() {
@@ -121,7 +185,10 @@ class _UserHomePageState extends State<UserHomePage> {
           // Center - Upgrade Button
           ElevatedButton(
             onPressed: () {
-              // TODO: Implement upgrade functionality
+              Navigator.push(
+                context,
+                MaterialPageRoute(builder: (context) => const SubscriptionPage()),
+              );
             },
             style: ElevatedButton.styleFrom(
               backgroundColor: Colors.purple,
@@ -980,6 +1047,7 @@ class _UserHomePageState extends State<UserHomePage> {
     return RefreshIndicator(
       onRefresh: _loadPosts,
       child: ListView.builder(
+        controller: _scrollController,
         padding: const EdgeInsets.symmetric(horizontal: 16),
         itemCount: _postsService.posts.length,
         itemBuilder: (context, index) {
@@ -1034,31 +1102,18 @@ class _UserHomePageState extends State<UserHomePage> {
             ),
           ),
           GestureDetector(
-            onTap: () async {
-              print('🏠 HomePage: Navigating to WritePostPage...');
-              final result = await Navigator.push(
+            onTap: () {
+              Navigator.push(
                 context,
-                MaterialPageRoute(
-                  builder: (context) => const WritePostPage(),
-                ),
+                MaterialPageRoute(builder: (context) => const WorkoutRecordPage()),
               );
-              
-              print('🏠 HomePage: Returned from WritePostPage with result: $result');
-              
-              // If post was created successfully, refresh the feed
-              if (result == true) {
-                print('🏠 HomePage: Post created successfully, refreshing feed...');
-                await _loadPosts();
-              } else {
-                print('🏠 HomePage: Post creation failed or was cancelled');
-              }
             },
             child: Column(
               mainAxisSize: MainAxisSize.min,
               children: [
-                Icon(Icons.add_circle_outline, color: Colors.grey[600], size: 28),
+                Icon(Icons.fitness_center, color: Colors.grey[600], size: 28),
                 const Text(
-                  'Post',
+                  'Record',
                   style: TextStyle(fontSize: 12, color: Colors.grey),
                 ),
               ],
@@ -1138,6 +1193,38 @@ class _UserHomePageState extends State<UserHomePage> {
           ],
         ),
       ),
+      floatingActionButton: AnimatedSlide(
+        duration: const Duration(milliseconds: 300),
+        offset: _isFabVisible ? Offset.zero : const Offset(0, 2),
+        child: AnimatedOpacity(
+          duration: const Duration(milliseconds: 300),
+          opacity: _isFabVisible ? 1.0 : 0.0,
+          child: Container(
+            margin: const EdgeInsets.only(bottom: 80), // Add margin to lift it above bottom nav
+            child: FloatingActionButton(
+              onPressed: () async {
+                final result = await Navigator.push(
+                  context,
+                  MaterialPageRoute(builder: (context) => const WritePostPage()),
+                );
+                
+                // If a post was created, refresh the posts
+                if (result == true) {
+                  await _loadPosts();
+                }
+              },
+              backgroundColor: Colors.purple,
+              foregroundColor: Colors.white,
+              elevation: 6,
+              child: const Icon(
+                Icons.add,
+                size: 28,
+              ),
+            ),
+          ),
+        ),
+      ),
+      floatingActionButtonLocation: FloatingActionButtonLocation.endFloat,
     );
   }
 }

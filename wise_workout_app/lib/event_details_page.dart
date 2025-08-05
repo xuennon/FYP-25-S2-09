@@ -22,6 +22,23 @@ class _EventDetailsPageState extends State<EventDetailsPage> {
     super.initState();
     // Check if this event is already joined
     isJoined = _joinedEventsState.isEventJoined(widget.event.id);
+    
+    // Listen to joined events state changes
+    _joinedEventsState.addListener(_onJoinedEventsChanged);
+  }
+
+  @override
+  void dispose() {
+    _joinedEventsState.removeListener(_onJoinedEventsChanged);
+    super.dispose();
+  }
+
+  void _onJoinedEventsChanged() {
+    if (mounted) {
+      setState(() {
+        isJoined = _joinedEventsState.isEventJoined(widget.event.id);
+      });
+    }
   }
 
   @override
@@ -177,6 +194,9 @@ class _EventDetailsPageState extends State<EventDetailsPage> {
       // Update global state
       _joinedEventsState.joinEvent(widget.event.id);
       
+      // Update the event object's isActive property
+      widget.event.isActive = true;
+      
       // Sync with Firebase
       bool success = await _eventsService.joinEvent(widget.event.id);
       
@@ -195,6 +215,7 @@ class _EventDetailsPageState extends State<EventDetailsPage> {
           isJoined = false;
         });
         _joinedEventsState.leaveEvent(widget.event.id);
+        widget.event.isActive = false;
         
         if (mounted) {
           ScaffoldMessenger.of(context).showSnackBar(
@@ -211,6 +232,7 @@ class _EventDetailsPageState extends State<EventDetailsPage> {
         isJoined = false;
       });
       _joinedEventsState.leaveEvent(widget.event.id);
+      widget.event.isActive = false;
       
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
@@ -233,6 +255,9 @@ class _EventDetailsPageState extends State<EventDetailsPage> {
       // Update global state
       _joinedEventsState.leaveEvent(widget.event.id);
       
+      // Update the event object's isActive property
+      widget.event.isActive = false;
+      
       // Sync with Firebase
       bool success = await _eventsService.leaveEvent(widget.event.id);
       
@@ -251,6 +276,7 @@ class _EventDetailsPageState extends State<EventDetailsPage> {
           isJoined = true;
         });
         _joinedEventsState.joinEvent(widget.event.id);
+        widget.event.isActive = true;
         
         if (mounted) {
           ScaffoldMessenger.of(context).showSnackBar(
@@ -267,6 +293,7 @@ class _EventDetailsPageState extends State<EventDetailsPage> {
         isJoined = true;
       });
       _joinedEventsState.joinEvent(widget.event.id);
+      widget.event.isActive = true;
       
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(

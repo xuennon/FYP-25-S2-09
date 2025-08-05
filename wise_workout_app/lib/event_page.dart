@@ -1,12 +1,12 @@
 import 'package:flutter/material.dart';
 import 'dart:async';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'search_page.dart';
 import 'friend_list_page.dart';
 import 'settings_page.dart';
 import 'create_team_page.dart';
 import 'my_profile_page.dart';
 import 'user_home_page.dart';
-import 'write_post_page.dart';
 import 'team_details_page.dart';
 import 'team_state.dart';
 import 'services/firebase_teams_service.dart';
@@ -20,6 +20,8 @@ import 'event_details_page.dart';
 import 'program_details_page.dart';
 import 'joined_events_state.dart';
 import 'all_events_page.dart';
+import 'subscription_page.dart';
+import 'workout_record_page.dart';
 
 class EventPage extends StatefulWidget {
   const EventPage({super.key});
@@ -50,9 +52,10 @@ class _EventPageState extends State<EventPage> with SingleTickerProviderStateMix
     _joinedEventsState.addListener(_onJoinedEventsChanged);
     _teamsService.addListener(_onTeamsChanged);
     
-    // Start real-time listening for programs and teams
+    // Start real-time listening for programs, teams, and events
     _programsService.startListening();
     _teamsService.startListening();
+    _eventsService.startListening(); // Add real-time events listening
     
     _loadEvents();
     _loadPrograms();
@@ -85,9 +88,10 @@ class _EventPageState extends State<EventPage> with SingleTickerProviderStateMix
     _teamsService.removeListener(_onTeamsChanged);
     _refreshTimer?.cancel(); // Cancel the timer when disposing
     
-    // Stop real-time listening for programs and teams
+    // Stop real-time listening for programs, teams, and events
     _programsService.stopListening();
     _teamsService.stopListening();
+    _eventsService.stopListening(); // Stop real-time events listening
     
     super.dispose();
   }
@@ -161,7 +165,14 @@ class _EventPageState extends State<EventPage> with SingleTickerProviderStateMix
         
         // Debug: Print each event
         for (var event in _eventsService.allEvents) {
-          print('� Event: ${event.name} | Sport: ${event.sportType} | Business: ${event.businessName}');
+          print('🎯 Event: ${event.name} | Sports: ${event.sportsDisplay} | Business: ${event.businessName}');
+        }
+        
+        // If no events found, run debug check
+        if (_eventsService.allEvents.isEmpty) {
+          print('⚠️ No events found! Running debug check...');
+          await _checkAuthenticationStatus();
+          await _eventsService.debugEventsCollection();
         }
         
         setState(() {}); // Force rebuild to show events
@@ -177,6 +188,29 @@ class _EventPageState extends State<EventPage> with SingleTickerProviderStateMix
           ),
         );
       }
+    }
+  }
+
+  // Add authentication check method
+  Future<void> _checkAuthenticationStatus() async {
+    final user = FirebaseAuth.instance.currentUser;
+    print('🔍 AUTHENTICATION DEBUG:');
+    if (user != null) {
+      print('✅ User is authenticated:');
+      print('   UID: ${user.uid}');
+      print('   Email: ${user.email ?? 'No email'}');
+      print('   Is Anonymous: ${user.isAnonymous}');
+      print('   Email Verified: ${user.emailVerified}');
+      print('   Provider: ${user.providerData.map((p) => p.providerId).join(', ')}');
+      
+      // Check if this matches Firebase rules requirements
+      if (user.isAnonymous) {
+        print('❌ User is ANONYMOUS - Firebase rules will deny access to events');
+      } else {
+        print('✅ User is REAL - should have access to events');
+      }
+    } else {
+      print('❌ User is NOT authenticated at all!');
     }
   }
 
@@ -267,7 +301,10 @@ class _EventPageState extends State<EventPage> with SingleTickerProviderStateMix
           // Center - Upgrade Button
           ElevatedButton(
             onPressed: () {
-              // TODO: Implement upgrade functionality
+              Navigator.push(
+                context,
+                MaterialPageRoute(builder: (context) => const SubscriptionPage()),
+              );
             },
             style: ElevatedButton.styleFrom(
               backgroundColor: Colors.purple,
@@ -285,9 +322,23 @@ class _EventPageState extends State<EventPage> with SingleTickerProviderStateMix
               ),
             ),
           ),
-          // Right side - Settings and Logout
+          // Right side - Settings, Debug and Logout
           Row(
             children: [
+              IconButton(
+                icon: const Icon(Icons.bug_report, color: Colors.orange),
+                onPressed: () async {
+                  print('🐛 Running debug check...');
+                  await _checkAuthenticationStatus();
+                  await _eventsService.debugEventsCollection();
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    const SnackBar(
+                      content: Text('Debug info printed to console'),
+                      backgroundColor: Colors.orange,
+                    ),
+                  );
+                },
+              ),
               IconButton(
                 icon: const Icon(Icons.settings),
                 onPressed: () {
@@ -438,6 +489,15 @@ class _EventPageState extends State<EventPage> with SingleTickerProviderStateMix
                       onPressed: _loadEvents,
                       tooltip: 'Refresh events',
                     ),
+                  // Debug button
+                  IconButton(
+                    icon: const Icon(Icons.bug_report, size: 18),
+                    onPressed: () async {
+                      print('🔍 DEBUG: Manual check triggered');
+                      await _eventsService.debugEventsCollection();
+                    },
+                    tooltip: 'Debug events',
+                  ),
                   Text(
                     '${_eventsService.allEvents.length} events',
                     style: TextStyle(
@@ -904,8 +964,9 @@ class _EventPageState extends State<EventPage> with SingleTickerProviderStateMix
     // For active events, always show ALL joined events regardless of sport filter
     // This ensures users can see all their active events at once
     final allEvents = _eventsService.allEvents;
-    // Show only joined events as active events
-    final activeEvents = allEvents.where((event) => _joinedEventsState.isEventJoined(event.id)).toList();
+    // Show only joined events as active events - check both isActive and joinedEventsState
+    final activeEvents = allEvents.where((event) => 
+      event.isActive || _joinedEventsState.isEventJoined(event.id)).toList();
     
     return Container(
       height: 80,
@@ -917,13 +978,16 @@ class _EventPageState extends State<EventPage> with SingleTickerProviderStateMix
         itemBuilder: (context, index) {
           final event = activeEvents[index];
           return GestureDetector(
-            onTap: () {
-              Navigator.push(
+            onTap: () async {
+              // Navigate to event details and refresh when returning
+              await Navigator.push(
                 context,
                 MaterialPageRoute(
                   builder: (context) => EventDetailsPage(event: event),
                 ),
               );
+              // Refresh the events page when returning
+              setState(() {});
             },
             child: Container(
               width: 80,
@@ -961,8 +1025,9 @@ class _EventPageState extends State<EventPage> with SingleTickerProviderStateMix
 
   Widget _buildAvailableEvents() {
     final allEvents = _eventsService.getEventsBySportType(selectedSportType);
-    // Filter out joined events
-    final availableEvents = allEvents.where((event) => !_joinedEventsState.isEventJoined(event.id)).toList();
+    // Filter out joined events - check both isActive and joinedEventsState
+    final availableEvents = allEvents.where((event) => 
+      !event.isActive && !_joinedEventsState.isEventJoined(event.id)).toList();
     
     if (availableEvents.isEmpty) {
       return Expanded(
@@ -1016,13 +1081,16 @@ class _EventPageState extends State<EventPage> with SingleTickerProviderStateMix
           itemBuilder: (context, index) {
             final event = availableEvents[index];
             return GestureDetector(
-              onTap: () {
-                Navigator.push(
+              onTap: () async {
+                // Navigate to event details and refresh when returning
+                await Navigator.push(
                   context,
                   MaterialPageRoute(
                     builder: (context) => EventDetailsPage(event: event),
                   ),
                 );
+                // Refresh the events page when returning
+                setState(() {});
               },
               child: Container(
                 decoration: BoxDecoration(
@@ -1216,15 +1284,15 @@ class _EventPageState extends State<EventPage> with SingleTickerProviderStateMix
             onTap: () {
               Navigator.push(
                 context,
-                MaterialPageRoute(builder: (context) => const WritePostPage()),
+                MaterialPageRoute(builder: (context) => const WorkoutRecordPage()),
               );
             },
             child: Column(
               mainAxisSize: MainAxisSize.min,
               children: [
-                Icon(Icons.add_circle_outline, color: Colors.grey[600], size: 28),
+                Icon(Icons.fitness_center, color: Colors.grey[600], size: 28),
                 const Text(
-                  'Post',
+                  'Record',
                   style: TextStyle(fontSize: 12, color: Colors.grey),
                 ),
               ],
@@ -1268,6 +1336,12 @@ class _EventPageState extends State<EventPage> with SingleTickerProviderStateMix
       // Update joined events state immediately for instant UI update
       _joinedEventsState.joinEvent(event.id);
       
+      // Update the event object's isActive property
+      event.isActive = true;
+      
+      // Trigger UI update immediately
+      setState(() {});
+      
       bool success = await _eventsService.joinEvent(event.id);
       
       if (success) {
@@ -1277,6 +1351,8 @@ class _EventPageState extends State<EventPage> with SingleTickerProviderStateMix
       } else {
         // If the server call failed, revert the state change
         _joinedEventsState.leaveEvent(event.id);
+        event.isActive = false;
+        setState(() {});
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(
             content: Text('Failed to join event. Please try again.'),
@@ -1287,6 +1363,8 @@ class _EventPageState extends State<EventPage> with SingleTickerProviderStateMix
     } catch (e) {
       // If there was an error, revert the state change
       _joinedEventsState.leaveEvent(event.id);
+      event.isActive = false;
+      setState(() {});
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
           content: Text('Error joining event: $e'),
