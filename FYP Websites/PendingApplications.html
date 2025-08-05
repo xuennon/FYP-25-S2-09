@@ -241,7 +241,7 @@
   </aside>
   <header class="toolbar" role="banner" aria-label="Page toolbar">
     <div style="display: flex; align-items: center; gap: 8px;">
-      <button id="backBtn" aria-label="Back" title="Back" style="background: none; border: none; color: white; font-size: 22px; cursor: pointer;">←</button>
+      <button id="backBtn" aria-label="Back to Dashboard" title="Back to Dashboard" style="background: none; border: none; color: white; font-size: 22px; cursor: pointer;" onclick="location.href='SystemAdmin.html'">←</button>
       <span class="title">Pending Business Applications</span>
     </div>
     <div>
@@ -266,11 +266,6 @@
     menuBtn.addEventListener("click", openMenu);
     closeMenuBtn.addEventListener("click", closeMenu);
     sideMenuOverlay.addEventListener("click", closeMenu);
-    // Back button functionality
-    const backBtn = document.getElementById("backBtn");
-    if (backBtn) {
-      backBtn.onclick = () => window.history.back();
-    }
   </script>
 
   <div class="container">
