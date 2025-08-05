@@ -17,6 +17,16 @@
       --shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
       --radius: 14px;
       --transition: 0.3s ease;
+      
+      /* Black & White Theme Variables */
+      --bw-primary: #000000;
+      --bw-secondary: #ffffff;
+      --bw-accent: #333333;
+      --bw-light-gray: #f5f5f5;
+      --bw-medium-gray: #888888;
+      --bw-dark-gray: #222222;
+      --bw-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+      --bw-shadow-lg: 0 8px 20px rgba(0, 0, 0, 0.25);
     }
 
     * {
@@ -39,6 +49,123 @@
     body.dark {
       background: var(--dark-bg);
       color: var(--text-dark);
+    }
+
+    /* Black & White Theme */
+    body.bw-theme {
+      background: var(--bw-secondary);
+      color: var(--bw-primary);
+    }
+
+    body.bw-theme .user-card {
+      background: var(--bw-secondary);
+      border: 2px solid var(--bw-primary);
+      box-shadow: var(--bw-shadow);
+    }
+
+    body.bw-theme .user-info span.label {
+      color: var(--bw-primary);
+      font-weight: 700;
+    }
+
+    body.bw-theme .user-info span.value {
+      color: var(--bw-accent);
+    }
+
+    body.bw-theme .search-filter-bar > * {
+      background: var(--bw-secondary);
+      border: 2px solid var(--bw-primary);
+      color: var(--bw-primary);
+    }
+
+    body.bw-theme .search-filter-bar > *:focus {
+      border-color: var(--bw-accent);
+      box-shadow: 0 0 8px rgba(0, 0, 0, 0.3);
+    }
+
+    body.bw-theme .modal {
+      background: var(--bw-secondary);
+      color: var(--bw-primary);
+      border: 3px solid var(--bw-primary);
+      box-shadow: var(--bw-shadow-lg);
+    }
+
+    body.bw-theme .modal .close-btn {
+      color: var(--bw-primary);
+      background: var(--bw-light-gray);
+      border-radius: 50%;
+      width: 32px;
+      height: 32px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    body.bw-theme .btn-remove {
+      background: var(--bw-primary);
+      color: var(--bw-secondary);
+      border: 2px solid var(--bw-primary);
+    }
+
+    body.bw-theme .btn-remove:hover {
+      background: var(--bw-secondary);
+      color: var(--bw-primary);
+    }
+
+    body.bw-theme .btn-suspend {
+      background: var(--bw-dark-gray);
+      color: var(--bw-secondary);
+      border: 2px solid var(--bw-primary);
+    }
+
+    body.bw-theme .btn-suspend:hover {
+      background: var(--bw-primary);
+    }
+
+    body.bw-theme .btn-unsuspend {
+      background: var(--bw-secondary);
+      color: var(--bw-primary);
+      border: 2px solid var(--bw-primary);
+    }
+
+    body.bw-theme .btn-unsuspend:hover {
+      background: var(--bw-primary);
+      color: var(--bw-secondary);
+    }
+
+    body.bw-theme .btn-viewmore {
+      background: var(--bw-primary);
+      color: var(--bw-secondary);
+      border: 2px solid var(--bw-primary);
+    }
+
+    body.bw-theme .btn-viewmore:hover {
+      background: var(--bw-secondary);
+      color: var(--bw-primary);
+    }
+
+    /* Black & White Theme Verified Status Colors */
+    body.bw-theme .user-info .value[style*="green"] {
+      color: var(--bw-primary) !important;
+      font-weight: bold;
+      background: var(--bw-light-gray);
+      padding: 2px 6px;
+      border-radius: 4px;
+    }
+
+    body.bw-theme .user-info .value[style*="red"] {
+      color: var(--bw-accent) !important;
+      font-weight: bold;
+      background: var(--bw-light-gray);
+      padding: 2px 6px;
+      border-radius: 4px;
+      text-decoration: line-through;
+    }
+
+    /* Black & White Theme Loading Text */
+    body.bw-theme #userList {
+      color: var(--bw-primary);
+      font-weight: 500;
     }
 
     /* Toolbar styles (from SystemAdmin.html) */
@@ -74,12 +201,36 @@
     #modeToggle {
       font-size: 20px;
     }
+    #bwToggle {
+      font-size: 18px;
+    }
     #menuBtn {
       font-size: 24px;
     }
     header.toolbar span.title {
       font-weight: 600;
       font-size: 18px;
+    }
+
+    /* Black & White Theme Toolbar */
+    body.bw-theme header.toolbar {
+      background-color: var(--bw-primary);
+      color: var(--bw-secondary);
+      border: 3px solid var(--bw-primary);
+      box-shadow: var(--bw-shadow);
+    }
+
+    body.bw-theme header.toolbar button {
+      color: var(--bw-secondary);
+      border: 1px solid var(--bw-secondary);
+      border-radius: 4px;
+      padding: 4px 8px;
+      transition: var(--transition);
+    }
+
+    body.bw-theme header.toolbar button:hover {
+      background: var(--bw-secondary);
+      color: var(--bw-primary);
     }
     /* Side Menu styles (from SystemAdmin.html) */
     #sideMenuOverlay {
@@ -146,6 +297,48 @@
       align-self: flex-end;
       cursor: pointer;
       margin-bottom: 10px;
+    }
+
+    /* Black & White Theme Side Menu */
+    body.bw-theme #sideMenu {
+      background-color: var(--bw-primary);
+      color: var(--bw-secondary);
+      border-left: 4px solid var(--bw-secondary);
+    }
+
+    body.bw-theme #sideMenu h2 {
+      color: var(--bw-secondary);
+      border-bottom: 2px solid var(--bw-secondary);
+      padding-bottom: 10px;
+    }
+
+    body.bw-theme #sideMenu nav a, 
+    body.bw-theme #sideMenu button.menu-btn {
+      color: var(--bw-secondary);
+      border-bottom: 1px solid var(--bw-medium-gray);
+    }
+
+    body.bw-theme #sideMenu nav a:hover, 
+    body.bw-theme #sideMenu button.menu-btn:hover {
+      background: var(--bw-secondary);
+      color: var(--bw-primary);
+      font-weight: 600;
+    }
+
+    body.bw-theme #sideMenu button#closeMenuBtn {
+      color: var(--bw-secondary);
+      border: 1px solid var(--bw-secondary);
+      border-radius: 50%;
+      width: 32px;
+      height: 32px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    body.bw-theme #sideMenu button#closeMenuBtn:hover {
+      background: var(--bw-secondary);
+      color: var(--bw-primary);
     }
 
     .header {
@@ -454,6 +647,7 @@
       <span class="title" id="adminName">Welcome, Admin</span>
     </div>
     <div>
+      <button id="bwToggle" aria-label="Toggle black/white theme" title="Toggle black/white theme">⚫</button>
       <button id="modeToggle" aria-label="Toggle light/dark mode" title="Toggle light/dark mode">🌙</button>
       <button id="menuBtn" aria-label="Open menu" title="Open menu">☰</button>
     </div>
@@ -536,6 +730,7 @@
     const menuBtn = document.getElementById("menuBtn");
     const closeMenuBtn = document.getElementById("closeMenuBtn");
     const modeToggle = document.getElementById("modeToggle");
+    const bwToggle = document.getElementById("bwToggle");
     const userListEl = document.getElementById("userList");
 
     // Inputs for search, sort, filter
@@ -564,14 +759,31 @@
 
     // Mode toggle functionality
     modeToggle.addEventListener("click", () => {
+      document.body.classList.remove("bw-theme"); // Remove B&W theme when switching to dark/light
       document.body.classList.toggle("dark");
       const isDark = document.body.classList.contains("dark");
       modeToggle.textContent = isDark ? "☀️" : "🌙";
+      bwToggle.textContent = "⚫"; // Reset B&W toggle
       localStorage.setItem("theme", isDark ? "dark" : "light");
+      localStorage.removeItem("bw-theme");
+    });
+
+    // Black & White theme toggle functionality
+    bwToggle.addEventListener("click", () => {
+      document.body.classList.remove("dark"); // Remove dark theme when switching to B&W
+      document.body.classList.toggle("bw-theme");
+      const isBW = document.body.classList.contains("bw-theme");
+      bwToggle.textContent = isBW ? "⚪" : "⚫";
+      modeToggle.textContent = "🌙"; // Reset mode toggle
+      localStorage.setItem("bw-theme", isBW ? "true" : "false");
+      localStorage.removeItem("theme");
     });
 
     // Load saved theme
-    if (localStorage.getItem("theme") === "dark") {
+    if (localStorage.getItem("bw-theme") === "true") {
+      document.body.classList.add("bw-theme");
+      bwToggle.textContent = "⚪";
+    } else if (localStorage.getItem("theme") === "dark") {
       document.body.classList.add("dark");
       modeToggle.textContent = "☀️";
     }
