@@ -393,7 +393,8 @@
       <button id="backBtn" aria-label="Back" title="Back" style="background: none; border: none; color: white; font-size: 22px; cursor: pointer;">←</button>
       <span class="title">Manage Users</span>
     </div>
-    <div>
+    <div style="display: flex; align-items: center; gap: 12px;">
+      <span id="adminName" style="font-size: 14px; font-weight: 500;">Hello, Admin</span>
       <button id="modeToggle" aria-label="Toggle light/dark mode" title="Toggle light/dark mode">🌙</button>
       <button id="menuBtn" aria-label="Open menu" title="Open menu">☰</button>
     </div>
@@ -512,6 +513,12 @@
         await signOut(auth);
         return location.href = "Login.html";
       }
+      
+      // Update admin name display
+      const adminData = admin.data();
+      const adminName = adminData.name || "Admin";
+      document.getElementById("adminName").textContent = `Hello, ${adminName}`;
+      
       loadUsers();
     });
 

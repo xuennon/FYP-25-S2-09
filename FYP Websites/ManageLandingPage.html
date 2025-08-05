@@ -1953,6 +1953,11 @@
         return;
       }
 
+      // Update admin name display
+      const adminData = adminDoc.data();
+      const adminName = adminData.name || "Admin";
+      document.getElementById("adminName").textContent = `Hello, ${adminName}`;
+
       await loadAllContent();
       await loadAISettings();
     });
