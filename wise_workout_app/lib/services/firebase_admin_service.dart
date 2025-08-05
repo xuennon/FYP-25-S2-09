@@ -2,7 +2,8 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 
 class FirebaseAdminService {
-  static final FirebaseAdminService _instance = FirebaseAdminService._internal();
+  static final FirebaseAdminService _instance =
+      FirebaseAdminService._internal();
   factory FirebaseAdminService() => _instance;
   FirebaseAdminService._internal();
 
@@ -13,7 +14,7 @@ class FirebaseAdminService {
   Future<bool> isCurrentUserAdmin() async {
     try {
       if (_auth.currentUser == null) return false;
-      
+
       DocumentSnapshot userDoc = await _firestore
           .collection('users')
           .doc(_auth.currentUser!.uid)
@@ -108,14 +109,14 @@ class FirebaseAdminService {
       QuerySnapshot usernameQuery = await _firestore
           .collection('users')
           .where('username', isGreaterThanOrEqualTo: searchTerm)
-          .where('username', isLessThanOrEqualTo: searchTerm + '\uf8ff')
+          .where('username', isLessThanOrEqualTo: '$searchTerm\uf8ff')
           .get();
 
       // Search by email
       QuerySnapshot emailQuery = await _firestore
           .collection('users')
           .where('email', isGreaterThanOrEqualTo: searchTerm)
-          .where('email', isLessThanOrEqualTo: searchTerm + '\uf8ff')
+          .where('email', isLessThanOrEqualTo: '$searchTerm\uf8ff')
           .get();
 
       Set<String> addedIds = {};
@@ -153,7 +154,7 @@ class FirebaseAdminService {
     try {
       // Total users
       QuerySnapshot totalUsers = await _firestore.collection('users').get();
-      
+
       // Suspended users
       QuerySnapshot suspendedUsers = await _firestore
           .collection('users')
