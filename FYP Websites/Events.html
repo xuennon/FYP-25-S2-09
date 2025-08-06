@@ -629,6 +629,275 @@
       height: 18px;
     }
 
+    /* Leaderboard Widget Styles */
+    .leaderboard-widget {
+      background: #fff;
+      border-radius: 16px;
+      box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+      padding: 24px;
+      width: 100%;
+      max-width: 800px;
+      margin: 0 auto;
+    }
+
+    body.dark .leaderboard-widget {
+      background: #2a2a2a;
+      box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
+    }
+
+    .leaderboard-tabs {
+      display: flex;
+      gap: 32px;
+      padding: 16px 24px;
+      border-bottom: 1px solid #eee;
+    }
+
+    .leaderboard-tab {
+      font-size: 16px;
+      font-weight: 600;
+      color: #888;
+      cursor: pointer;
+      transition: color 0.2s;
+    }
+
+    .leaderboard-tab.active {
+      color: #f90;
+    }
+
+    .leaderboard-header {
+      display: flex;
+      align-items: center;
+      padding: 8px 24px;
+      color: #888;
+      font-size: 12px;
+      font-weight: 500;
+    }
+
+    .leaderboard-entry {
+      display: flex;
+      align-items: center;
+      padding: 12px 24px;
+      transition: background-color 0.2s;
+    }
+
+    .leaderboard-entry.current-user {
+      background-color: rgba(255, 153, 0, 0.1);
+    }
+
+    .entry-rank {
+      width: 40px;
+      font-size: 16px;
+      font-weight: 600;
+    }
+
+    .entry-rank.current-user {
+      color: #f90;
+    }
+
+    .profile-picture {
+      width: 40px;
+      height: 40px;
+      border-radius: 50%;
+      margin-right: 12px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: white;
+      font-weight: bold;
+      font-size: 18px;
+    }
+
+    .athlete-name {
+      flex: 1;
+      font-size: 16px;
+      font-weight: 500;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    .athlete-name.current-user {
+      color: #f90;
+    }
+
+    .metric-value {
+      font-size: 16px;
+      font-weight: 600;
+      text-align: right;
+    }
+
+    .metric-value.current-user {
+      color: #f90;
+    }
+
+    .empty-state {
+      padding: 24px;
+      text-align: center;
+    }
+
+    .empty-state-icon {
+      font-size: 60px;
+      color: #ccc;
+      margin-bottom: 16px;
+    }
+
+    .empty-state-title {
+      font-size: 18px;
+      font-weight: 500;
+      color: #666;
+      margin-bottom: 8px;
+    }
+
+    .empty-state-subtitle {
+      font-size: 14px;
+      color: #888;
+    }
+
+    .leaderboard-widget h2 {
+      color: var(--primary);
+      font-size: 28px;
+      margin: 0 0 24px 0;
+      text-align: center;
+      font-weight: 700;
+    }
+
+    .leaderboard-widget table {
+      width: 100%;
+      border-collapse: separate;
+      border-spacing: 0;
+      margin-top: 12px;
+    }
+
+    .leaderboard-widget th,
+    .leaderboard-widget td {
+      padding: 16px;
+      text-align: left;
+      border-bottom: 1px solid #eee;
+    }
+
+    .leaderboard-widget tr {
+      transition: transform 0.2s, box-shadow 0.2s;
+      border-radius: 8px;
+    }
+
+    .leaderboard-widget tbody tr:hover {
+      transform: translateY(-2px);
+      background: #f8f9fa;
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+    }
+
+    body.dark .leaderboard-widget tbody tr:hover {
+      background: #333;
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+    }
+
+    body.dark .leaderboard-widget th,
+    body.dark .leaderboard-widget td {
+      border-bottom: 1px solid #444;
+    }
+
+    .leaderboard-widget th {
+      font-weight: 600;
+      color: #666;
+      font-size: 15px;
+      letter-spacing: 0.02em;
+      padding: 16px;
+      background: #f8f9fa;
+      border-radius: 8px;
+    }
+
+    body.dark .leaderboard-widget th {
+      color: #aaa;
+      background: #2d2d2d;
+    }
+
+    .leaderboard-widget td {
+      padding: 12px 16px;
+    }
+
+    .leaderboard-widget .rank {
+      font-weight: 700;
+      color: var(--primary);
+      width: 100px;
+      font-size: 15px;
+      background: rgba(63, 81, 181, 0.1);
+      padding: 8px 16px;
+      border-radius: 20px;
+      text-align: center;
+    }
+
+    .leaderboard-widget .team {
+      font-weight: 600;
+      font-size: 15px;
+      color: #444;
+      padding: 8px 16px;
+      background: #f8f9fa;
+      border-radius: 20px;
+    }
+
+    body.dark .leaderboard-widget .team {
+      color: #fff;
+      background: #2d2d2d;
+    }
+
+    .leaderboard-widget .points {
+      font-weight: 600;
+      color: #28a745;
+      font-size: 15px;
+      background: #f8f9fa;
+      padding: 8px 16px;
+      border-radius: 20px;
+      display: inline-block;
+      margin: 2px 4px;
+    }
+
+    body.dark .leaderboard-widget .points {
+      background: #2d2d2d;
+    }
+
+    body.dark .leaderboard-widget .points {
+      color: #2ecc71;
+      background: rgba(46, 204, 113, 0.15);
+    }
+
+    .leaderboard-empty {
+      text-align: center;
+      padding: 40px 20px;
+      color: #666;
+      font-style: normal;
+      font-size: 15px;
+      background: #f8f9fa;
+      border-radius: 12px;
+      margin: 15px 0;
+      box-shadow: inset 0 0 0 1px rgba(0, 0, 0, 0.05);
+    }
+
+    body.dark .leaderboard-empty {
+      color: #aaa;
+      background: #333;
+      box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.1);
+    }
+
+    .loading-spinner {
+      width: 30px;
+      height: 30px;
+      border: 3px solid #f3f3f3;
+      border-top: 3px solid #3498db;
+      border-radius: 50%;
+      margin: 0 auto;
+      animation: spin 1s linear infinite;
+    }
+
+    @keyframes spin {
+      0% { transform: rotate(0deg); }
+      100% { transform: rotate(360deg); }
+    }
+
+    body.dark .loading-spinner {
+      border: 3px solid #333;
+      border-top: 3px solid #3498db;
+    }
+
     /* Modal content padding for mobile */
     @media (max-width: 600px) {
       .modal-content {
@@ -740,7 +1009,6 @@
           <div class="metrics-options">
             <label><input type="checkbox" class="metric-checkbox" value="distance"> Distance</label><br>
             <label><input type="checkbox" class="metric-checkbox" value="time"> Time</label><br>
-            <label><input type="checkbox" class="metric-checkbox" value="elevation"> Elevation</label><br>
             <label><input type="checkbox" class="metric-checkbox" value="steps"> Steps</label>
           </div>
           <div style="margin-top:18px; display:flex; justify-content:flex-end;">
@@ -961,7 +1229,147 @@ import { getFirestore, doc, getDoc, updateDoc } from "https://www.gstatic.com/fi
     });
 
     // Firebase imports for Firestore
-    import { collection, addDoc, getDocs, deleteDoc, doc as firestoreDoc } from "https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore.js";
+    import { collection, addDoc, getDocs, deleteDoc, doc as firestoreDoc, query, where, orderBy } from "https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore.js";
+
+    // Helper functions for leaderboard
+    function _getMetricHeaderText(entry) {
+      const primaryMetric = entry.primaryMetric;
+      
+      if (primaryMetric) {
+        switch (primaryMetric) {
+          case 'distanceKm':
+            return 'DISTANCE';
+          case 'durationSeconds':
+            return 'TIME';
+          case 'elevation':
+            return 'ELEVATION';
+          case 'avgPace':
+            return 'PACE';
+          case 'steps':
+            return 'STEPS';
+          case 'calories':
+            return 'CALORIES';
+          default:
+            return primaryMetric.toUpperCase();
+        }
+      }
+      return 'TIME'; // Default
+    }
+
+    function _getMetricValueText(entry) {
+      if (!entry.primaryMetric) return '';
+      
+      switch (entry.primaryMetric) {
+        case 'distanceKm':
+          return `${entry.distanceKm?.toFixed(2) || 0} km`;
+        case 'durationSeconds':
+          const minutes = Math.floor((entry.durationSeconds || 0) / 60);
+          const seconds = (entry.durationSeconds || 0) % 60;
+          return `${minutes}:${seconds.toString().padStart(2, '0')}`;
+        case 'elevation':
+          return `${entry.elevation || 0}m`;
+        case 'avgPace':
+          return `${entry.avgPace?.toFixed(2) || 0} min/km`;
+        case 'steps':
+          return entry.steps?.toString() || '0';
+        case 'calories':
+          return `${entry.calories || 0} cal`;
+        default:
+          return entry[entry.primaryMetric]?.toString() || '0';
+      }
+    }
+
+    function _getProfileColor(initial) {
+      const colors = [
+        '#f90', // Orange
+        '#3498db', // Blue
+        '#2ecc71', // Green
+        '#9b59b6', // Purple
+        '#e74c3c', // Red
+        '#16a085', // Teal
+        '#34495e', // Dark Blue
+        '#e91e63', // Pink
+      ];
+      
+      const index = initial.charCodeAt(0) % colors.length;
+      return colors[index];
+    }
+
+    // View Leaderboard function
+    window.viewLeaderboard = async function(eventId) {
+      try {
+        const leaderboardModal = document.createElement('div');
+        leaderboardModal.className = 'modal';
+        leaderboardModal.style.display = 'flex';
+        
+        const modalContent = document.createElement('div');
+        modalContent.className = 'modal-content';
+        modalContent.innerHTML = `
+          <div class="modal-header">
+            <h3>Event Leaderboard</h3>
+            <button class="close-btn">&times;</button>
+          </div>
+          <div class="leaderboard-widget">
+            <div id="leaderboardContent">Loading leaderboard...</div>
+          </div>
+        `;
+        
+        leaderboardModal.appendChild(modalContent);
+        document.body.appendChild(leaderboardModal);
+        
+        const closeBtn = modalContent.querySelector('.close-btn');
+        closeBtn.onclick = () => {
+          document.body.removeChild(leaderboardModal);
+        };
+
+        // Query the leaderboards collection
+        const leaderboardsRef = collection(db, 'leaderboards');
+        const q = query(leaderboardsRef, 
+          where('eventId', '==', eventId),
+          orderBy('points', 'desc')
+        );
+        
+        const querySnapshot = await getDocs(q);
+        let leaderboardHTML = '';
+        
+        if (querySnapshot.empty) {
+          leaderboardHTML = '<div class="leaderboard-empty">No entries yet for this event.</div>';
+        } else {
+          leaderboardHTML = `
+            <table>
+              <thead>
+                <tr>
+                  <th class="rank">Rank</th>
+                  <th class="team">Team</th>
+                  <th class="points">Points</th>
+                </tr>
+              </thead>
+              <tbody>
+          `;
+          
+          let rank = 1;
+          querySnapshot.forEach((doc) => {
+            const data = doc.data();
+            leaderboardHTML += `
+              <tr>
+                <td class="rank">#${rank}</td>
+                <td class="team">${data.teamName || 'Unknown Team'}</td>
+                <td class="points">${data.points || 0}</td>
+              </tr>
+            `;
+            rank++;
+          });
+          
+          leaderboardHTML += '</tbody></table>';
+        }
+        
+        document.getElementById('leaderboardContent').innerHTML = leaderboardHTML;
+        
+      } catch (error) {
+        console.error('Error loading leaderboard:', error);
+        alert('Failed to load leaderboard. Please try again.');
+      }
+    };
 
     // Render event table from Firestore
     async function rendereventTable() {
@@ -995,7 +1403,7 @@ import { getFirestore, doc, getDoc, updateDoc } from "https://www.gstatic.com/fi
               <td>${data.name ? data.name.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;') : ''}</td>
               <td>${data.description ? data.description.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;') : ''}</td>
               <td class="event-actions">
-                <button class="action-btn view-btn" title="View" onclick="viewevent('${docSnap.id}')">View</button>
+                <button class="action-btn view-btn" title="View Leaderboard" onclick="viewLeaderboard('${docSnap.id}')">Leaderboard</button>
                 <button class="action-btn edit-btn" title="Edit" onclick="editevent('${docSnap.id}')">Edit</button>
                 <button class="action-btn delete-btn" title="Delete" onclick="deleteevent('${docSnap.id}')">Delete</button>
               </td>
@@ -1260,9 +1668,195 @@ window.editevent = editevent;
       editCloseBtn.addEventListener('click', closeEditModal);
     }
 
-    // View event (placeholder)
-    function viewevent(id) {
-      alert(`Viewing event: ${id}\n(Not implemented - would show ranking and points)`);
+    // View leaderboard for an event
+    async function viewLeaderboard(id) {
+      try {
+        const eventDoc = await getDoc(firestoreDoc(db, "events", id));
+        if (!eventDoc.exists()) {
+          throw new Error("Event not found");
+        }
+        const eventData = eventDoc.data();
+
+        // Create modal structure
+        const leaderboardModal = document.createElement('div');
+        leaderboardModal.className = 'modal';
+        leaderboardModal.style.display = 'flex';
+        
+        const modalContent = document.createElement('div');
+        modalContent.className = 'modal-content';
+        modalContent.innerHTML = `
+          <div class="modal-header">
+            <h3>Lets go up up Leaderboard</h3>
+            <button class="close-btn">&times;</button>
+          </div>
+          <div class="leaderboard-widget">
+            <div id="leaderboardContent" style="padding: 20px;">
+              <div class="leaderboard-empty" style="padding: 30px;">
+                <div class="loading-spinner"></div>
+                <p style="margin-top: 15px; color: #666;">Loading leaderboard data...</p>
+              </div>
+            </div>
+          </div>
+        `;        leaderboardModal.appendChild(modalContent);
+        document.body.appendChild(leaderboardModal);
+
+        // Add close button functionality
+        const closeBtn = modalContent.querySelector('.close-btn');
+        closeBtn.onclick = () => {
+          document.body.removeChild(leaderboardModal);
+        };
+
+        // Get entries from the leaderboards collection
+        const leaderboardsQuery = query(
+          collection(db, "leaderboards"),
+          where("eventId", "==", id)
+        );
+        
+        // Execute the query and get the snapshot
+        const leaderboardsSnap = await getDocs(leaderboardsQuery);
+        
+        const leaderboardData = [];
+        leaderboardsSnap.forEach(doc => {
+          const data = doc.data();
+          console.log('Raw Firestore document data:', data);
+          console.log('entries array:', data.entries);
+          console.log('Document ID:', doc.id);
+          
+          // Check if there are entries in the array
+          if (data.entries && data.entries.length > 0) {
+            // Loop through each entry in the entries array
+            data.entries.forEach((entry, entryIndex) => {
+              console.log(`Processing entry ${entryIndex}:`, entry);
+              console.log(`Entry username: "${entry.username}"`);
+              
+              // Create individual leaderboard entry for each user
+              const entryData = {
+                id: `${doc.id}_${entryIndex}`, // Unique ID for each entry
+                userName: entry.username,
+                userId: entry.userId,
+                userInitial: entry.userInitial,
+                userProfileImageUrl: entry.userProfileImageUrl || '',
+                activityId: entry.activityId,
+                metrics: entry.metrics,
+                // Copy document-level properties
+                eventId: data.eventId,
+                primaryMetric: data.primaryMetric,
+                isLowerBetter: data.isLowerBetter,
+                // Copy specific metric values from entry.metrics
+                ...entry.metrics
+              };
+              
+              console.log('Processed individual entry data:', entryData);
+              leaderboardData.push(entryData);
+            });
+          } else {
+            // Fallback: treat the document itself as an entry (old format)
+            console.log('No entries array found, treating document as single entry');
+            const entryData = {
+              id: doc.id,
+              userName: data.username,
+              metrics: data.metrics,
+              ...data
+            };
+            
+            console.log('Processed document-level entry data:', entryData);
+            leaderboardData.push(entryData);
+          }
+        });
+
+        console.log('Final leaderboardData array:', leaderboardData);
+
+        // Sort the leaderboard data based on the primary metric
+        if (leaderboardData.length > 0 && leaderboardData[0].primaryMetric) {
+          const primaryMetric = leaderboardData[0].primaryMetric;
+          const isLowerBetter = leaderboardData[0].isLowerBetter;
+          
+          console.log(`Sorting by ${primaryMetric}, isLowerBetter: ${isLowerBetter}`);
+          
+          leaderboardData.sort((a, b) => {
+            const aValue = a[primaryMetric] || 0;
+            const bValue = b[primaryMetric] || 0;
+            
+            if (isLowerBetter) {
+              return aValue - bValue; // Lower values are better (ascending)
+            } else {
+              return bValue - aValue; // Higher values are better (descending)
+            }
+          });
+          
+          console.log('Sorted leaderboardData:', leaderboardData);
+        }
+
+        const leaderboardContent = document.getElementById('leaderboardContent');
+
+        if (leaderboardData.length === 0) {
+          leaderboardContent.innerHTML = `
+            <div class="empty-state">
+              <div class="empty-state-icon">📊</div>
+              <div class="empty-state-title">No records yet</div>
+              <div class="empty-state-subtitle">Complete activities to see rankings</div>
+            </div>
+          `;
+        } else {
+          // Get current user for highlighting
+          const currentUser = auth.currentUser;
+          
+          let html = `
+            <div class="leaderboard-tabs">
+              <div class="leaderboard-tab active">OVERALL</div>
+            </div>
+            
+            <div class="leaderboard-header">
+              <div style="width: 40px">RANK</div>
+              <div style="flex: 1">USER</div>
+              <div>${_getMetricHeaderText(leaderboardData[0])}</div>
+            </div>
+          `;          leaderboardData.forEach((entry, index) => {
+            console.log(`Processing entry ${index + 1}:`, entry);
+            console.log(`Entry userName: "${entry.userName}"`);
+            console.log(`Entry userInitial: "${entry.userInitial}"`);
+            
+            const isCurrentUser = entry.userId === currentUser?.uid;
+            const profileColor = _getProfileColor(entry.userInitial || 'A');
+            
+            // Format the metric value
+            const metricValue = _getMetricValueText(entry);
+            
+            const displayName = entry.userName || 'Anonymous';
+            console.log(`Display name will be: "${displayName}"`);
+            
+            html += `
+              <div class="leaderboard-entry${isCurrentUser ? ' current-user' : ''}">
+                <div class="entry-rank${isCurrentUser ? ' current-user' : ''}">${index + 1}</div>
+                
+                ${entry.userProfileImageUrl 
+                  ? `<img class="profile-picture" src="${entry.userProfileImageUrl}" alt="${entry.userName}" 
+                       onerror="this.onerror=null; this.innerHTML='${entry.userInitial}'; this.style.backgroundColor='${profileColor}';">`
+                  : `<div class="profile-picture" style="background-color: ${profileColor}">${entry.userInitial || entry.userName?.[0] || '?'}</div>`
+                }
+                
+                <div class="athlete-name${isCurrentUser ? ' current-user' : ''}">${displayName}</div>
+                <div class="metric-value${isCurrentUser ? ' current-user' : ''}">${metricValue}</div>
+              </div>
+            `;
+          });
+
+          html += '</tbody></table>';
+          leaderboardContent.innerHTML = html;
+        }
+
+        // Add close button event listener
+        const leaderboardModalCloseBtn = document.getElementById('leaderboardModalCloseBtn');
+        if (leaderboardModalCloseBtn) {
+          leaderboardModalCloseBtn.onclick = () => {
+            leaderboardModal.style.display = 'none';
+          };
+        }
+
+      } catch (err) {
+        console.error("Error viewing leaderboard:", err);
+        alert("Failed to load leaderboard: " + err.message);
+      }
     }
 
     // Delete event from Firestore
@@ -1292,7 +1886,7 @@ window.editevent = editevent;
     }
 
     // Expose for inline onclick
-    window.viewevent = viewevent;
+    window.viewLeaderboard = viewLeaderboard;
     window.deleteevent = deleteevent;
 
     // Note: createeventForm submission is handled by the step-by-step modal now
