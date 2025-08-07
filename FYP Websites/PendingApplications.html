@@ -719,19 +719,27 @@
     }
 
     async function loadPendingApplications() {
-      const q = query(collection(db, "businessUsers"), where("verified", "==", false));
+      // Get all business users and filter in JavaScript to match ManageBusiness.html logic
+      const q = query(collection(db, "businessUsers"));
       const snap = await getDocs(q);
 
       if (snap.empty) {
-        pendingList.textContent = "No pending applications.";
+        pendingList.textContent = "No business users found.";
         return;
       }
 
-      // Map docs to array of objects with id and data
-      allApplications = snap.docs.map(docSnap => ({
-        id: docSnap.id,
-        ...docSnap.data()
-      }));
+      // Map docs to array and filter for unverified (verified !== true)
+      allApplications = snap.docs
+        .map(docSnap => ({
+          id: docSnap.id,
+          ...docSnap.data()
+        }))
+        .filter(app => app.verified !== true); // This matches undefined, null, false, etc.
+
+      if (allApplications.length === 0) {
+        pendingList.textContent = "No pending applications.";
+        return;
+      }
 
       renderApplications();
     }

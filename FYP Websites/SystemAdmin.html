@@ -476,6 +476,20 @@
     return snapshot.size;
   }
 
+  // Helper: get pending applications count (verified !== true)
+  async function getPendingApplicationsCount(colRef) {
+    const q = query(colRef);
+    const snapshot = await getDocs(q);
+    let count = 0;
+    snapshot.docs.forEach(doc => {
+      const data = doc.data();
+      if (data.verified !== true) { // This matches undefined, null, false, etc.
+        count++;
+      }
+    });
+    return count;
+  }
+
   async function loadDashboardStats() {
     try {
       const usersCol = collection(db, "users");
@@ -500,8 +514,8 @@
       ]);
       document.getElementById("suspendedUsers").textContent = suspendedUsersCount + suspendedBusinessCount;
 
-      // Pending applications = businessUsers with verified == false
-      const pendingAppsCount = await getFilteredCount(businessCol, "verified", false);
+      // Pending applications = businessUsers with verified !== true (includes false, null, undefined)
+      const pendingAppsCount = await getPendingApplicationsCount(businessCol);
       document.getElementById("pendingCount").textContent = pendingAppsCount;
       document.getElementById("pendingAppsMain").textContent = pendingAppsCount;
 

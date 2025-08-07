@@ -1,0 +1,109 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Debug Pending Applications</title>
+</head>
+<body>
+    <h1>Debug Pending Applications</h1>
+    <div id="results"></div>
+
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/9.23.0/firebase-app.js";
+        import {
+            getFirestore,
+            collection,
+            getDocs,
+            query,
+            where
+        } from "https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore.js";
+
+        const firebaseConfig = {
+            apiKey: "AIzaSyAIFV7ynXUzA0p-CrmVOE2lFRgaf_9g_k4",
+            authDomain: "fyp-25-s2-09.firebaseapp.com",
+            projectId: "fyp-25-s2-09",
+            storageBucket: "fyp-25-s2-09.firebasestorage.app",
+            messagingSenderId: "838641447649",
+            appId: "1:838641447649:web:6ddfb234b3d445f16dbda0",
+            measurementId: "G-TQDTLZ1VPX"
+        };
+
+        const app = initializeApp(firebaseConfig);
+        const db = getFirestore(app);
+
+        async function debugBusinessUsers() {
+            const resultsDiv = document.getElementById('results');
+            
+            try {
+                // Get all business users
+                console.log('Fetching all business users...');
+                const allBusinessQuery = query(collection(db, "businessUsers"));
+                const allSnap = await getDocs(allBusinessQuery);
+                
+                console.log(`Total business users: ${allSnap.size}`);
+                resultsDiv.innerHTML += `<h2>Total business users: ${allSnap.size}</h2>`;
+                
+                if (allSnap.empty) {
+                    resultsDiv.innerHTML += '<p>No business users found at all!</p>';
+                    return;
+                }
+                
+                // Check each document
+                resultsDiv.innerHTML += '<h3>All Business Users:</h3>';
+                allSnap.docs.forEach((docSnap, index) => {
+                    const data = docSnap.data();
+                    const verified = data.verified;
+                    const verifiedType = typeof verified;
+                    
+                    console.log(`Document ${index + 1}:`, {
+                        id: docSnap.id,
+                        verified: verified,
+                        verifiedType: verifiedType,
+                        businessName: data.businessName
+                    });
+                    
+                    resultsDiv.innerHTML += `
+                        <div style="border: 1px solid #ccc; margin: 10px; padding: 10px;">
+                            <strong>Document ${index + 1}</strong><br>
+                            ID: ${docSnap.id}<br>
+                            Business Name: ${data.businessName || 'N/A'}<br>
+                            Verified: ${verified} (${verifiedType})<br>
+                            Has verified field: ${data.hasOwnProperty('verified')}<br>
+                        </div>
+                    `;
+                });
+                
+                // Test the exact query used by PendingApplications
+                console.log('Testing verified == false query...');
+                const pendingQuery = query(collection(db, "businessUsers"), where("verified", "==", false));
+                const pendingSnap = await getDocs(pendingQuery);
+                
+                console.log(`Pending applications (verified == false): ${pendingSnap.size}`);
+                resultsDiv.innerHTML += `<h2>Pending Applications (verified == false): ${pendingSnap.size}</h2>`;
+                
+                // Test string "false"
+                console.log('Testing verified == "false" query...');
+                const pendingStringQuery = query(collection(db, "businessUsers"), where("verified", "==", "false"));
+                const pendingStringSnap = await getDocs(pendingStringQuery);
+                
+                console.log(`Pending applications (verified == "false"): ${pendingStringSnap.size}`);
+                resultsDiv.innerHTML += `<h2>Pending Applications (verified == "false"): ${pendingStringSnap.size}</h2>`;
+                
+                // Test undefined/null
+                console.log('Testing verified == null query...');
+                const pendingNullQuery = query(collection(db, "businessUsers"), where("verified", "==", null));
+                const pendingNullSnap = await getDocs(pendingNullQuery);
+                
+                console.log(`Pending applications (verified == null): ${pendingNullSnap.size}`);
+                resultsDiv.innerHTML += `<h2>Pending Applications (verified == null): ${pendingNullSnap.size}</h2>`;
+                
+            } catch (error) {
+                console.error('Error:', error);
+                resultsDiv.innerHTML += `<p style="color: red;">Error: ${error.message}</p>`;
+            }
+        }
+
+        // Run debug when page loads
+        debugBusinessUsers();
+    </script>
+</body>
+</html>
