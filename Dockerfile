@@ -7,8 +7,8 @@ WORKDIR /usr/share/nginx/html
 # Remove default nginx website
 RUN rm -rf /usr/share/nginx/html/*
 
-# Copy website files to nginx html directory
-COPY "FYP Websites"/ /usr/share/nginx/html/
+# Copy only the index.html file from FYP Websites directory
+COPY ["FYP Websites/index.html", "/usr/share/nginx/html/"]
 
 # Copy custom nginx configuration
 COPY nginx.conf /etc/nginx/conf.d/default.conf
