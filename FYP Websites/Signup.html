@@ -6,58 +6,255 @@
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>Wise Fitness - Sign Up</title>
   <style>
+    * {
+      box-sizing: border-box;
+    }
+
     body {
-      font-family: sans-serif;
-      background: #f4f4f4;
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      background: #f8f9fa;
       margin: 0;
-      padding: 0;
+      padding: 20px;
       display: flex;
       align-items: center;
       justify-content: center;
-      height: 100vh;
+      min-height: 100vh;
     }
 
     .signup-container {
       background: white;
       padding: 40px;
-      border-radius: 10px;
-      box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+      border-radius: 20px;
+      box-shadow: 0 20px 60px rgba(0, 0, 0, 0.15);
       max-width: 500px;
       width: 100%;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .signup-container::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      height: 4px;
+      background: linear-gradient(90deg, #007bff, #0056b3);
     }
 
     h2 {
       text-align: center;
       color: #007bff;
+      margin-bottom: 30px;
+      font-size: 2rem;
+      font-weight: 600;
+      letter-spacing: -0.5px;
+    }
+
+    .form-group {
+      position: relative;
+      margin-bottom: 20px;
     }
 
     input,
-    select,
-    button {
+    select {
       width: 100%;
-      padding: 12px;
-      margin-top: 12px;
-      border-radius: 5px;
-      border: 1px solid #ccc;
+      padding: 16px 20px;
+      border-radius: 12px;
+      border: 2px solid #e9ecef;
       box-sizing: border-box;
+      font-size: 16px;
+      transition: all 0.3s ease;
+      background: #f8f9fa;
+    }
+
+    input:focus,
+    select:focus {
+      outline: none;
+      border-color: #007bff;
+      background: white;
+      box-shadow: 0 0 0 3px rgba(0, 123, 255, 0.1);
+      transform: translateY(-1px);
+    }
+
+    input:valid,
+    select:valid {
+      border-color: #28a745;
+    }
+
+    input::placeholder {
+      color: #6c757d;
+      font-size: 14px;
+    }
+
+    .date-label {
+      position: absolute;
+      top: -8px;
+      left: 16px;
+      background: white;
+      padding: 0 8px;
+      font-size: 12px;
+      color: #007bff;
+      font-weight: 500;
     }
 
     button {
-      background-color: #007bff;
-      color: white;
-      font-weight: bold;
+      width: 100%;
+      padding: 16px;
+      border-radius: 12px;
       border: none;
+      background: linear-gradient(135deg, #007bff 0%, #0056b3 100%);
+      color: white;
+      font-weight: 600;
+      font-size: 16px;
       cursor: pointer;
+      transition: all 0.3s ease;
+      margin-top: 20px;
+      position: relative;
+      overflow: hidden;
     }
 
     button:hover {
-      background-color: #0056b3;
+      transform: translateY(-2px);
+      box-shadow: 0 8px 25px rgba(0, 123, 255, 0.3);
+    }
+
+    button:active {
+      transform: translateY(0);
+    }
+
+    button:disabled {
+      background: #6c757d;
+      cursor: not-allowed;
+      transform: none;
+      box-shadow: none;
     }
 
     .back-link {
       text-align: center;
-      margin-top: 20px;
+      margin-top: 30px;
     }
+
+    .back-link a {
+      color: #007bff;
+      text-decoration: none;
+      font-weight: 500;
+      transition: color 0.3s ease;
+    }
+
+    .back-link a:hover {
+      color: #0056b3;
+      text-decoration: underline;
+    }
+
+    /* Modern validation styles */
+    .field-error {
+      color: #dc3545;
+      font-size: 0.85rem;
+      margin-top: 8px;
+      padding: 8px 12px;
+      background: #f8d7da;
+      border-radius: 8px;
+      border-left: 4px solid #dc3545;
+      animation: slideDown 0.3s ease;
+    }
+
+    @keyframes slideDown {
+      from {
+        opacity: 0;
+        transform: translateY(-10px);
+      }
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+
+    .error-container {
+      background: linear-gradient(135deg, #f8d7da 0%, #f5c6cb 100%);
+      color: #721c24;
+      padding: 16px 20px;
+      border-radius: 12px;
+      margin: 0 0 25px 0;
+      border-left: 4px solid #dc3545;
+      display: none;
+      animation: slideDown 0.3s ease;
+      box-shadow: 0 4px 12px rgba(220, 53, 69, 0.15);
+    }
+
+    .error-container.show {
+      display: block;
+    }
+
+    .password-strength {
+      font-size: 0.85rem;
+      margin-top: 8px;
+      padding: 6px 12px;
+      border-radius: 8px;
+      font-weight: 500;
+      transition: all 0.3s ease;
+    }
+
+    .password-strength.weak {
+      color: #dc3545;
+      background: #f8d7da;
+    }
+
+    .password-strength.medium {
+      color: #fd7e14;
+      background: #ffeaa7;
+    }
+
+    .password-strength.strong {
+      color: #28a745;
+      background: #d4edda;
+    }
+
+    /* Input icons */
+    .form-group::before {
+      content: '';
+      position: absolute;
+      right: 16px;
+      top: 50%;
+      transform: translateY(-50%);
+      width: 20px;
+      height: 20px;
+      opacity: 0.3;
+      pointer-events: none;
+      z-index: 1;
+    }
+
+    /* Success state */
+    input.valid {
+      border-color: #28a745;
+      background: #f8fff9;
+    }
+
+    input.error {
+      border-color: #dc3545;
+      background: #fff8f8;
+    }
+
+    /* Responsive design */
+    @media (max-width: 600px) {
+      body {
+        padding: 10px;
+      }
+      
+      .signup-container {
+        padding: 30px 25px;
+        border-radius: 15px;
+      }
+      
+      h2 {
+        font-size: 1.75rem;
+      }
+      
+      input, select, button {
+        padding: 14px 16px;
+      }
+    }
+  </style>
   </style>
 </head>
 
@@ -65,32 +262,66 @@
 
   <div class="signup-container">
     <h2>Create Account</h2>
+    
+    <!-- Error Display -->
+    <div id="errorContainer" class="error-container">
+      <span id="errorText"></span>
+    </div>
+    
     <form id="signupForm">
-      <input type="text" id="username" placeholder="Username" required />
-      <input type="text" id="name" placeholder="Full Name" required />
-      <input type="email" id="email" placeholder="Email Address" required />
-      <input type="tel" id="phone" placeholder="Phone Number (e.g. 12345678)" />
+      <div class="form-group">
+        <input type="text" id="username" placeholder="Username (3-20 characters, letters and numbers only)" required />
+      </div>
+      
+      <div class="form-group">
+        <input type="text" id="name" placeholder="Full Name (e.g. John Doe)" required />
+      </div>
+      
+      <div class="form-group">
+        <input type="email" id="email" placeholder="Email Address (e.g. john@example.com)" required />
+      </div>
+      
+      <div class="form-group">
+        <input type="tel" id="phone" placeholder="Phone Number (e.g. +65 9123 4567)" />
+      </div>
+
+      <!-- Date of Birth -->
+      <div class="form-group">
+        <input type="date" id="dateOfBirth" required />
+        <label for="dateOfBirth" class="date-label">Date of Birth *</label>
+      </div>
 
       <!-- Age Range Dropdown -->
-      <select id="ageRange" required>
-        <option value="">Select Age Range</option>
-        <option value="Under 18">Under 18</option>
-        <option value="18-25">18 - 25</option>
-        <option value="26-35">26 - 35</option>
-        <option value="36-55">36 - 55</option>
-        <option value="56 and above">56 and above</option>
-      </select>
+      <div class="form-group">
+        <select id="ageRange" required>
+          <option value="">Select Age Range *</option>
+          <option value="Under 18">Under 18</option>
+          <option value="18-25">18 - 25</option>
+          <option value="26-35">26 - 35</option>
+          <option value="36-55">36 - 55</option>
+          <option value="56 and above">56 and above</option>
+        </select>
+      </div>
 
       <!-- Gender Dropdown -->
-      <select id="gender" required>
-        <option value="">Select Gender</option>
-        <option value="Male">Male</option>
-        <option value="Female">Female</option>
-        <option value="Other">Other</option>
-      </select>
+      <div class="form-group">
+        <select id="gender" required>
+          <option value="">Select Gender *</option>
+          <option value="Male">Male</option>
+          <option value="Female">Female</option>
+          <option value="Other">Other</option>
+        </select>
+      </div>
 
-      <input type="password" id="password" placeholder="Password" required />
-      <input type="password" id="confirmPassword" placeholder="Confirm Password" required />
+      <div class="form-group">
+        <input type="password" id="password" placeholder="Password (min 8 chars, uppercase, lowercase, number, special char)" required />
+        <div id="passwordStrength" class="password-strength"></div>
+      </div>
+      
+      <div class="form-group">
+        <input type="password" id="confirmPassword" placeholder="Confirm Password" required />
+      </div>
+      
       <button type="submit">Sign Up</button>
     </form>
 
@@ -98,6 +329,9 @@
       <a href="index.html">← Back to Home</a>
     </div>
   </div>
+
+  <!-- libphonenumber for phone validation -->
+  <script src="https://cdn.jsdelivr.net/npm/libphonenumber-js@1.10.44/bundle/libphonenumber-js.min.js"></script>
 
   <!-- Firebase SDKs -->
   <script type="module">
@@ -127,6 +361,297 @@
     const auth = getAuth(app);
     const db = getFirestore(app);
 
+    // Validation functions
+    function validateUsername(username) {
+      const errors = [];
+      if (!username || username.trim().length < 3) {
+        errors.push('Username must be at least 3 characters long');
+      }
+      if (username.trim().length > 20) {
+        errors.push('Username cannot exceed 20 characters');
+      }
+      if (!/^[a-zA-Z0-9_]+$/.test(username.trim())) {
+        errors.push('Username can only contain letters, numbers, and underscores');
+      }
+      return errors;
+    }
+
+    function validateFullName(name) {
+      const errors = [];
+      if (!name || name.trim().length < 2) {
+        errors.push('Full name must be at least 2 characters long');
+      }
+      if (name.trim().length > 50) {
+        errors.push('Full name cannot exceed 50 characters');
+      }
+      if (!/^[a-zA-Z\s\-\.\']+$/.test(name.trim())) {
+        errors.push('Full name contains invalid characters');
+      }
+      return errors;
+    }
+
+    function validateEmail(email) {
+      const errors = [];
+      const emailRegex = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/;
+      
+      if (!emailRegex.test(email)) {
+        errors.push('Please enter a valid email address');
+      }
+      
+      return errors;
+    }
+
+    function validatePhoneNumber(phone) {
+      const errors = [];
+      if (!phone.trim()) {
+        return errors; // Phone is optional
+      }
+      
+      try {
+        const phoneNumber = libphonenumber.parsePhoneNumber(phone, 'SG');
+        if (!phoneNumber.isValid()) {
+          errors.push('Please enter a valid phone number');
+        }
+      } catch (error) {
+        errors.push('Please enter a valid phone number (e.g., +65 9123 4567)');
+      }
+      return errors;
+    }
+
+    function validateDateOfBirth(dob) {
+      const errors = [];
+      if (!dob) {
+        errors.push('Date of birth is required');
+        return errors;
+      }
+      
+      const birthDate = new Date(dob);
+      const today = new Date();
+      const age = today.getFullYear() - birthDate.getFullYear();
+      const monthDiff = today.getMonth() - birthDate.getMonth();
+      
+      if (monthDiff < 0 || (monthDiff === 0 && today.getDate() < birthDate.getDate())) {
+        age--;
+      }
+      
+      if (birthDate > today) {
+        errors.push('Date of birth cannot be in the future');
+      } else if (age < 13) {
+        errors.push('You must be at least 13 years old to register');
+      } else if (age > 120) {
+        errors.push('Please enter a valid date of birth');
+      }
+      
+      return errors;
+    }
+
+    function validatePassword(password) {
+      const errors = [];
+      
+      if (password.length < 8) {
+        errors.push('Password must be at least 8 characters long');
+      }
+      
+      if (!/[A-Z]/.test(password)) {
+        errors.push('Password must contain at least one uppercase letter');
+      }
+      
+      if (!/[a-z]/.test(password)) {
+        errors.push('Password must contain at least one lowercase letter');
+      }
+      
+      if (!/\d/.test(password)) {
+        errors.push('Password must contain at least one number');
+      }
+      
+      if (!/[!@#$%^&*()_+\-=\[\]{};':"\\|,.<>\/?]/.test(password)) {
+        errors.push('Password must contain at least one special character');
+      }
+      
+      return errors;
+    }
+
+    function getPasswordStrength(password) {
+      let score = 0;
+      
+      if (password.length >= 8) score++;
+      if (/[A-Z]/.test(password)) score++;
+      if (/[a-z]/.test(password)) score++;
+      if (/\d/.test(password)) score++;
+      if (/[!@#$%^&*()_+\-=\[\]{};':"\\|,.<>\/?]/.test(password)) score++;
+      
+      if (score < 3) return { strength: 'weak', text: 'Weak password' };
+      if (score < 5) return { strength: 'medium', text: 'Medium strength' };
+      return { strength: 'strong', text: 'Strong password' };
+    }
+
+    function showError(message) {
+      const errorContainer = document.getElementById('errorContainer');
+      const errorText = document.getElementById('errorText');
+      errorText.textContent = message;
+      errorContainer.classList.add('show');
+    }
+
+    function hideError() {
+      document.getElementById('errorContainer').classList.remove('show');
+    }
+
+    function showFieldError(fieldId, message) {
+      const field = document.getElementById(fieldId);
+      field.style.borderColor = '#dc3545';
+      field.classList.add('error');
+      field.classList.remove('valid');
+      
+      // Remove existing error message
+      const existingError = field.parentNode.querySelector('.field-error');
+      if (existingError) {
+        existingError.remove();
+      }
+      
+      if (message) {
+        const errorDiv = document.createElement('div');
+        errorDiv.className = 'field-error';
+        errorDiv.textContent = message;
+        field.parentNode.appendChild(errorDiv);
+      }
+    }
+
+    function clearFieldError(fieldId) {
+      const field = document.getElementById(fieldId);
+      field.style.borderColor = '#e9ecef';
+      field.classList.remove('error');
+      field.classList.add('valid');
+      const existingError = field.parentNode.querySelector('.field-error');
+      if (existingError) {
+        existingError.remove();
+      }
+    }
+
+    // Real-time validation
+    const usernameInput = document.getElementById('username');
+    const nameInput = document.getElementById('name');
+    const emailInput = document.getElementById('email');
+    const phoneInput = document.getElementById('phone');
+    const dobInput = document.getElementById('dateOfBirth');
+    const passwordInput = document.getElementById('password');
+    const confirmPasswordInput = document.getElementById('confirmPassword');
+    const passwordStrengthDiv = document.getElementById('passwordStrength');
+
+    usernameInput.addEventListener('blur', () => {
+      const errors = validateUsername(usernameInput.value);
+      if (errors.length > 0) {
+        showFieldError('username', errors[0]);
+      } else {
+        clearFieldError('username');
+      }
+    });
+
+    nameInput.addEventListener('blur', () => {
+      const errors = validateFullName(nameInput.value);
+      if (errors.length > 0) {
+        showFieldError('name', errors[0]);
+      } else {
+        clearFieldError('name');
+      }
+    });
+
+    emailInput.addEventListener('blur', () => {
+      const errors = validateEmail(emailInput.value);
+      if (errors.length > 0) {
+        showFieldError('email', errors[0]);
+      } else {
+        clearFieldError('email');
+      }
+    });
+
+    phoneInput.addEventListener('blur', () => {
+      const errors = validatePhoneNumber(phoneInput.value);
+      if (errors.length > 0) {
+        showFieldError('phone', errors[0]);
+      } else {
+        clearFieldError('phone');
+      }
+    });
+
+    dobInput.addEventListener('blur', () => {
+      const errors = validateDateOfBirth(dobInput.value);
+      if (errors.length > 0) {
+        showFieldError('dateOfBirth', errors[0]);
+      } else {
+        clearFieldError('dateOfBirth');
+      }
+    });
+
+    passwordInput.addEventListener('input', () => {
+      const password = passwordInput.value;
+      const strength = getPasswordStrength(password);
+      
+      passwordStrengthDiv.textContent = strength.text;
+      passwordStrengthDiv.className = `password-strength ${strength.strength}`;
+      
+      // Clear validation on input
+      if (password.length > 0) {
+        const errors = validatePassword(password);
+        if (errors.length === 0) {
+          clearFieldError('password');
+        }
+      }
+    });
+
+    passwordInput.addEventListener('blur', () => {
+      const errors = validatePassword(passwordInput.value);
+      if (errors.length > 0) {
+        showFieldError('password', errors[0]);
+      } else {
+        clearFieldError('password');
+      }
+    });
+
+    confirmPasswordInput.addEventListener('blur', () => {
+      if (confirmPasswordInput.value && confirmPasswordInput.value !== passwordInput.value) {
+        showFieldError('confirmPassword', 'Passwords do not match');
+      } else {
+        clearFieldError('confirmPassword');
+      }
+    });
+
+    // Phone formatting
+    phoneInput.addEventListener('input', (e) => {
+      let value = e.target.value;
+      // Add +65 prefix if not present and starts with 8 or 9
+      if (/^[89]/.test(value) && !value.startsWith('+65')) {
+        e.target.value = '+65 ' + value;
+      }
+    });
+
+    // Auto-update age range based on date of birth
+    dobInput.addEventListener('change', () => {
+      const dob = dobInput.value;
+      if (dob) {
+        const birthDate = new Date(dob);
+        const today = new Date();
+        let age = today.getFullYear() - birthDate.getFullYear();
+        const monthDiff = today.getMonth() - birthDate.getMonth();
+        
+        if (monthDiff < 0 || (monthDiff === 0 && today.getDate() < birthDate.getDate())) {
+          age--;
+        }
+        
+        const ageRangeSelect = document.getElementById('ageRange');
+        if (age < 18) {
+          ageRangeSelect.value = 'Under 18';
+        } else if (age <= 25) {
+          ageRangeSelect.value = '18-25';
+        } else if (age <= 35) {
+          ageRangeSelect.value = '26-35';
+        } else if (age <= 55) {
+          ageRangeSelect.value = '36-55';
+        } else {
+          ageRangeSelect.value = '56 and above';
+        }
+      }
+    });
+
     async function saveUserProfile(uid, profile) {
       try {
         await setDoc(doc(db, "users", uid), profile);
@@ -138,32 +663,123 @@
 
     document.getElementById("signupForm").addEventListener("submit", async (e) => {
       e.preventDefault();
+      hideError();
+
+      // Clear all field errors
+      ['username', 'name', 'email', 'phone', 'dateOfBirth', 'password', 'confirmPassword'].forEach(clearFieldError);
 
       const username = document.getElementById("username").value.trim();
       const name = document.getElementById("name").value.trim();
       const email = document.getElementById("email").value.trim();
       const phone = document.getElementById("phone").value.trim();
+      const dateOfBirth = document.getElementById("dateOfBirth").value;
       const ageRange = document.getElementById("ageRange").value;
       const gender = document.getElementById("gender").value;
       const password = document.getElementById("password").value;
       const confirmPassword = document.getElementById("confirmPassword").value;
 
+      // Collect validation errors
+      let allErrors = [];
+      let hasFieldErrors = false;
+
+      // Validate username
+      const usernameErrors = validateUsername(username);
+      if (usernameErrors.length > 0) {
+        showFieldError('username', usernameErrors[0]);
+        allErrors = allErrors.concat(usernameErrors);
+        hasFieldErrors = true;
+      }
+
+      // Validate full name
+      const nameErrors = validateFullName(name);
+      if (nameErrors.length > 0) {
+        showFieldError('name', nameErrors[0]);
+        allErrors = allErrors.concat(nameErrors);
+        hasFieldErrors = true;
+      }
+
+      // Validate email
+      const emailErrors = validateEmail(email);
+      if (emailErrors.length > 0) {
+        showFieldError('email', emailErrors[0]);
+        allErrors = allErrors.concat(emailErrors);
+        hasFieldErrors = true;
+      }
+
+      // Validate phone (optional)
+      const phoneErrors = validatePhoneNumber(phone);
+      if (phoneErrors.length > 0) {
+        showFieldError('phone', phoneErrors[0]);
+        allErrors = allErrors.concat(phoneErrors);
+        hasFieldErrors = true;
+      }
+
+      // Validate date of birth
+      const dobErrors = validateDateOfBirth(dateOfBirth);
+      if (dobErrors.length > 0) {
+        showFieldError('dateOfBirth', dobErrors[0]);
+        allErrors = allErrors.concat(dobErrors);
+        hasFieldErrors = true;
+      }
+
+      // Validate password
+      const passwordErrors = validatePassword(password);
+      if (passwordErrors.length > 0) {
+        showFieldError('password', passwordErrors[0]);
+        allErrors = allErrors.concat(passwordErrors);
+        hasFieldErrors = true;
+      }
+
+      // Validate password confirmation
       if (password !== confirmPassword) {
-        alert("Passwords do not match.");
+        showFieldError('confirmPassword', 'Passwords do not match');
+        allErrors.push('Passwords do not match');
+        hasFieldErrors = true;
+      }
+
+      // Validate required fields
+      if (!ageRange) {
+        allErrors.push('Please select an age range');
+      }
+
+      if (!gender) {
+        allErrors.push('Please select a gender');
+      }
+
+      // If there are validation errors, show them and stop
+      if (allErrors.length > 0) {
+        if (!hasFieldErrors) {
+          showError(allErrors.join('\n'));
+        }
         return;
       }
 
       try {
+        document.querySelector('button[type="submit"]').disabled = true;
+        document.querySelector('button[type="submit"]').textContent = 'Creating Account...';
+
         const userCredential = await createUserWithEmailAndPassword(auth, email, password);
         const user = userCredential.user;
 
         await sendEmailVerification(user);
+
+        // Calculate age from date of birth
+        const birthDate = new Date(dateOfBirth);
+        const today = new Date();
+        let calculatedAge = today.getFullYear() - birthDate.getFullYear();
+        const monthDiff = today.getMonth() - birthDate.getMonth();
+        
+        if (monthDiff < 0 || (monthDiff === 0 && today.getDate() < birthDate.getDate())) {
+          calculatedAge--;
+        }
 
         await saveUserProfile(user.uid, {
           username,
           fullName: name,
           phone: phone || null,
           email,
+          dateOfBirth: dateOfBirth,
+          age: calculatedAge,
           ageRange,
           gender,
           userType: "basic", // Set default user type
@@ -176,7 +792,24 @@
         location.href = "Login.html";
 
       } catch (error) {
-        alert("Error: " + error.message);
+        console.error("Registration error:", error);
+        
+        // Handle specific Firebase errors
+        let errorMessage = "Registration failed. Please try again.";
+        if (error.code === 'auth/email-already-in-use') {
+          errorMessage = "An account with this email already exists. Please use a different email or try logging in.";
+        } else if (error.code === 'auth/weak-password') {
+          errorMessage = "Password is too weak. Please choose a stronger password.";
+        } else if (error.code === 'auth/invalid-email') {
+          errorMessage = "Invalid email address. Please enter a valid email.";
+        } else if (error.code === 'auth/network-request-failed') {
+          errorMessage = "Network error. Please check your internet connection and try again.";
+        }
+        
+        showError(errorMessage);
+      } finally {
+        document.querySelector('button[type="submit"]').disabled = false;
+        document.querySelector('button[type="submit"]').textContent = 'Sign Up';
       }
     });
   </script>
