@@ -1761,6 +1761,16 @@
     const db = firebase.firestore();
     const auth = firebase.auth();
     console.log("Firebase initialized successfully");
+    
+    // Test Firebase connection
+    db.collection("testimonial").limit(1).get().then(snapshot => {
+      console.log("✅ Firebase connection working, testimonials accessible");
+      console.log("Found", snapshot.size, "testimonial documents");
+    }).catch(error => {
+      console.error("❌ Firebase connection failed:", error);
+      console.error("Error code:", error.code);
+      console.error("Error message:", error.message);
+    });
 
     // LOGIN MODAL FUNCTIONALITY
     // ...existing code...
