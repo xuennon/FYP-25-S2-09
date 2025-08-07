@@ -1669,6 +1669,10 @@
             🔄 Refresh
           </button>
           
+          <button onclick="configureOpenAI()" style="background: #6f42c1; color: white; border: none; padding: 8px 16px; border-radius: 6px; font-size: 0.9rem; font-weight: 600; cursor: pointer;" title="Configure OpenAI API Key">
+            🔑 API Key
+          </button>
+          
           <button onclick="testOpenAI()" style="background: #17a2b8; color: white; border: none; padding: 8px 16px; border-radius: 6px; font-size: 0.9rem; font-weight: 600; cursor: pointer;" title="Test OpenAI API connection">
             🧪 Test API
           </button>
@@ -2695,8 +2699,31 @@ Services Section:
     let isAiAnalyzing = false;
     
     // AI Configuration - SECURITY: Use environment variable or configure in admin settings
-    const OPENAI_API_KEY = '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'; // Configure this securely via environment variables
+    const OPENAI_API_KEY = localStorage.getItem('openai_api_key') || 'your-openai-api-key-here'; // Configure this securely via environment variables
     const OPENAI_API_URL = 'https://api.openai.com/v1/chat/completions';
+    
+    // Configure OpenAI API Key
+    window.configureOpenAI = function() {
+      const currentKey = localStorage.getItem('openai_api_key') || 'Not configured';
+      const keyPreview = currentKey.length > 20 ? currentKey.substring(0, 20) + '...' : currentKey;
+      
+      const newKey = prompt(`Current API Key: ${keyPreview}\n\nEnter your OpenAI API Key:\n(Get one from: https://platform.openai.com/api-keys)`);
+      
+      if (newKey && newKey.trim() !== '' && newKey !== 'your-openai-api-key-here') {
+        localStorage.setItem('openai_api_key', newKey.trim());
+        showMessage('✅ OpenAI API Key configured successfully! Refresh the page to use the new key.', 'success');
+        
+        // Ask user if they want to test the API
+        if (confirm('Would you like to test the API connection now?')) {
+          setTimeout(() => window.location.reload(), 1000);
+        }
+      } else if (newKey === '') {
+        localStorage.removeItem('openai_api_key');
+        showMessage('🗑️ OpenAI API Key removed.', 'success');
+      } else {
+        showMessage('❌ API Key configuration cancelled.', 'error');
+      }
+    };
     
     // Test OpenAI API connection
     window.testOpenAI = async function() {
