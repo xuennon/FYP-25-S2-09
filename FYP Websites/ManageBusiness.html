@@ -404,6 +404,13 @@
       overflow-y: auto;
     }
 
+    .modal.document-viewer {
+      max-width: 90vw;
+      max-height: 95vh;
+      width: 90%;
+      height: 90%;
+    }
+
     body.dark .modal {
       background: var(--card-dark);
       color: var(--text-dark);
@@ -430,10 +437,223 @@
       font-size: 22px;
       cursor: pointer;
       color: var(--text-light);
+      z-index: 101;
     }
 
     body.dark .modal .close-btn {
       color: var(--text-dark);
+    }
+
+    /* Document viewer styles */
+    .document-viewer-container {
+      width: 100%;
+      height: 100%;
+      display: flex;
+      flex-direction: column;
+    }
+
+    .document-controls {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 16px;
+      padding: 12px;
+      background: rgba(0, 123, 255, 0.1);
+      border-radius: 8px;
+      flex-wrap: wrap;
+      gap: 8px;
+    }
+
+    .document-navigation {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .nav-btn {
+      background: var(--primary);
+      color: white;
+      border: none;
+      padding: 8px 12px;
+      border-radius: 6px;
+      cursor: pointer;
+      font-size: 14px;
+      transition: var(--transition);
+    }
+
+    .nav-btn:hover:not(:disabled) {
+      background: #0056b3;
+    }
+
+    .nav-btn:disabled {
+      background: #ccc;
+      cursor: not-allowed;
+    }
+
+    .document-info {
+      font-size: 14px;
+      color: var(--text-light);
+      font-weight: 600;
+    }
+
+    body.dark .document-info {
+      color: var(--text-dark);
+    }
+
+    .document-display {
+      flex: 1;
+      border: 2px solid #e0e0e0;
+      border-radius: 8px;
+      overflow: hidden;
+      position: relative;
+      min-height: 400px;
+      background: #f9f9f9;
+    }
+
+    body.dark .document-display {
+      border-color: #444;
+      background: #1a1a1a;
+    }
+
+    .document-display iframe,
+    .document-display img {
+      width: 100%;
+      height: 100%;
+      border: none;
+      object-fit: contain;
+    }
+
+    .document-display .loading {
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      color: var(--text-light);
+      font-size: 16px;
+    }
+
+    body.dark .document-display .loading {
+      color: var(--text-dark);
+    }
+
+    .document-display .error {
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      color: #333;
+      text-align: center;
+      padding: 30px 20px;
+      max-width: 90%;
+      background: white;
+      border-radius: 12px;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+      border: 2px solid #e0e0e0;
+    }
+
+    body.dark .document-display .error {
+      background: #2c2c2c;
+      color: #f1f1f1;
+      border-color: #444;
+    }
+
+    .document-display .error h3 {
+      color: #f44336;
+      margin-bottom: 15px;
+      font-size: 18px;
+    }
+
+    .document-display .error p {
+      margin: 8px 0;
+      color: #666;
+      font-size: 14px;
+    }
+
+    body.dark .document-display .error p {
+      color: #ccc;
+    }
+
+    .document-display .error .nav-btn {
+      margin: 15px 5px 10px 5px;
+      padding: 10px 20px;
+      font-size: 14px;
+    }
+
+    .view-documents-btn {
+      background: #28a745;
+      color: white;
+      border: none;
+      padding: 8px 16px;
+      border-radius: 6px;
+      cursor: pointer;
+      font-size: 14px;
+      margin-top: 12px;
+      transition: var(--transition);
+    }
+
+    .view-documents-btn:hover {
+      background: #218838;
+    }
+
+    /* Tablet/iPad responsive styles */
+    @media (max-width: 1024px) and (min-width: 768px) {
+      .modal.document-viewer {
+        max-width: 95vw;
+        max-height: 90vh;
+        width: 95%;
+        height: 85%;
+      }
+
+      .document-controls {
+        padding: 10px;
+      }
+
+      .nav-btn {
+        padding: 10px 14px;
+        font-size: 16px;
+        min-width: 44px; /* Touch-friendly size */
+        min-height: 44px;
+      }
+
+      .document-info {
+        font-size: 16px;
+      }
+
+      .document-display {
+        min-height: 500px;
+      }
+    }
+
+    /* Mobile responsive styles */
+    @media (max-width: 767px) {
+      .modal.document-viewer {
+        max-width: 100vw;
+        max-height: 100vh;
+        width: 100%;
+        height: 100%;
+        border-radius: 0;
+      }
+
+      .document-controls {
+        flex-direction: column;
+        align-items: stretch;
+        gap: 12px;
+      }
+
+      .document-navigation {
+        justify-content: center;
+      }
+
+      .nav-btn {
+        padding: 12px 16px;
+        font-size: 16px;
+        min-width: 48px;
+        min-height: 48px;
+      }
+
+      .document-display {
+        min-height: 60vh;
+      }
     }
   </style>
 </head>
@@ -689,6 +909,12 @@
       const business = allBusinesses.find(b => b.id === id);
       if (!business) return;
 
+      const documentsHtml = business.businessDocuments && business.businessDocuments.length > 0 
+        ? `<button class="view-documents-btn" onclick="showDocumentViewer('${id}')">
+             📄 View Documents (${business.businessDocuments.length})
+           </button>`
+        : `<div style="color: #f44336; font-style: italic; margin-top: 12px;">No documents uploaded</div>`;
+
       modalDesc.innerHTML = `
         <div class="modal-row"><span class="label">Business Name:</span> ${business.businessName || "—"}</div>
         <div class="modal-row"><span class="label">UEN:</span> ${business.uen || "—"}</div>
@@ -697,8 +923,14 @@
         <div class="modal-row"><span class="label">Services:</span> ${(business.servicesOffered || []).join(", ") || "—"}</div>
         <div class="modal-row"><span class="label">Status:</span> ${business.suspensionStatus === "yes" ? "<strong style='color:red'>Suspended</strong>" : "Active"}</div>
         <div class="modal-row"><span class="label">Verified:</span> <span style="color: ${business.verified ? 'green' : 'red'};">${business.verified ? "✔ Verified" : "✘ Not Verified"}</span></div>
+        <div class="modal-row">
+          <span class="label">Documents:</span>
+          ${documentsHtml}
+        </div>
       `;
 
+      // Reset modal class
+      modalOverlay.querySelector('.modal').className = 'modal';
       modalOverlay.classList.add("active");
       modalOverlay.focus();
     };
@@ -706,6 +938,268 @@
     window.closeModal = () => {
       modalOverlay.classList.remove("active");
     };
+
+    // Document viewer functionality
+    let currentDocuments = [];
+    let currentDocumentIndex = 0;
+
+    window.showDocumentViewer = (businessId) => {
+      const business = allBusinesses.find(b => b.id === businessId);
+      if (!business || !business.businessDocuments || business.businessDocuments.length === 0) {
+        alert('No documents available for this business.');
+        return;
+      }
+
+      currentDocuments = business.businessDocuments;
+      currentDocumentIndex = 0;
+
+      // Update modal class for document viewer
+      const modal = modalOverlay.querySelector('.modal');
+      modal.className = 'modal document-viewer';
+
+      // Create document viewer HTML
+      modalDesc.innerHTML = `
+        <div class="document-viewer-container">
+          <div class="document-controls">
+            <div class="document-navigation">
+              <button class="nav-btn" id="prevDoc" onclick="navigateDocument(-1)">← Previous</button>
+              <button class="nav-btn" id="nextDoc" onclick="navigateDocument(1)">Next →</button>
+            </div>
+            <div class="document-info" id="docInfo">
+              Document 1 of ${currentDocuments.length}
+            </div>
+            <div>
+              <button class="nav-btn" onclick="downloadDocument()">📥 Download</button>
+              <button class="nav-btn" onclick="showBusinessDetails('${businessId}')">← Back to Details</button>
+            </div>
+          </div>
+          <div class="document-display" id="documentDisplay">
+            <div class="loading">Loading document...</div>
+          </div>
+        </div>
+      `;
+
+      displayCurrentDocument();
+      updateNavigationButtons();
+    };
+
+    window.navigateDocument = (direction) => {
+      const newIndex = currentDocumentIndex + direction;
+      if (newIndex >= 0 && newIndex < currentDocuments.length) {
+        currentDocumentIndex = newIndex;
+        displayCurrentDocument();
+        updateNavigationButtons();
+      }
+    };
+
+    window.downloadDocument = () => {
+      if (currentDocuments.length > 0) {
+        const currentDoc = currentDocuments[currentDocumentIndex];
+        // Create a temporary anchor element to trigger download
+        const link = document.createElement('a');
+        link.href = currentDoc.url;
+        link.download = currentDoc.originalName || `document_${currentDocumentIndex + 1}`;
+        link.target = '_blank';
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+      }
+    };
+
+    function displayCurrentDocument() {
+      const displayElement = document.getElementById('documentDisplay');
+      const currentDoc = currentDocuments[currentDocumentIndex];
+      
+      if (!currentDoc) return;
+
+      displayElement.innerHTML = '<div class="loading">Loading document...</div>';
+
+      // Determine file type
+      const fileName = currentDoc.originalName || currentDoc.name || '';
+      const fileExtension = fileName.split('.').pop().toLowerCase();
+      const isPDF = fileExtension === 'pdf' || currentDoc.type === 'application/pdf';
+      const isImage = ['jpg', 'jpeg', 'png', 'gif', 'webp'].includes(fileExtension) || 
+                     currentDoc.type?.startsWith('image/');
+
+      console.log('Displaying document:', {
+        fileName,
+        fileExtension,
+        isPDF,
+        isImage,
+        url: currentDoc.url,
+        type: currentDoc.type
+      });
+
+      try {
+        if (isPDF) {
+          // Set a timeout to show error if loading takes too long
+          const loadingTimeout = setTimeout(() => {
+            if (displayElement.querySelector('.loading')) {
+              showPDFError(displayElement, currentDoc);
+            }
+          }, 10000); // 10 seconds timeout
+
+          // Try multiple PDF viewing approaches
+          const iframe = document.createElement('iframe');
+          
+          // Use Google Drive viewer as fallback for better compatibility
+          const googleViewerUrl = `https://drive.google.com/viewerng/viewer?embedded=true&url=${encodeURIComponent(currentDoc.url)}`;
+          const directUrl = currentDoc.url + '#view=FitH&toolbar=1';
+          
+          // Try direct URL first, fallback to Google viewer
+          iframe.src = directUrl;
+          iframe.style.width = '100%';
+          iframe.style.height = '100%';
+          iframe.style.border = 'none';
+          iframe.setAttribute('sandbox', 'allow-same-origin allow-scripts allow-popups allow-forms');
+          
+          let loadAttempt = 1;
+          
+          iframe.onload = () => {
+            clearTimeout(loadingTimeout);
+            // Check if iframe actually loaded content
+            try {
+              if (iframe.contentWindow && iframe.contentWindow.location.href !== 'about:blank') {
+                displayElement.innerHTML = '';
+                displayElement.appendChild(iframe);
+                console.log('PDF loaded successfully with direct URL');
+              } else {
+                throw new Error('Iframe loaded but no content');
+              }
+            } catch (e) {
+              // Try Google viewer as fallback
+              if (loadAttempt === 1) {
+                loadAttempt = 2;
+                console.log('Trying Google Drive viewer fallback');
+                iframe.src = googleViewerUrl;
+              } else {
+                showPDFError(displayElement, currentDoc);
+              }
+            }
+          };
+          
+          iframe.onerror = () => {
+            clearTimeout(loadingTimeout);
+            if (loadAttempt === 1) {
+              loadAttempt = 2;
+              console.log('Direct URL failed, trying Google Drive viewer');
+              iframe.src = googleViewerUrl;
+            } else {
+              console.log('Both PDF viewing methods failed');
+              showPDFError(displayElement, currentDoc);
+            }
+          };
+          
+        } else if (isImage) {
+          // For image files
+          const img = document.createElement('img');
+          img.src = currentDoc.url;
+          img.alt = currentDoc.originalName || 'Business Document';
+          img.style.width = '100%';
+          img.style.height = '100%';
+          img.style.objectFit = 'contain';
+          img.style.background = 'white';
+          
+          const imgTimeout = setTimeout(() => {
+            img.onerror();
+          }, 15000); // 15 seconds timeout for images
+          
+          img.onload = () => {
+            clearTimeout(imgTimeout);
+            displayElement.innerHTML = '';
+            displayElement.appendChild(img);
+            console.log('Image loaded successfully');
+          };
+          
+          img.onerror = () => {
+            clearTimeout(imgTimeout);
+            console.log('Image failed to load');
+            displayElement.innerHTML = `
+              <div class="error">
+                <h3>Unable to display image</h3>
+                <p>Image failed to load or may be corrupted.</p>
+                <p><strong>File:</strong> ${fileName}</p>
+                <button class="nav-btn" onclick="downloadDocument()">📥 Download Image</button>
+                <br><br>
+                <a href="${currentDoc.url}" target="_blank" style="color: var(--primary); text-decoration: underline;">
+                  🔗 Open in new tab
+                </a>
+              </div>
+            `;
+          };
+          
+        } else {
+          // For unsupported file types
+          displayElement.innerHTML = `
+            <div class="error">
+              <h3>File type not supported for preview</h3>
+              <p><strong>File:</strong> ${fileName}</p>
+              <p><strong>Type:</strong> ${currentDoc.type || 'Unknown'}</p>
+              <p><strong>Size:</strong> ${(currentDoc.size / (1024 * 1024)).toFixed(2)} MB</p>
+              <button class="nav-btn" onclick="downloadDocument()">📥 Download File</button>
+              <br><br>
+              <a href="${currentDoc.url}" target="_blank" style="color: var(--primary); text-decoration: underline;">
+                🔗 Open in new tab
+              </a>
+            </div>
+          `;
+        }
+      } catch (error) {
+        console.error('Error displaying document:', error);
+        displayElement.innerHTML = `
+          <div class="error">
+            <h3>Error loading document</h3>
+            <p><strong>Error:</strong> ${error.message}</p>
+            <p><strong>File:</strong> ${fileName}</p>
+            <button class="nav-btn" onclick="downloadDocument()">📥 Download</button>
+            <br><br>
+            <a href="${currentDoc.url}" target="_blank" style="color: var(--primary); text-decoration: underline;">
+              🔗 Try opening in new tab
+            </a>
+          </div>
+        `;
+      }
+    }
+
+    function showPDFError(displayElement, currentDoc) {
+      const fileName = currentDoc.originalName || currentDoc.name || '';
+      console.log('PDF failed to load, showing error options');
+      displayElement.innerHTML = `
+        <div class="error">
+          <h3>PDF Preview Not Available</h3>
+          <p>Unable to display PDF in browser due to security restrictions.</p>
+          <p><strong>File:</strong> ${fileName}</p>
+          <p><strong>Size:</strong> ${(currentDoc.size / (1024 * 1024)).toFixed(2)} MB</p>
+          <div style="margin-top: 20px;">
+            <button class="nav-btn" onclick="downloadDocument()" style="margin: 5px;">
+              📥 Download PDF
+            </button>
+            <br>
+            <a href="${currentDoc.url}" target="_blank" style="color: var(--primary); text-decoration: underline; font-size: 16px;">
+              🔗 Open PDF in new tab
+            </a>
+          </div>
+          <div style="margin-top: 15px; padding: 10px; background: rgba(0,123,255,0.1); border-radius: 6px; font-size: 14px;">
+            <strong>💡 Tip:</strong> Click "Open PDF in new tab" to view the document in your browser's built-in PDF viewer.
+          </div>
+        </div>
+      `;
+    }
+
+    function updateNavigationButtons() {
+      const prevBtn = document.getElementById('prevDoc');
+      const nextBtn = document.getElementById('nextDoc');
+      const docInfo = document.getElementById('docInfo');
+      
+      if (prevBtn) prevBtn.disabled = currentDocumentIndex === 0;
+      if (nextBtn) nextBtn.disabled = currentDocumentIndex === currentDocuments.length - 1;
+      
+      if (docInfo && currentDocuments.length > 0) {
+        const currentDoc = currentDocuments[currentDocumentIndex];
+        const fileName = currentDoc.originalName || currentDoc.name || `Document ${currentDocumentIndex + 1}`;
+        docInfo.textContent = `${currentDocumentIndex + 1} of ${currentDocuments.length}: ${fileName}`;
+      }
+    }
 
     modalOverlay.addEventListener("click", (e) => {
       if (e.target === modalOverlay) {
