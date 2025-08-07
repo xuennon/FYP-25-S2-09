@@ -232,14 +232,14 @@
   <h2>Business User Registration</h2>
   <form id="businessSignupForm" novalidate>
     <label for="businessName">Business Name *</label>
-    <input type="text" id="businessName" placeholder="Enter your business name" required />
+    <input type="text" id="businessName" placeholder="Enter your business name (e.g., Fitness Pro Gym Pte Ltd)" required />
 
     <label for="uen">UEN (Unique Entity Number) *</label>
-    <input type="text" id="uen" placeholder="Enter your UEN" required />
+    <input type="text" id="uen" placeholder="e.g., 200123456H or T08LL1234J" required />
 
     <div class="services-checkboxes">
       <strong>Services Provided *</strong>
-      <label><input type="checkbox" name="services" value="Gym" /> Gym</label>
+      <label><input type="checkbox" name="services" value="Gym" checked /> Gym</label>
       <label><input type="checkbox" name="services" value="Crossfit" /> Crossfit</label>
       <label><input type="checkbox" name="services" value="Dance Studio" /> Dance Studio</label>
       <label><input type="checkbox" name="services" value="Physiotherapy" /> Physiotherapy</label>
@@ -272,16 +272,16 @@
     </div>
 
     <label for="email">Business Email Address *</label>
-    <input type="email" id="email" placeholder="Enter your business email" required />
+    <input type="email" id="email" placeholder="business@company.com" required />
 
     <label for="phone">Business Phone Number *</label>
-    <input type="tel" id="phone" placeholder="Enter your phone number" required />
+    <input type="tel" id="phone" placeholder="+65 9123 4567" required />
 
     <label for="password">Password *</label>
-    <input type="password" id="password" placeholder="Enter your password" required />
+    <input type="password" id="password" placeholder="Minimum 8 characters, include uppercase, lowercase, number" required />
 
     <label for="confirmPassword">Confirm Password *</label>
-    <input type="password" id="confirmPassword" placeholder="Confirm your password" required />
+    <input type="password" id="confirmPassword" placeholder="Re-enter your password" required />
 
     <button type="submit">Register Business</button>
   </form>
@@ -292,6 +292,7 @@
 </div>
 
 <!-- Firebase SDKs -->
+<script src="https://unpkg.com/libphonenumber-js@1.10.44/bundle/libphonenumber-max.js"></script>
 <script type="module">
   import { initializeApp } from "https://www.gstatic.com/firebasejs/9.23.0/firebase-app.js";
   import {
@@ -331,6 +332,109 @@
   const MAX_FILES = 3;
   const ALLOWED_TYPES = ['application/pdf', 'image/jpeg', 'image/png'];
   const ALLOWED_EXTENSIONS = ['pdf', 'jpg', 'jpeg', 'png'];
+
+  // Validation functions
+  function validateBusinessName(name) {
+    const errors = [];
+    if (!name || name.trim().length < 2) {
+      errors.push('Business name must be at least 2 characters long');
+    }
+    if (name.trim().length > 100) {
+      errors.push('Business name cannot exceed 100 characters');
+    }
+    if (!/^[a-zA-Z0-9\s\-\&\(\)\.\']+$/.test(name.trim())) {
+      errors.push('Business name contains invalid characters');
+    }
+    return errors;
+  }
+
+  function validateUEN(uen) {
+    const errors = [];
+    const cleanUEN = uen.replace(/\s/g, '').toUpperCase();
+    
+    // Singapore UEN format validation
+    // Format 1: 9 digits + 1 letter (e.g., 200123456H)
+    // Format 2: 1 letter + 2 digits + 2 letters + 4 digits + 1 letter (e.g., T08LL1234J)
+    const format1 = /^\d{9}[A-Z]$/;
+    const format2 = /^[A-Z]\d{2}[A-Z]{2}\d{4}[A-Z]$/;
+    
+    if (!format1.test(cleanUEN) && !format2.test(cleanUEN)) {
+      errors.push('Invalid UEN format. Use format like 200123456H or T08LL1234J');
+    }
+    
+    return errors;
+  }
+
+  function validateBusinessEmail(email) {
+    const errors = [];
+    const emailRegex = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/;
+    
+    if (!emailRegex.test(email)) {
+      errors.push('Please enter a valid email address');
+    }
+    
+    // Check for common personal email domains
+    const personalDomains = ['gmail.com', 'yahoo.com', 'hotmail.com', 'outlook.com'];
+    const domain = email.split('@')[1]?.toLowerCase();
+    if (personalDomains.includes(domain)) {
+      errors.push('Please use a business email address (not personal email)');
+    }
+    
+    return errors;
+  }
+
+  function validatePhoneNumber(phone) {
+    const errors = [];
+    try {
+      const phoneNumber = libphonenumber.parsePhoneNumber(phone, 'SG');
+      if (!phoneNumber.isValid()) {
+        errors.push('Please enter a valid phone number');
+      }
+    } catch (error) {
+      errors.push('Please enter a valid phone number (e.g., +65 9123 4567)');
+    }
+    return errors;
+  }
+
+  function validatePassword(password) {
+    const errors = [];
+    
+    if (password.length < 8) {
+      errors.push('Password must be at least 8 characters long');
+    }
+    
+    if (!/[A-Z]/.test(password)) {
+      errors.push('Password must contain at least one uppercase letter');
+    }
+    
+    if (!/[a-z]/.test(password)) {
+      errors.push('Password must contain at least one lowercase letter');
+    }
+    
+    if (!/\d/.test(password)) {
+      errors.push('Password must contain at least one number');
+    }
+    
+    if (!/[!@#$%^&*()_+\-=\[\]{};':"\\|,.<>\/?]/.test(password)) {
+      errors.push('Password must contain at least one special character');
+    }
+    
+    return errors;
+  }
+
+  function validateServices(selectedServices, otherServiceText) {
+    const errors = [];
+    
+    if (selectedServices.length === 0) {
+      errors.push('Please select at least one service');
+    }
+    
+    if (selectedServices.includes('Other') && !otherServiceText.trim()) {
+      errors.push('Please specify the "Other" service');
+    }
+    
+    return errors;
+  }
 
   function validateFile(file) {
     const errors = [];
@@ -422,6 +526,96 @@
   const otherText = document.getElementById('otherServiceText');
   const fileInput = document.getElementById('businessDocuments');
 
+  // Real-time validation
+  const businessNameInput = document.getElementById('businessName');
+  const uenInput = document.getElementById('uen');
+  const emailInput = document.getElementById('email');
+  const phoneInput = document.getElementById('phone');
+  const passwordInput = document.getElementById('password');
+  const confirmPasswordInput = document.getElementById('confirmPassword');
+
+  function showFieldError(fieldId, message) {
+    const field = document.getElementById(fieldId);
+    field.style.borderColor = '#f44336';
+    
+    // Remove existing error message
+    const existingError = field.parentNode.querySelector('.field-error');
+    if (existingError) {
+      existingError.remove();
+    }
+    
+    if (message) {
+      const errorDiv = document.createElement('div');
+      errorDiv.className = 'field-error';
+      errorDiv.style.cssText = 'color: #f44336; font-size: 0.85rem; margin-top: 4px;';
+      errorDiv.textContent = message;
+      field.parentNode.appendChild(errorDiv);
+    }
+  }
+
+  function clearFieldError(fieldId) {
+    const field = document.getElementById(fieldId);
+    field.style.borderColor = '#ccc';
+    const existingError = field.parentNode.querySelector('.field-error');
+    if (existingError) {
+      existingError.remove();
+    }
+  }
+
+  // Real-time validation events
+  businessNameInput.addEventListener('blur', () => {
+    const errors = validateBusinessName(businessNameInput.value);
+    if (errors.length > 0) {
+      showFieldError('businessName', errors[0]);
+    } else {
+      clearFieldError('businessName');
+    }
+  });
+
+  uenInput.addEventListener('blur', () => {
+    const errors = validateUEN(uenInput.value);
+    if (errors.length > 0) {
+      showFieldError('uen', errors[0]);
+    } else {
+      clearFieldError('uen');
+    }
+  });
+
+  emailInput.addEventListener('blur', () => {
+    const errors = validateBusinessEmail(emailInput.value);
+    if (errors.length > 0) {
+      showFieldError('email', errors[0]);
+    } else {
+      clearFieldError('email');
+    }
+  });
+
+  phoneInput.addEventListener('blur', () => {
+    const errors = validatePhoneNumber(phoneInput.value);
+    if (errors.length > 0) {
+      showFieldError('phone', errors[0]);
+    } else {
+      clearFieldError('phone');
+    }
+  });
+
+  passwordInput.addEventListener('blur', () => {
+    const errors = validatePassword(passwordInput.value);
+    if (errors.length > 0) {
+      showFieldError('password', errors[0]);
+    } else {
+      clearFieldError('password');
+    }
+  });
+
+  confirmPasswordInput.addEventListener('blur', () => {
+    if (confirmPasswordInput.value && confirmPasswordInput.value !== passwordInput.value) {
+      showFieldError('confirmPassword', 'Passwords do not match');
+    } else {
+      clearFieldError('confirmPassword');
+    }
+  });
+
   // File input validation
   fileInput.addEventListener('change', (e) => {
     hideError();
@@ -460,57 +654,134 @@
     }
   });
 
+  // UEN formatting
+  uenInput.addEventListener('input', (e) => {
+    let value = e.target.value.replace(/\s/g, '').toUpperCase();
+    if (value.length > 10) {
+      value = value.substring(0, 10);
+    }
+    e.target.value = value;
+  });
+
+  // Phone formatting
+  phoneInput.addEventListener('input', (e) => {
+    let value = e.target.value;
+    // Add +65 prefix if not present and starts with 8 or 9
+    if (/^[89]/.test(value) && !value.startsWith('+65')) {
+      e.target.value = '+65 ' + value;
+    }
+  });
+
   document.getElementById("businessSignupForm").addEventListener("submit", async (e) => {
     e.preventDefault();
     hideError();
 
+    // Clear all field errors
+    ['businessName', 'uen', 'email', 'phone', 'password', 'confirmPassword'].forEach(clearFieldError);
+
     const businessName = document.getElementById("businessName").value.trim();
     const uen = document.getElementById("uen").value.trim();
-
-    // Collect services selected
-    const selectedServices = Array.from(document.querySelectorAll('input[name="services"]:checked')).map(cb => cb.value);
-    if (otherCheckbox.checked) {
-      if (!otherText.value.trim()) {
-        alert("Please specify your other service.");
-        otherText.focus();
-        return;
-      }
-      selectedServices.push(otherText.value.trim());
-    }
-
-    if (selectedServices.length === 0) {
-      alert("Please select at least one service provided.");
-      return;
-    }
-
-    const servicesOfferedDesc = document.getElementById("servicesOfferedDesc").value.trim();
     const email = document.getElementById("email").value.trim();
     const phone = document.getElementById("phone").value.trim();
     const password = document.getElementById("password").value;
     const confirmPassword = document.getElementById("confirmPassword").value;
+    const servicesOfferedDesc = document.getElementById("servicesOfferedDesc").value.trim();
+
+    // Collect validation errors
+    let allErrors = [];
+    let hasFieldErrors = false;
+
+    // Validate business name
+    const businessNameErrors = validateBusinessName(businessName);
+    if (businessNameErrors.length > 0) {
+      showFieldError('businessName', businessNameErrors[0]);
+      allErrors = allErrors.concat(businessNameErrors);
+      hasFieldErrors = true;
+    }
+
+    // Validate UEN
+    const uenErrors = validateUEN(uen);
+    if (uenErrors.length > 0) {
+      showFieldError('uen', uenErrors[0]);
+      allErrors = allErrors.concat(uenErrors);
+      hasFieldErrors = true;
+    }
+
+    // Validate email
+    const emailErrors = validateBusinessEmail(email);
+    if (emailErrors.length > 0) {
+      showFieldError('email', emailErrors[0]);
+      allErrors = allErrors.concat(emailErrors);
+      hasFieldErrors = true;
+    }
+
+    // Validate phone
+    const phoneErrors = validatePhoneNumber(phone);
+    if (phoneErrors.length > 0) {
+      showFieldError('phone', phoneErrors[0]);
+      allErrors = allErrors.concat(phoneErrors);
+      hasFieldErrors = true;
+    }
+
+    // Validate password
+    const passwordErrors = validatePassword(password);
+    if (passwordErrors.length > 0) {
+      showFieldError('password', passwordErrors[0]);
+      allErrors = allErrors.concat(passwordErrors);
+      hasFieldErrors = true;
+    }
+
+    // Validate password confirmation
+    if (password !== confirmPassword) {
+      showFieldError('confirmPassword', 'Passwords do not match');
+      allErrors.push('Passwords do not match');
+      hasFieldErrors = true;
+    }
+
+    // Collect and validate services
+    const selectedServices = Array.from(document.querySelectorAll('input[name="services"]:checked')).map(cb => cb.value);
+    let otherServiceValue = '';
+    
+    if (otherCheckbox.checked) {
+      otherServiceValue = otherText.value.trim();
+      if (!otherServiceValue) {
+        showError("Please specify your other service.");
+        otherText.focus();
+        return;
+      }
+      selectedServices.push(otherServiceValue);
+    }
+
+    const serviceErrors = validateServices(selectedServices, otherServiceValue);
+    if (serviceErrors.length > 0) {
+      allErrors = allErrors.concat(serviceErrors);
+    }
 
     // Validate business documents
     const documentFiles = Array.from(fileInput.files);
     if (documentFiles.length === 0) {
-      alert("Please upload at least one business registration document.");
+      showError("Please upload at least one business registration document.");
       fileInput.focus();
       return;
     }
 
-    // Re-validate files before submission
-    let allErrors = [];
+    // Validate files
+    let fileErrors = [];
     documentFiles.forEach(file => {
       const errors = validateFile(file);
-      allErrors = allErrors.concat(errors);
+      fileErrors = fileErrors.concat(errors);
     });
 
-    if (allErrors.length > 0) {
-      showError(allErrors.join('\n'));
+    if (fileErrors.length > 0) {
+      showError(fileErrors.join('\n'));
       return;
     }
 
-    if (password !== confirmPassword) {
-      alert("Passwords do not match.");
+    // If there are validation errors, show them and stop
+    if (allErrors.length > 0) {
+      if (!hasFieldErrors) {
+        showError(allErrors.join('\n'));
+      }
       return;
     }
 
@@ -543,7 +814,7 @@
       document.getElementById('progressText').textContent = 'Saving registration data...';
       await setDoc(doc(db, "businessUsers", user.uid), {
         businessName,
-        uen,
+        uen: uen.toUpperCase(),
         servicesOffered: selectedServices,
         servicesDescription: servicesOfferedDesc || null,
         email,
