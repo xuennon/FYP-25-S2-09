@@ -489,6 +489,80 @@
       color: var(--text-white);
     }
 
+    /* ANDROID DOWNLOAD BUTTON */
+    .download-android-btn {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+      color: white;
+      padding: 1rem 2rem;
+      text-decoration: none;
+      border-radius: 16px;
+      margin: 0.5rem;
+      font-weight: 600;
+      font-size: 1.1rem;
+      border: none;
+      cursor: pointer;
+      transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+      box-shadow: 0 10px 25px rgba(16, 185, 129, 0.3);
+      min-width: 250px;
+      position: relative;
+      overflow: hidden;
+      gap: 12px;
+    }
+
+    .download-android-btn:hover {
+      transform: translateY(-3px);
+      box-shadow: 0 20px 40px rgba(16, 185, 129, 0.4);
+      background: linear-gradient(135deg, #059669 0%, #047857 100%);
+    }
+
+    .download-android-btn::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: -100%;
+      width: 100%;
+      height: 100%;
+      background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
+      transition: left 0.5s;
+    }
+
+    .download-android-btn:hover::before {
+      left: 100%;
+    }
+
+    .download-android-btn .btn-icon {
+      width: 24px;
+      height: 24px;
+      background: rgba(255, 255, 255, 0.2);
+      border-radius: 4px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 16px;
+    }
+
+    .download-android-btn .btn-content {
+      display: flex;
+      flex-direction: column;
+      align-items: flex-start;
+      line-height: 1.2;
+    }
+
+    .download-android-btn .btn-main-text {
+      font-size: 1.1rem;
+      font-weight: 600;
+      margin-bottom: 2px;
+    }
+
+    .download-android-btn .btn-sub-text {
+      font-size: 0.85rem;
+      font-weight: 400;
+      opacity: 0.9;
+    }
+
     /* GRIDS */
     .services-grid, .plans-grid {
       display: grid;
@@ -1530,7 +1604,13 @@
         </p>
         <p style="text-align: center; color: var(--text-gray); margin-bottom: 2rem;">Download the Wise Fitness app today and start your journey to a better you!</p>
         <div style="text-align: center;">
-          <a href="https://github.com/ddevMetal/wisefitness-apk/releases/download/v1.0.0/app-release.apk" class="button" target="_blank" rel="noopener noreferrer">Download Android APK</a>
+          <a href="https://github.com/ddevMetal/wisefitness-apk/releases/download/v1.0.0/app-release.apk" class="download-android-btn" target="_blank" rel="noopener noreferrer">
+            <div class="btn-icon">📱</div>
+            <div class="btn-content">
+              <div class="btn-main-text">Download for Android</div>
+              <div class="btn-sub-text">APK • v1.0.0 • Free</div>
+            </div>
+          </a>
         </div>
       </div>
     </div>
