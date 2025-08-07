@@ -82,12 +82,19 @@ app.use('/wise_workout_app', express.static(path.join(__dirname, 'wise_workout_a
 
 // API Routes
 app.get('/api/health', (req, res) => {
-  res.json({
+  // Send response immediately for faster health checks
+  res.status(200).json({
     status: 'healthy',
     timestamp: new Date().toISOString(),
-    uptime: process.uptime(),
-    environment: process.env.NODE_ENV || 'development'
+    uptime: Math.floor(process.uptime()),
+    environment: process.env.NODE_ENV || 'development',
+    port: PORT
   });
+});
+
+// Basic root health check (backup)
+app.get('/health', (req, res) => {
+  res.status(200).send('OK');
 });
 
 // API endpoint for checking OpenAI configuration status
@@ -182,11 +189,34 @@ app.use((err, req, res, next) => {
 });
 
 // Start server
-app.listen(PORT, '0.0.0.0', () => {
+const server = app.listen(PORT, '0.0.0.0', () => {
   console.log(`🚀 Wise Fitness server running on port ${PORT}`);
   console.log(`📱 Local: http://localhost:${PORT}`);
   console.log(`🌐 Environment: ${process.env.NODE_ENV || 'development'}`);
   console.log(`🤖 AI Features: ${process.env.OPENAI_API_KEY ? '✅ Configured' : '❌ Not configured'}`);
+  console.log(`💚 Health check: http://localhost:${PORT}/api/health`);
+});
+
+// Handle server startup errors
+server.on('error', (error) => {
+  if (error.syscall !== 'listen') {
+    throw error;
+  }
+
+  const bind = typeof PORT === 'string' ? 'Pipe ' + PORT : 'Port ' + PORT;
+
+  switch (error.code) {
+    case 'EACCES':
+      console.error(`${bind} requires elevated privileges`);
+      process.exit(1);
+      break;
+    case 'EADDRINUSE':
+      console.error(`${bind} is already in use`);
+      process.exit(1);
+      break;
+    default:
+      throw error;
+  }
 });
 
 // Graceful shutdown
