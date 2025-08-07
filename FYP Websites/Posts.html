@@ -584,11 +584,11 @@
   // Side menu navigation links
   profileLink.addEventListener("click", (e) => {
     e.preventDefault();
-    window.location.href = "profile.html";
+    window.location.href = "BusinessUserProfile.html";
   });
   settingsLink.addEventListener("click", (e) => {
     e.preventDefault();
-    window.location.href = "settings.html";
+    window.location.href = "BusinessUserSettings.html";
   });
   // Logout link
   logoutLink.addEventListener("click", async (e) => {
@@ -854,10 +854,10 @@
 
   // Navigation buttons
   function goProfile() {
-    window.location.href = "profile.html";
+    window.location.href = "BusinessUserProfile.html";
   }
   function goSettings() {
-    window.location.href = "settings.html";
+    window.location.href = "BusinessUserSettings.html";
   }
   function logout() {
     auth.signOut().then(() => {

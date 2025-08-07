@@ -2011,8 +2011,8 @@ editeventForm.addEventListener("submit", async (e) => {
       logoutLink.addEventListener('click', handleLogout);
     }
 
-    window.goProfile = () => window.location.href = "Profile.html";
-    window.goSettings = () => window.location.href = "Settings.html";
+    window.goProfile = () => window.location.href = "BusinessUserProfile.html";
+    window.goSettings = () => window.location.href = "BusinessUserSettings.html";
     window.resetPassword = () => {
       const user = auth.currentUser;
       if (!user || !user.email) {
