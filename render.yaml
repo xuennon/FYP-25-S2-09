@@ -1,0 +1,45 @@
+services:
+  - type: web
+    name: runpulse-web-app
+    env: docker
+    dockerfilePath: ./Dockerfile
+    plan: free
+    region: oregon
+    branch: deploy-for-testing
+    buildCommand: docker build -t runpulse-app .
+    startCommand: nginx -g "daemon off;"
+    healthCheckPath: /health
+    
+    # Environment variables (if needed)
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: PORT
+        value: 80
+    
+    # Auto-deploy settings
+    autoDeploy: true
+    
+    # Custom domains (add your domain when ready)
+    # domains:
+    #   - runpulse.yourdom ain.com
+    
+    # Build settings
+    buildFilter:
+      paths:
+        - website
+        - FYP Websites/**
+        - Dockerfile
+        - nginx.conf
+      ignoredPaths:
+        - wise_workout_app/**
+        - "*.md"
+        - .git/**
+
+  # Optional: Static site service for faster delivery
+  # - type: static_site
+  #   name: runpulse-static
+  #   buildCommand: echo "Static files ready"
+  #   publishPath: ./
+  #   branch: deploy-for-testing
+  #   pullRequestPreviewsEnabled: true
