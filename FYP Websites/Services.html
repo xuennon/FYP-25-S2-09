@@ -337,8 +337,8 @@
     <button id="closeMenuBtn" aria-label="Close menu" title="Close menu">×</button>
     <h2>Menu</h2>
     <nav>
-      <a href="#">Profile</a>
-      <a href="#">Settings</a>
+      <a href="#" id="profileLink">Profile</a>
+      <a href="#" id="settingsLink">Settings</a>
       <a href="#" id="resetPasswordLink">Reset Password</a>
       <a href="#" id="logoutLink">Logout</a>
     </nav>
@@ -392,6 +392,8 @@
     const sideMenu = document.getElementById("sideMenu");
     const sideMenuOverlay = document.getElementById("sideMenuOverlay");
     const closeMenuBtn = document.getElementById("closeMenuBtn");
+    const profileLink = document.getElementById("profileLink");
+    const settingsLink = document.getElementById("settingsLink");
     const logoutLink = document.getElementById("logoutLink");
     const resetPasswordLink = document.getElementById("resetPasswordLink");
 
@@ -566,6 +568,19 @@
     menuBtn.addEventListener("click", openMenu);
     closeMenuBtn.addEventListener("click", closeMenu);
     sideMenuOverlay.addEventListener("click", closeMenu);
+
+    // Profile and Settings navigation
+    profileLink.addEventListener("click", (e) => {
+      e.preventDefault();
+      closeMenu();
+      window.location.href = "BusinessUserProfile.html";
+    });
+
+    settingsLink.addEventListener("click", (e) => {
+      e.preventDefault();
+      closeMenu();
+      window.location.href = "BusinessUserSettings.html";
+    });
 
    logoutLink.addEventListener("click", async (e) => {
   e.preventDefault();
