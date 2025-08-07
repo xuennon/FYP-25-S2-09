@@ -1,0 +1,71 @@
+# Docker ignore file for Render deployment
+# This file specifies which files/folders should be excluded from the Docker build context
+
+# Version control
+.git/
+.gitignore
+
+# IDE/Editor files
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# OS generated files
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db
+
+# Logs
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# Dependencies (not needed in Docker)
+node_modules/
+npm-debug.log
+
+# Build outputs (we'll generate these in Docker)
+dist/
+build/
+
+# Environment files (should be set via Render dashboard)
+.env
+.env.local
+.env.development.local
+.env.test.local
+.env.production.local
+
+# Documentation that's not needed for deployment
+README.md
+*.md
+
+# Backup files
+*.bak
+*.backup
+
+# Temporary files
+tmp/
+temp/
+
+# Test files
+test/
+tests/
+__tests__/
+*.test.js
+*.spec.js
+
+# Coverage reports
+coverage/
+
+# Flutter app (not needed for web deployment)
+wise_workout_app/
+
+# Keep FYP Websites directory and its assets for web deployment
+# !FYP Websites/
