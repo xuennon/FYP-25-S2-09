@@ -64,7 +64,8 @@ __tests__/
 # Coverage reports
 coverage/
 
-# Flutter app (not needed for web deployment)
+# Flutter app (not needed for web deployment, except specific assets)
 wise_workout_app/
+!wise_workout_app/assets/adib-the-builder.jpg
 
 # Website source is needed, so don't ignore FYP Websites/
