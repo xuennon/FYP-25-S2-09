@@ -3,15 +3,16 @@ services:
     name: wise-fitness-website
     runtime: node
     plan: free
-    buildCommand: yarn install
-    startCommand: node server.js
+    buildCommand: npm install
+    startCommand: npm start
     healthCheckPath: /api/health
-    region: oregon
     envVars:
       - key: NODE_ENV
         value: production
       - key: OPENAI_API_KEY
         sync: false  # Set manually in Render dashboard
+    domains:
+      - wise-fitness-app.onrender.com
     
     # Auto-deploy on push to main
     autoDeploy: true
