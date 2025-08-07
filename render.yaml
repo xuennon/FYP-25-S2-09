@@ -1,0 +1,7 @@
+services:
+  - type: web
+    name: wise-fitness-website
+    env: docker
+    plan: free
+    healthCheckPath: /health
+    branch: main
