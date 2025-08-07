@@ -11,7 +11,7 @@ WORKDIR /usr/share/nginx/html
 RUN rm -rf /usr/share/nginx/html/*
 
 # Copy your static site (all files in FYP Websites)
-COPY "FYP Websites/" /usr/share/nginx/html/
+COPY ["FYP Websites/", "/usr/share/nginx/html/"]
 
 # Copy custom nginx configuration
 COPY nginx.conf /etc/nginx/conf.d/default.conf
