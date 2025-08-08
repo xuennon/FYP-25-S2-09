@@ -1669,8 +1669,8 @@
             🔄 Refresh
           </button>
           
-          <button onclick="testOpenAI()" style="background: #17a2b8; color: white; border: none; padding: 8px 16px; border-radius: 6px; font-size: 0.9rem; font-weight: 600; cursor: pointer;" title="Test OpenAI API connection">
-            🧪 Test API
+          <button onclick="runDiagnostics()" style="background: #fd7e14; color: white; border: none; padding: 8px 16px; border-radius: 6px; font-size: 0.9rem; font-weight: 600; cursor: pointer;" title="Run diagnostics">
+            🔍 Debug API
           </button>
         </div>
         
@@ -1967,10 +1967,14 @@
                        "Admin";
       
       console.log('Resolved admin name:', adminName); // Debug log
-      document.getElementById("adminName").textContent = `Welcome, ${adminName}`;
+      
+      // Update admin name display if element exists
+      const adminNameElement = document.getElementById("adminName");
+      if (adminNameElement) {
+        adminNameElement.textContent = `Welcome, ${adminName}`;
+      }
 
       await loadAllContent();
-      await loadAISettings();
     });
 
     async function loadAllContent() {
@@ -2695,45 +2699,54 @@ Services Section:
     let isAiAnalyzing = false;
     
     // AI Configuration - SECURITY: Use environment variable or configure in admin settings
-    const OPENAI_API_KEY = 'PLACEHOLDER_OPENAI_API_KEY'; // This will be replaced by environment variable during Docker build
-    const OPENAI_API_URL = 'https://api.openai.com/v1/chat/completions';
+    // IMPORTANT: To enable AI-powered testimonial analysis:
+    // 1. Get an OpenAI API key from https://platform.openai.com/api-keys
+    // 2. Make sure your API key has access to GPT models (check billing/usage limits)
+    // 3. Replace the key below with your actual API key
+    // 4. For production: Use environment variables instead of hardcoding the key
+    // NOTE: Without a working API key, the system will use advanced rule-based analysis as fallback
     
-    // Test OpenAI API connection
-    window.testOpenAI = async function() {
+    // AI Configuration - Use your working API key and available model
+    const OPENAI_API_KEY = 'your-openai-api-key-here'; // Replace with your actual OpenAI API key
+    const OPENAI_API_URL = 'https://api.openai.com/v1/completions'; // Changed to completions for instruct model
+    
+    // Quick connectivity test function
+    window.testConnections = async function() {
+      console.log('🔍 Testing Backend Connections...');
+      
+      // Test 1: OpenAI API
       try {
-        showMessage('🧪 Testing OpenAI API connection...', 'success');
+        const response = await fetch(OPENAI_API_URL, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${OPENAI_API_KEY}`
+          },
+          body: JSON.stringify({
+            model: 'gpt-3.5-turbo-instruct',
+            prompt: 'Test connection. Respond with just: OK',
+            max_tokens: 10
+          })
+        });
         
-        // Test with different scenarios
-        const testCases = [
-          { feedback: 'This is a great app! I love using it every day.', rating: 5 },
-          { feedback: 'This app is terrible and crashes all the time.', rating: 1 },
-          { feedback: 'The app is okay, but needs improvement.', rating: 3 }
-        ];
-        
-        for (const testCase of testCases) {
-          const analysis = await callOpenAIWithFallback(testCase.feedback, testCase.rating);
+        if (response.ok) {
+          console.log('✅ OpenAI API: Connected');
+        } else {
+          console.log('❌ OpenAI API: Error -', response.status, response.statusText);
         }
-        
-        showMessage(`✅ API Test Successful! All test cases completed.`, 'success');
-        return true;
-        
-      } catch (error) {
-        console.error('API Test Failed:', error);
-        showMessage(`❌ API Test Failed: ${error.message}`, 'error');
-        
-        // Check common issues
-        if (error.message.includes('401')) {
-          showMessage('🔑 Error 401: Invalid API key. Please check your OpenAI API key.', 'error');
-        } else if (error.message.includes('429')) {
-          showMessage('⏳ Error 429: Rate limit exceeded. Please wait and try again.', 'error');
-        } else if (error.message.includes('CORS')) {
-          showMessage('🌐 CORS Error: This might be a browser security issue. Try using this from a server environment.', 'error');
-        }
-        
-        return false;
+      } catch (e) {
+        console.log('❌ OpenAI API: Failed -', e.message);
+      }
+      
+      // Test 2: Firebase
+      try {
+        const testDoc = await getDoc(doc(db, 'landingPage', 'content'));
+        console.log('✅ Firebase: Connected');
+      } catch (e) {
+        console.log('❌ Firebase: Failed -', e.message);
       }
     };
-    
+
     // Update dashboard statistics
     window.updateDashboardStats = function() {
       const dashboard = document.getElementById('testimonials-dashboard');
@@ -3151,7 +3164,7 @@ Services Section:
       renderTestimonialsTable();
     };
     
-    // Render AI analysis with better validation
+    // Render AI analysis with better validation (RESTORED ORIGINAL)
     function renderAiAnalysis(testimonial) {
       // Don't show analyze button if no feedback exists
       if (!testimonial.feedback || testimonial.feedback.trim() === '' || testimonial.feedback === 'No feedback') {
@@ -3165,6 +3178,7 @@ Services Section:
       if (!testimonial.aiSentiment) {
         return `
           <button onclick="analyzeSingleTestimonial('${testimonial.id}')" 
+                  id="analyze-btn-${testimonial.id}"
                   style="background: #ffc107; color: #212529; border: none; padding: 4px 8px; border-radius: 4px; font-size: 0.75rem; cursor: pointer;">
             🤖 Analyze
           </button>
@@ -3274,7 +3288,10 @@ Services Section:
 
     // AI Analysis Functions
     window.analyzeAllTestimonials = async function() {
-      if (isAiAnalyzing) return;
+      if (isAiAnalyzing) {
+        showMessage('⏳ AI analysis already in progress...', 'warning');
+        return;
+      }
       
       if (!OPENAI_API_KEY || OPENAI_API_KEY === 'your-openai-api-key-here') {
         showMessage('❌ OpenAI API key not configured. Please add your API key to enable AI analysis.', 'error');
@@ -3288,43 +3305,77 @@ Services Section:
         isAiAnalyzing = true;
         button.disabled = true;
         
-        // First refresh the data
-        button.textContent = '🔄 Refreshing data...';
+        // First refresh the data with loading indicator
+        button.textContent = '🔄 Loading testimonials...';
+        showMessage('🔄 Refreshing testimonials data...', 'info');
         await refreshTestimonials();
         
-        button.textContent = '🤖 Analyzing...';
+        // Find testimonials to analyze - ANALYZE ALL testimonials with feedback
+        console.log('🔍 Preparing to analyze ALL testimonials...');
+        console.log('Total testimonials loaded:', allTestimonialsData.length);
         
-        const unanalyzedTestimonials = allTestimonialsData.filter(t => 
-          !t.aiSentiment && 
-          t.feedback && 
-          t.feedback.trim() !== '' && 
-          t.feedback !== 'No feedback' &&
-          t.feedback.trim().length >= 3
-        );
+        // Analyze ALL testimonials that have feedback (ignore existing AI analysis)
+        const testimonialsToAnalyze = allTestimonialsData.filter(t => {
+          const hasFeedback = t.feedback && t.feedback.trim() !== '' && t.feedback !== 'No feedback';
+          const hasMinLength = t.feedback && t.feedback.trim().length >= 3;
+          
+          return hasFeedback && hasMinLength;
+        });
         
-        if (unanalyzedTestimonials.length === 0) {
-          showMessage('✅ All testimonials with feedback have already been analyzed!', 'success');
+        console.log(`📊 Analysis Plan:`, {
+          total: allTestimonialsData.length,
+          withFeedback: testimonialsToAnalyze.length,
+          willAnalyze: testimonialsToAnalyze.length
+        });
+        
+        const totalTestimonials = allTestimonialsData.length;
+        const toAnalyzeCount = testimonialsToAnalyze.length;
+        
+        if (testimonialsToAnalyze.length === 0) {
+          showMessage(`❌ No testimonials with feedback found to analyze!`, 'error');
+          button.textContent = `❌ No Feedback Found`;
+          setTimeout(() => {
+            button.textContent = originalText;
+          }, 3000);
           return;
         }
         
-        showMessage(`🤖 Starting AI analysis of ${unanalyzedTestimonials.length} testimonials...`, 'success');
+        showMessage(`🤖 Starting AI analysis for ALL ${testimonialsToAnalyze.length} testimonials with feedback`, 'success');
         
-        // Process in batches to avoid rate limits
-        const batchSize = 5;
-        for (let i = 0; i < unanalyzedTestimonials.length; i += batchSize) {
-          const batch = unanalyzedTestimonials.slice(i, i + batchSize);
+        // Process testimonials one by one with progress updates
+        let processedCount = 0;
+        for (let i = 0; i < testimonialsToAnalyze.length; i++) {
+          const testimonial = testimonialsToAnalyze[i];
+          processedCount++;
           
-          button.textContent = `🤖 Analyzing... (${i + 1}-${Math.min(i + batchSize, unanalyzedTestimonials.length)}/${unanalyzedTestimonials.length})`;
+          // Update button with current progress
+          button.textContent = `🤖 Analyzing ${processedCount}/${testimonialsToAnalyze.length}`;
           
-          await Promise.all(batch.map(testimonial => analyzeSingleTestimonial(testimonial.id, false)));
+          // Show which testimonial is being analyzed
+          const feedbackPreview = testimonial.feedback.substring(0, 30) + (testimonial.feedback.length > 30 ? '...' : '');
+          showMessage(`🔍 Analyzing: "${feedbackPreview}" (${processedCount}/${testimonialsToAnalyze.length})`, 'info');
           
-          // Small delay between batches
-          if (i + batchSize < unanalyzedTestimonials.length) {
-            await new Promise(resolve => setTimeout(resolve, 1000));
+          try {
+            await analyzeSingleTestimonial(testimonial.id, false);
+            
+            // Update progress
+            const currentProgress = Math.round((processedCount / testimonialsToAnalyze.length) * 100);
+            console.log(`✅ Progress: ${processedCount}/${testimonialsToAnalyze.length} (${currentProgress}%)`);
+            
+          } catch (error) {
+            console.error(`❌ Failed to analyze testimonial ${testimonial.id}:`, error);
+            showMessage(`❌ Failed to analyze: "${feedbackPreview}" - ${error.message}`, 'error');
           }
+          
+          // Small delay to show progress and avoid rate limits
+          await new Promise(resolve => setTimeout(resolve, 500));
         }
         
-        showMessage('✅ AI analysis completed for all testimonials!', 'success');
+        // Final success message with statistics
+        showMessage(`✅ AI analysis completed! Processed ${processedCount} testimonials.`, 'success');
+        
+        // Refresh the table to show results
+        await refreshTestimonials();
         renderTestimonialsTable();
         updateDashboardStats();
         
@@ -3372,10 +3423,20 @@ Services Section:
         }
         
         if (showIndividualMessage) {
-          showMessage(`🤖 Analyzing feedback: "${testimonial.feedback.substring(0, 50)}..."`, 'success');
+          // Update button to show loading state
+          const button = document.getElementById(`analyze-btn-${testimonialId}`);
+          if (button) {
+            button.disabled = true;
+            button.style.background = '#6c757d';
+            button.textContent = '⏳ Analyzing...';
+          }
+          
+          showMessage(`🤖 Analyzing feedback: "${testimonial.feedback.substring(0, 50)}..."`, 'info');
         }
         
         const analysis = await callOpenAIWithFallback(testimonial.feedback, testimonial.rating);
+        
+        console.log(`🎯 AI Analysis Result for ${testimonialId}:`, analysis);
         
         // Update testimonial with AI analysis
         testimonial.aiSentiment = analysis.sentiment;
@@ -3384,24 +3445,49 @@ Services Section:
         
         // Save to Firestore
         const collection_name = testimonial.source === 'business' ? 'businessUserTestimonial' : 'testimonial';
+        console.log(`💾 Saving to Firestore: ${collection_name}/${testimonialId}`, {
+          sentiment: analysis.sentiment,
+          confidence: analysis.confidence,
+          flags: analysis.flags,
+          testimonial_source: testimonial.source,
+          testimonial_object: testimonial
+        });
+        
         const docRef = doc(db, collection_name, testimonialId);
         
-        await updateDoc(docRef, {
+        const updateData = {
           aiSentiment: analysis.sentiment,
           aiScore: analysis.confidence,
           aiFlags: analysis.flags,
           aiAnalyzedAt: new Date()
-        });
+        };
+        
+        console.log(`📝 Update data being sent:`, updateData);
+        
+        await updateDoc(docRef, updateData);
+        
+        console.log(`✅ Successfully saved AI analysis to Firestore for ${testimonialId}`);
         
         if (showIndividualMessage) {
           const correlationNote = getCorrelationNote(testimonial.rating, analysis.sentiment);
           showMessage(`✅ AI analysis completed: ${analysis.sentiment} (${Math.round(analysis.confidence * 100)}% confidence)${correlationNote}`, 'success');
+          
+          // Re-render the table to show the updated analysis instead of the button
           renderTestimonialsTable();
         }
         
       } catch (error) {
         console.error('Error analyzing testimonial:', error);
+        
         if (showIndividualMessage) {
+          // Reset button state on error
+          const button = document.getElementById(`analyze-btn-${testimonialId}`);
+          if (button) {
+            button.disabled = false;
+            button.style.background = '#ffc107';
+            button.textContent = '🤖 Analyze';
+          }
+          
           showMessage('❌ Error during AI analysis: ' + error.message, 'error');
         }
       }
@@ -3423,7 +3509,7 @@ Services Section:
       return '';
     }
     
-    // Call OpenAI API for sentiment analysis
+    // Call OpenAI API for sentiment analysis (RESTORED ORIGINAL)
     async function callOpenAI(feedback, starRating = null) {
       const ratingContext = starRating ? `\nStar Rating: ${starRating}/5 stars` : '';
       
@@ -3456,17 +3542,25 @@ Respond in JSON format:
             'Authorization': `Bearer ${OPENAI_API_KEY}`
           },
           body: JSON.stringify({
-            model: 'gpt-3.5-turbo',
-            messages: [
-              {
-                role: 'system',
-                content: 'You are an expert at analyzing customer feedback sentiment and detecting spam or inappropriate content. Always respond with valid JSON.'
-              },
-              {
-                role: 'user',
-                content: prompt
-              }
-            ],
+            model: 'gpt-3.5-turbo-instruct',
+            prompt: `You are an expert at analyzing customer feedback sentiment. Analyze this testimonial and respond with valid JSON only.
+
+Testimonial: "${feedback}"${ratingContext}
+
+Guidelines:
+- 5 stars usually indicates positive sentiment
+- 4 stars usually indicates positive sentiment  
+- 3 stars and below usually indicates negative or neutral sentiment
+- Consider both text content and star rating for final sentiment
+
+Respond in JSON format:
+{
+  "sentiment": "positive|negative|neutral|spam|inappropriate",
+  "confidence": 0.95,
+  "flags": []
+}
+
+JSON Response:`,
             max_tokens: 150,
             temperature: 0.1
           })
@@ -3479,7 +3573,7 @@ Respond in JSON format:
         }
         
         const data = await response.json();
-        const aiResponse = data.choices[0].message.content.trim();
+        const aiResponse = data.choices[0].text.trim(); // Changed from message.content to text
         
         try {
           const parsedResponse = JSON.parse(aiResponse);
@@ -3499,11 +3593,23 @@ Respond in JSON format:
         }
         
       } catch (networkError) {
-        console.error('Network/API Error:', networkError);
-        throw new Error(`Failed to call OpenAI API: ${networkError.message}`);
+        console.error('Network error calling OpenAI:', networkError);
+        throw networkError;
       }
     }
     
+    // Helper function to extract sentiment when JSON parsing fails
+    function extractSentimentFallback(aiResponse) {
+      const text = aiResponse.toLowerCase();
+      
+      if (text.includes('positive')) return 'positive';
+      if (text.includes('negative')) return 'negative';
+      if (text.includes('spam')) return 'spam';
+      if (text.includes('inappropriate')) return 'inappropriate';
+      
+      return 'neutral';
+    }
+
     // Enhanced rule-based sentiment analysis that considers star ratings
     function analyzeWithRules(feedback, starRating = null) {
       const text = feedback.toLowerCase().trim();
@@ -3640,14 +3746,22 @@ Respond in JSON format:
       };
     }
     
-    // Enhanced callOpenAI with fallback
+    // Enhanced callOpenAI with fallback (RESTORED ORIGINAL)
     async function callOpenAIWithFallback(feedback, starRating = null) {
+      // Check if API key is configured
+      if (!OPENAI_API_KEY || OPENAI_API_KEY === 'your-openai-api-key-here' || OPENAI_API_KEY === 'PLACEHOLDER_OPENAI_API_KEY') {
+        console.warn('OpenAI API key not configured, using rule-based analysis');
+        showMessage('ℹ️ Using rule-based analysis (OpenAI API key not configured)', 'info');
+        return await analyzeWithRules(feedback, starRating);
+      }
+      
       try {
         // Try OpenAI first
-        return await callOpenAI(feedback);
+        console.log('🤖 Attempting OpenAI API call...');
+        return await callOpenAI(feedback, starRating);
       } catch (error) {
         console.warn('OpenAI API failed, using rule-based analysis:', error.message);
-        showMessage('⚠️ Using backup analysis system (OpenAI unavailable)', 'success');
+        showMessage('⚠️ Using backup analysis system (OpenAI unavailable)', 'warning');
         
         // Fallback to rule-based analysis with star rating
         return analyzeWithRules(feedback, starRating);
@@ -3704,6 +3818,134 @@ Respond in JSON format:
         return 'Invalid date';
       }
     }
+    
+    // Startup function to initialize and test the page
+    async function initializePage() {
+      try {
+        console.log('🚀 Initializing Landing Page...');
+        
+        // Test Firebase connection
+        console.log('📡 Testing Firebase connection...');
+        const testDoc = await getDoc(doc(db, 'test', 'connection'));
+        console.log('✅ Firebase connected successfully');
+        
+        // Test OpenAI API key configuration
+        console.log('🧠 Testing OpenAI configuration...');
+        if (OPENAI_API_KEY && OPENAI_API_KEY !== 'your-openai-api-key-here') {
+          console.log('✅ OpenAI API key configured');
+        } else {
+          console.log('⚠️ OpenAI API key not configured - will use rule-based analysis');
+        }
+        
+        // Load testimonials automatically
+        console.log('📊 Loading testimonials...');
+        await loadTestimonials();
+        
+        console.log('🎉 Page initialization complete!');
+        showMessage('✅ Landing Page loaded successfully!', 'success');
+        
+      } catch (error) {
+        console.error('❌ Initialization error:', error);
+        showMessage(`⚠️ Initialization warning: ${error.message}`, 'warning');
+      }
+    }
+
+    // Comprehensive diagnostics function
+    window.runDiagnostics = async function() {
+      try {
+        showMessage('🔍 Running OpenAI diagnostics...', 'info');
+        console.log('=== 🔬 OPENAI API DIAGNOSTICS ===');
+        
+        // 1. Check API Key
+        console.log('1️⃣ Checking API Key...');
+        if (!OPENAI_API_KEY || OPENAI_API_KEY === 'your-openai-api-key-here') {
+          console.log('❌ API Key: Not configured');
+          showMessage('❌ API Key not configured!', 'error');
+          return;
+        }
+        console.log('✅ API Key: Configured');
+        console.log('Key starts with:', OPENAI_API_KEY.substring(0, 20) + '...');
+        
+        // 2. Test API Connection
+        console.log('2️⃣ Testing API Connection...');
+        try {
+          const testResponse = await fetch('https://api.openai.com/v1/models', {
+            method: 'GET',
+            headers: {
+              'Authorization': `Bearer ${OPENAI_API_KEY}`
+            }
+          });
+          
+          console.log('API Response Status:', testResponse.status);
+          
+          if (testResponse.ok) {
+            const models = await testResponse.json();
+            console.log('✅ API Connection: Success');
+            console.log('Available models count:', models.data?.length || 'Unknown');
+            
+            // List ALL available models
+            console.log('📋 ALL AVAILABLE MODELS:');
+            if (models.data && models.data.length > 0) {
+              models.data.forEach((model, index) => {
+                console.log(`   ${index + 1}. ${model.id}`);
+              });
+            } else {
+              console.log('   No models found');
+            }
+            
+            // Check specific models
+            const hasGPT35 = models.data?.some(model => model.id === 'gpt-3.5-turbo');
+            const hasGPT4oMini = models.data?.some(model => model.id === 'gpt-4o-mini');
+            const hasGPT4 = models.data?.some(model => model.id === 'gpt-4');
+            
+            console.log('Model Access Check:');
+            console.log('  GPT-3.5-turbo:', hasGPT35 ? '✅ Yes' : '❌ No');
+            console.log('  GPT-4o-mini:', hasGPT4oMini ? '✅ Yes' : '❌ No');
+            console.log('  GPT-4:', hasGPT4 ? '✅ Yes' : '❌ No');
+            
+          } else {
+            console.log('❌ API Connection: Failed');
+            console.log('Error details:', await testResponse.text());
+          }
+          
+        } catch (apiError) {
+          console.log('❌ API Connection: Network Error');
+          console.log('Error:', apiError.message);
+        }
+        
+        // 3. Test Actual OpenAI Call
+        console.log('3️⃣ Testing OpenAI Chat Completion...');
+        try {
+          const testResult = await callOpenAI('This is a test message for diagnostics');
+          console.log('✅ OpenAI Call: Success');
+          console.log('Result:', testResult);
+        } catch (testError) {
+          console.log('❌ OpenAI Call: Failed');
+          console.log('Error:', testError.message);
+        }
+        
+        // 4. Test Fallback System
+        console.log('4️⃣ Testing Fallback System...');
+        try {
+          const fallbackResult = await callOpenAIWithFallback('Great app, I love it!', 5);
+          console.log('✅ Fallback System: Working');
+          console.log('Result:', fallbackResult);
+        } catch (fallbackError) {
+          console.log('❌ Fallback System: Failed');
+          console.log('Error:', fallbackError.message);
+        }
+        
+        console.log('=== 🏁 DIAGNOSTICS COMPLETE ===');
+        showMessage('✅ Diagnostics complete - check console for details', 'success');
+        
+      } catch (error) {
+        console.error('❌ Diagnostics error:', error);
+        showMessage('❌ Diagnostics failed: ' + error.message, 'error');
+      }
+    };
+    
+    // Auto-initialize when page loads
+    window.addEventListener('load', initializePage);
     
   </script>
 </body>
