@@ -1,0 +1,54 @@
+{
+  "project_info": {
+    "project_number": "838641447649",
+    "project_id": "fyp-25-s2-09",
+    "storage_bucket": "fyp-25-s2-09.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:838641447649:android:5607a3443012e4946dbda0",
+        "android_client_info": {
+          "package_name": "com.example.wise_workout_app"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "838641447649-nj79mtpd5ge6bg5brd015e3pr416vch6.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.example.wise_workout_app",
+            "certificate_hash": "5d1795a724a3500f2789f492c6fba0942278cfe1"
+          }
+        },
+        {
+          "client_id": "838641447649-5h70l3prt41t2hhale3medp49khr1uh4.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyCZmBzUtEqOp3sC7RemrTOQOcDQCk_iEOA"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "838641447649-2iutggfeajuuehe2m965tjh4gdtlu5ta.apps.googleusercontent.com",
+              "client_type": 3
+            },
+            {
+              "client_id": "838641447649-b7k80n0l85chcm97qcdand1u2sitbre5.apps.googleusercontent.com",
+              "client_type": 2,
+              "ios_info": {
+                "bundle_id": "com.example.sahhaDemo"
+              }
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
