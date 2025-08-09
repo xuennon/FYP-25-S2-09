@@ -4,4 +4,4 @@ services:
     env: docker
     plan: free
     healthCheckPath: /health
-    branch: web-sitedeployment
+    branch: main
