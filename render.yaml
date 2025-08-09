@@ -1,6 +1,6 @@
 services:
   - type: web
-    name: FYP-25-S2-09-WiseWorkout
+    name: wise-fitness-website
     env: docker
     plan: free
     healthCheckPath: /health
