@@ -1668,10 +1668,6 @@
           <button onclick="refreshTestimonials()" style="background: #28a745; color: white; border: none; padding: 8px 16px; border-radius: 6px; font-size: 0.9rem; font-weight: 600; cursor: pointer;" title="Refresh testimonials data">
             🔄 Refresh
           </button>
-          
-          <button onclick="runDiagnostics()" style="background: #fd7e14; color: white; border: none; padding: 8px 16px; border-radius: 6px; font-size: 0.9rem; font-weight: 600; cursor: pointer;" title="Run diagnostics">
-            🔍 Debug API
-          </button>
         </div>
         
         <div class="modal-body">
@@ -2707,7 +2703,7 @@ Services Section:
     // NOTE: Without a working API key, the system will use advanced rule-based analysis as fallback
     
     // AI Configuration - Use your working API key and available model
-    const OPENAI_API_KEY = 'your-openai-api-key-here'; // Replace with your actual OpenAI API key
+    const OPENAI_API_KEY = 'PLACEHOLDER_OPENAI_API_KEY'; // Replace with your actual OpenAI API key
     const OPENAI_API_URL = 'https://api.openai.com/v1/completions'; // Changed to completions for instruct model
     
     // Quick connectivity test function
@@ -3340,39 +3336,78 @@ Services Section:
           return;
         }
         
-        showMessage(`🤖 Starting AI analysis for ALL ${testimonialsToAnalyze.length} testimonials with feedback`, 'success');
+        showMessage(`🚀 Starting OPTIMIZED AI analysis for ALL ${testimonialsToAnalyze.length} testimonials with feedback`, 'success');
         
-        // Process testimonials one by one with progress updates
-        let processedCount = 0;
-        for (let i = 0; i < testimonialsToAnalyze.length; i++) {
-          const testimonial = testimonialsToAnalyze[i];
-          processedCount++;
-          
-          // Update button with current progress
-          button.textContent = `🤖 Analyzing ${processedCount}/${testimonialsToAnalyze.length}`;
-          
-          // Show which testimonial is being analyzed
-          const feedbackPreview = testimonial.feedback.substring(0, 30) + (testimonial.feedback.length > 30 ? '...' : '');
-          showMessage(`🔍 Analyzing: "${feedbackPreview}" (${processedCount}/${testimonialsToAnalyze.length})`, 'info');
-          
-          try {
-            await analyzeSingleTestimonial(testimonial.id, false);
-            
-            // Update progress
-            const currentProgress = Math.round((processedCount / testimonialsToAnalyze.length) * 100);
-            console.log(`✅ Progress: ${processedCount}/${testimonialsToAnalyze.length} (${currentProgress}%)`);
-            
-          } catch (error) {
-            console.error(`❌ Failed to analyze testimonial ${testimonial.id}:`, error);
-            showMessage(`❌ Failed to analyze: "${feedbackPreview}" - ${error.message}`, 'error');
-          }
-          
-          // Small delay to show progress and avoid rate limits
-          await new Promise(resolve => setTimeout(resolve, 500));
+        // OPTIMIZATION 1: Parallel Processing with Controlled Concurrency
+        // Instead of processing one-by-one, we process multiple testimonials simultaneously
+        // This reduces total time from (n * api_time) to (n / batch_size * api_time)
+        const BATCH_SIZE = 5; // Process 5 testimonials simultaneously (OpenAI rate limit safe)
+        const batches = [];
+        
+        // Split testimonials into batches for parallel processing
+        for (let i = 0; i < testimonialsToAnalyze.length; i += BATCH_SIZE) {
+          batches.push(testimonialsToAnalyze.slice(i, i + BATCH_SIZE));
         }
         
-        // Final success message with statistics
-        showMessage(`✅ AI analysis completed! Processed ${processedCount} testimonials.`, 'success');
+        console.log(`⚡ OPTIMIZATION: Processing ${testimonialsToAnalyze.length} testimonials in ${batches.length} parallel batches of ${BATCH_SIZE}`);
+        
+        let processedCount = 0;
+        let successCount = 0;
+        let errorCount = 0;
+        
+        // OPTIMIZATION 2: Process batches with parallel execution
+        for (let batchIndex = 0; batchIndex < batches.length; batchIndex++) {
+          const batch = batches[batchIndex];
+          button.textContent = `🚀 Batch ${batchIndex + 1}/${batches.length} (${processedCount}/${testimonialsToAnalyze.length})`;
+          
+          console.log(`🔄 Processing batch ${batchIndex + 1}/${batches.length} with ${batch.length} testimonials`);
+          
+          // OPTIMIZATION 3: Promise.allSettled for true parallel execution
+          // All testimonials in this batch are processed simultaneously
+          const batchPromises = batch.map(async (testimonial) => {
+            try {
+              const feedbackPreview = testimonial.feedback.substring(0, 20) + '...';
+              console.log(`🔍 Analyzing: "${feedbackPreview}" (ID: ${testimonial.id})`);
+              
+              // OPTIMIZATION 4: Direct analysis without delays
+              await analyzeSingleTestimonial(testimonial.id, false);
+              return { success: true, id: testimonial.id };
+            } catch (error) {
+              console.error(`❌ Failed to analyze ${testimonial.id}:`, error);
+              return { success: false, id: testimonial.id, error: error.message };
+            }
+          });
+          
+          // Wait for all testimonials in this batch to complete
+          const batchResults = await Promise.allSettled(batchPromises);
+          
+          // Process results
+          batchResults.forEach((result, index) => {
+            processedCount++;
+            if (result.status === 'fulfilled' && result.value.success) {
+              successCount++;
+            } else {
+              errorCount++;
+              const testimonial = batch[index];
+              const feedbackPreview = testimonial.feedback.substring(0, 20) + '...';
+              showMessage(`❌ Failed: "${feedbackPreview}" - ${result.value?.error || 'Unknown error'}`, 'error');
+            }
+          });
+          
+          // Update progress
+          const currentProgress = Math.round((processedCount / testimonialsToAnalyze.length) * 100);
+          console.log(`✅ Batch ${batchIndex + 1} completed: ${successCount} success, ${errorCount} errors (${currentProgress}% total)`);
+          
+          // OPTIMIZATION 5: Minimal delay only between batches (not between individual items)
+          // This respects API rate limits while maintaining speed
+          if (batchIndex < batches.length - 1) {
+            await new Promise(resolve => setTimeout(resolve, 100)); // Only 100ms between batches
+          }
+        }
+        
+        // Enhanced completion message with performance metrics
+        const successRate = Math.round((successCount / testimonialsToAnalyze.length) * 100);
+        showMessage(`🚀 OPTIMIZED AI analysis completed! ✅ ${successCount} successful, ❌ ${errorCount} failed (${successRate}% success rate)`, 'success');
         
         // Refresh the table to show results
         await refreshTestimonials();
@@ -3842,107 +3877,12 @@ JSON Response:`,
         await loadTestimonials();
         
         console.log('🎉 Page initialization complete!');
-        showMessage('✅ Landing Page loaded successfully!', 'success');
         
       } catch (error) {
         console.error('❌ Initialization error:', error);
         showMessage(`⚠️ Initialization warning: ${error.message}`, 'warning');
       }
     }
-
-    // Comprehensive diagnostics function
-    window.runDiagnostics = async function() {
-      try {
-        showMessage('🔍 Running OpenAI diagnostics...', 'info');
-        console.log('=== 🔬 OPENAI API DIAGNOSTICS ===');
-        
-        // 1. Check API Key
-        console.log('1️⃣ Checking API Key...');
-        if (!OPENAI_API_KEY || OPENAI_API_KEY === 'your-openai-api-key-here') {
-          console.log('❌ API Key: Not configured');
-          showMessage('❌ API Key not configured!', 'error');
-          return;
-        }
-        console.log('✅ API Key: Configured');
-        console.log('Key starts with:', OPENAI_API_KEY.substring(0, 20) + '...');
-        
-        // 2. Test API Connection
-        console.log('2️⃣ Testing API Connection...');
-        try {
-          const testResponse = await fetch('https://api.openai.com/v1/models', {
-            method: 'GET',
-            headers: {
-              'Authorization': `Bearer ${OPENAI_API_KEY}`
-            }
-          });
-          
-          console.log('API Response Status:', testResponse.status);
-          
-          if (testResponse.ok) {
-            const models = await testResponse.json();
-            console.log('✅ API Connection: Success');
-            console.log('Available models count:', models.data?.length || 'Unknown');
-            
-            // List ALL available models
-            console.log('📋 ALL AVAILABLE MODELS:');
-            if (models.data && models.data.length > 0) {
-              models.data.forEach((model, index) => {
-                console.log(`   ${index + 1}. ${model.id}`);
-              });
-            } else {
-              console.log('   No models found');
-            }
-            
-            // Check specific models
-            const hasGPT35 = models.data?.some(model => model.id === 'gpt-3.5-turbo');
-            const hasGPT4oMini = models.data?.some(model => model.id === 'gpt-4o-mini');
-            const hasGPT4 = models.data?.some(model => model.id === 'gpt-4');
-            
-            console.log('Model Access Check:');
-            console.log('  GPT-3.5-turbo:', hasGPT35 ? '✅ Yes' : '❌ No');
-            console.log('  GPT-4o-mini:', hasGPT4oMini ? '✅ Yes' : '❌ No');
-            console.log('  GPT-4:', hasGPT4 ? '✅ Yes' : '❌ No');
-            
-          } else {
-            console.log('❌ API Connection: Failed');
-            console.log('Error details:', await testResponse.text());
-          }
-          
-        } catch (apiError) {
-          console.log('❌ API Connection: Network Error');
-          console.log('Error:', apiError.message);
-        }
-        
-        // 3. Test Actual OpenAI Call
-        console.log('3️⃣ Testing OpenAI Chat Completion...');
-        try {
-          const testResult = await callOpenAI('This is a test message for diagnostics');
-          console.log('✅ OpenAI Call: Success');
-          console.log('Result:', testResult);
-        } catch (testError) {
-          console.log('❌ OpenAI Call: Failed');
-          console.log('Error:', testError.message);
-        }
-        
-        // 4. Test Fallback System
-        console.log('4️⃣ Testing Fallback System...');
-        try {
-          const fallbackResult = await callOpenAIWithFallback('Great app, I love it!', 5);
-          console.log('✅ Fallback System: Working');
-          console.log('Result:', fallbackResult);
-        } catch (fallbackError) {
-          console.log('❌ Fallback System: Failed');
-          console.log('Error:', fallbackError.message);
-        }
-        
-        console.log('=== 🏁 DIAGNOSTICS COMPLETE ===');
-        showMessage('✅ Diagnostics complete - check console for details', 'success');
-        
-      } catch (error) {
-        console.error('❌ Diagnostics error:', error);
-        showMessage('❌ Diagnostics failed: ' + error.message, 'error');
-      }
-    };
     
     // Auto-initialize when page loads
     window.addEventListener('load', initializePage);
