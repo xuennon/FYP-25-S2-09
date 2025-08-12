@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'services/firebase_teams_service.dart';
 import 'services/firebase_auth_service.dart';
+import 'services/firebase_subscription_service.dart';
 
 class CreateTeamPage extends StatefulWidget {
   const CreateTeamPage({super.key});
@@ -14,6 +15,7 @@ class _CreateTeamPageState extends State<CreateTeamPage> {
   final TextEditingController _descriptionController = TextEditingController();
   final FirebaseTeamsService _teamsService = FirebaseTeamsService();
   final FirebaseAuthService _authService = FirebaseAuthService();
+  final FirebaseSubscriptionService _subscriptionService = FirebaseSubscriptionService();
   bool _isCreating = false;
 
   @override
@@ -88,6 +90,76 @@ class _CreateTeamPageState extends State<CreateTeamPage> {
                     fontSize: 16,
                     color: Colors.grey[600],
                   ),
+                ),
+                const SizedBox(height: 16),
+                // Team member limit info
+                FutureBuilder<int>(
+                  future: _teamsService.getTeamMemberLimit(),
+                  builder: (context, snapshot) {
+                    if (snapshot.hasData) {
+                      final limit = snapshot.data!;
+                      return Container(
+                        padding: const EdgeInsets.all(12),
+                        decoration: BoxDecoration(
+                          color: limit == -1 ? Colors.green[50] : Colors.orange[50],
+                          borderRadius: BorderRadius.circular(8),
+                          border: Border.all(
+                            color: limit == -1 ? Colors.green[200]! : Colors.orange[200]!,
+                          ),
+                        ),
+                        child: Row(
+                          children: [
+                            Icon(
+                              limit == -1 ? Icons.all_inclusive : Icons.group,
+                              color: limit == -1 ? Colors.green[700] : Colors.orange[700],
+                              size: 20,
+                            ),
+                            const SizedBox(width: 8),
+                            Expanded(
+                              child: Text(
+                                limit == -1 
+                                    ? 'Premium: Create teams with unlimited members'
+                                    : 'Free plan: Teams limited to $limit members',
+                                style: TextStyle(
+                                  fontSize: 14,
+                                  color: limit == -1 ? Colors.green[700] : Colors.orange[700],
+                                  fontWeight: FontWeight.w500,
+                                ),
+                              ),
+                            ),
+                            if (limit != -1) ...[
+                              const SizedBox(width: 8),
+                              GestureDetector(
+                                onTap: () async {
+                                  // Check if subscription service can handle upgrade
+                                  try {
+                                    final currentType = await _subscriptionService.getUserSubscriptionType();
+                                    if (currentType != 'premium') {
+                                      // Navigate to subscription page
+                                      Navigator.pushNamed(context, '/subscription');
+                                    }
+                                  } catch (e) {
+                                    // Fallback to subscription page
+                                    Navigator.pushNamed(context, '/subscription');
+                                  }
+                                },
+                                child: Text(
+                                  'Upgrade',
+                                  style: TextStyle(
+                                    fontSize: 14,
+                                    color: Colors.orange[700],
+                                    fontWeight: FontWeight.bold,
+                                    decoration: TextDecoration.underline,
+                                  ),
+                                ),
+                              ),
+                            ],
+                          ],
+                        ),
+                      );
+                    }
+                    return const SizedBox.shrink();
+                  },
                 ),
                 const SizedBox(height: 40),
                 Center(

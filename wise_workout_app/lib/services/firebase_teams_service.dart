@@ -3,6 +3,7 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/foundation.dart';
 import '../models/team.dart';
+import 'firebase_subscription_service.dart';
 
 class FirebaseTeamsService extends ChangeNotifier {
   static final FirebaseTeamsService _instance = FirebaseTeamsService._internal();
@@ -11,12 +12,17 @@ class FirebaseTeamsService extends ChangeNotifier {
 
   final FirebaseFirestore _firestore = FirebaseFirestore.instance;
   final FirebaseAuth _auth = FirebaseAuth.instance;
+  final FirebaseSubscriptionService _subscriptionService = FirebaseSubscriptionService();
   
   List<Team> _allTeams = [];
   List<Team> _myTeams = [];
   List<Team> _joinedTeams = [];
   bool _isLoading = false;
   StreamSubscription<QuerySnapshot>? _teamsSubscription;
+  
+  // Constants for member limits
+  static const int FREE_USER_TEAM_MEMBER_LIMIT = 4;
+  static const int PREMIUM_USER_TEAM_MEMBER_LIMIT = -1; // -1 means unlimited
   
   List<Team> get allTeams => _allTeams;
   List<Team> get myTeams => _myTeams;
@@ -152,28 +158,41 @@ class FirebaseTeamsService extends ChangeNotifier {
     }
   }
 
-  // Join a team
-  Future<bool> joinTeam(String teamId) async {
+  // Join a team with detailed result information
+  Future<Map<String, dynamic>> joinTeamWithResult(String teamId) async {
     try {
       if (currentUserId == null) {
-        print('❌ No authenticated user');
-        return false;
+        return {
+          'success': false,
+          'message': 'Please log in to join a team.',
+        };
       }
-
-      print('🔄 Joining team: $teamId');
-      print('🔄 Current user ID: $currentUserId');
 
       // First check if team exists
       final team = getTeamById(teamId);
       if (team == null) {
-        print('❌ Team not found: $teamId');
-        return false;
+        return {
+          'success': false,
+          'message': 'Team not found.',
+        };
       }
 
       // Check if user is already a member
       if (team.isMember(currentUserId!)) {
-        print('❌ User is already a member of team: $teamId');
-        return false;
+        return {
+          'success': false,
+          'message': 'You are already a member of this team.',
+        };
+      }
+
+      // Check if team can accept new members based on creator's subscription
+      final canAcceptMembers = await canTeamAcceptNewMembers(teamId);
+      if (!canAcceptMembers) {
+        final memberLimit = await getTeamMemberLimitForTeam(teamId);
+        return {
+          'success': false,
+          'message': 'This team has reached its member limit of $memberLimit members. The team creator needs to upgrade to Premium for unlimited members.',
+        };
       }
 
       // Add user to team members array
@@ -181,16 +200,25 @@ class FirebaseTeamsService extends ChangeNotifier {
         'members': FieldValue.arrayUnion([currentUserId]),
       });
 
-      print('✅ Successfully joined team: $teamId');
-      
       // Force reload to ensure UI updates immediately
       await loadTeams();
       
-      return true;
+      return {
+        'success': true,
+        'message': 'Successfully joined ${team.name}!',
+      };
     } catch (e) {
-      print('❌ Error joining team: $e');
-      return false;
+      return {
+        'success': false,
+        'message': 'Error joining team: $e',
+      };
     }
+  }
+
+  // Join a team
+  Future<bool> joinTeam(String teamId) async {
+    final result = await joinTeamWithResult(teamId);
+    return result['success'] as bool;
   }
 
   // Leave a team
@@ -265,6 +293,65 @@ class FirebaseTeamsService extends ChangeNotifier {
     if (currentUserId == null) return false;
     final team = getTeamById(teamId);
     return team?.isCreator(currentUserId!) ?? false;
+  }
+
+  // Get maximum team member limit for current user based on subscription
+  Future<int> getTeamMemberLimit() async {
+    try {
+      bool isPremium = await _subscriptionService.hasPremiumSubscription();
+      return isPremium ? PREMIUM_USER_TEAM_MEMBER_LIMIT : FREE_USER_TEAM_MEMBER_LIMIT;
+    } catch (e) {
+      print('❌ Error checking subscription: $e');
+      return FREE_USER_TEAM_MEMBER_LIMIT; // Default to free limit on error
+    }
+  }
+
+  // Check if team can accept new members based on creator's subscription
+  Future<bool> canTeamAcceptNewMembers(String teamId) async {
+    try {
+      final team = getTeamById(teamId);
+      if (team == null) return false;
+
+      // Get the creator's subscription type
+      final creatorDoc = await _firestore.collection('users').doc(team.createdBy).get();
+      if (!creatorDoc.exists) {
+        return team.memberCount < FREE_USER_TEAM_MEMBER_LIMIT;
+      }
+
+      final creatorData = creatorDoc.data() as Map<String, dynamic>;
+      final creatorUserType = creatorData['userType'] ?? 'normal';
+      
+      if (creatorUserType == 'premium') {
+        return true; // Premium users have unlimited members
+      } else {
+        return team.memberCount < FREE_USER_TEAM_MEMBER_LIMIT;
+      }
+    } catch (e) {
+      print('❌ Error checking team member capacity: $e');
+      return false;
+    }
+  }
+
+  // Get team member limit for a specific team based on creator's subscription
+  Future<int> getTeamMemberLimitForTeam(String teamId) async {
+    try {
+      final team = getTeamById(teamId);
+      if (team == null) return FREE_USER_TEAM_MEMBER_LIMIT;
+
+      // Get the creator's subscription type
+      final creatorDoc = await _firestore.collection('users').doc(team.createdBy).get();
+      if (!creatorDoc.exists) {
+        return FREE_USER_TEAM_MEMBER_LIMIT;
+      }
+
+      final creatorData = creatorDoc.data() as Map<String, dynamic>;
+      final creatorUserType = creatorData['userType'] ?? 'normal';
+      
+      return creatorUserType == 'premium' ? PREMIUM_USER_TEAM_MEMBER_LIMIT : FREE_USER_TEAM_MEMBER_LIMIT;
+    } catch (e) {
+      print('❌ Error getting team member limit: $e');
+      return FREE_USER_TEAM_MEMBER_LIMIT;
+    }
   }
 
   // Update team information (only creator can do this)

@@ -24,18 +24,71 @@ class Program {
   });
 
   factory Program.fromMap(Map<String, dynamic> map, String documentId) {
-    return Program(
-      id: documentId,
-      name: map['name']?.toString() ?? '',
-      description: map['description']?.toString() ?? '',
-      category: map['category']?.toString() ?? '',
-      duration: map['duration']?.toString() ?? '',
-      createdBy: map['createdBy']?.toString() ?? '',
-      imageUrl: map['imageUrl']?.toString() ?? '',
-      createdAt: map['createdAt']?.toDate() ?? DateTime.now(),
-      features: List<String>.from(map['features'] ?? []),
-      isActive: map['isActive'] ?? true,
-    );
+    print('🏗️ Creating Program from map: $map with ID: $documentId');
+    
+    try {
+      // Handle different createdAt formats
+      DateTime createdAt;
+      if (map['createdAt'] != null) {
+        if (map['createdAt'] is String) {
+          // If it's a string, try to parse it
+          try {
+            createdAt = DateTime.parse(map['createdAt']);
+          } catch (e) {
+            print('⚠️ Could not parse createdAt string: ${map['createdAt']}, using now()');
+            createdAt = DateTime.now();
+          }
+        } else {
+          // If it's a Timestamp, convert it
+          try {
+            createdAt = map['createdAt'].toDate();
+          } catch (e) {
+            print('⚠️ Could not convert createdAt timestamp: ${map['createdAt']}, using now()');
+            createdAt = DateTime.now();
+          }
+        }
+      } else {
+        createdAt = DateTime.now();
+      }
+      
+      // Extract and validate required fields
+      final name = map['name']?.toString().trim() ?? '';
+      final description = map['description']?.toString().trim() ?? '';
+      final category = map['category']?.toString().trim() ?? '';
+      final duration = map['duration']?.toString().trim() ?? 'Duration not specified';
+      final createdBy = map['createdBy']?.toString().trim() ?? '';
+      final imageUrl = map['imageUrl']?.toString().trim() ?? '';
+      
+      // Validate essential fields
+      if (name.isEmpty) {
+        throw Exception('Program name is required');
+      }
+      if (category.isEmpty) {
+        throw Exception('Program category is required');
+      }
+      if (createdBy.isEmpty) {
+        throw Exception('Program createdBy is required');
+      }
+      
+      final program = Program(
+        id: documentId,
+        name: name,
+        description: description,
+        category: category,
+        duration: duration,
+        createdBy: createdBy,
+        imageUrl: imageUrl,
+        createdAt: createdAt,
+        features: List<String>.from(map['features'] ?? []),
+        isActive: map['isActive'] ?? true,
+      );
+      
+      print('✅ Program created: ${program.name} (${program.category}) - ${program.duration}');
+      return program;
+    } catch (e) {
+      print('❌ Error creating program from map: $e');
+      rethrow;
+    }
   }
 
   Map<String, dynamic> toMap() {

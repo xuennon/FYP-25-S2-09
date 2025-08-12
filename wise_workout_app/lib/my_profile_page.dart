@@ -13,6 +13,7 @@ import 'feedback_page.dart';
 import 'services/firebase_user_profile_service.dart';
 import 'services/firebase_friend_service.dart';
 import 'workout_record_page.dart';
+import 'enrolled_programs_page.dart';
 
 class MyProfilePage extends StatefulWidget {
   const MyProfilePage({super.key});
@@ -269,6 +270,16 @@ class _MyProfilePageState extends State<MyProfilePage> {
               Navigator.push(
                 context,
                 MaterialPageRoute(builder: (context) => const MyPostsPage()),
+              );
+            },
+          ),
+          _buildMenuItem(
+            icon: Icons.fitness_center,
+            title: 'Training Programs',
+            onTap: () {
+              Navigator.push(
+                context,
+                MaterialPageRoute(builder: (context) => const EnrolledProgramsPage()),
               );
             },
           ),

@@ -77,23 +77,66 @@ class _DiscoveredTeamDetailsPageState extends State<DiscoveredTeamDetailsPage> {
                   ),
                   const SizedBox(height: 8),
                   
-                  // Member Count
-                  Row(
-                    children: [
-                      Icon(
-                        Icons.people,
-                        size: 20,
-                        color: Colors.grey[600],
-                      ),
-                      const SizedBox(width: 8),
-                      Text(
-                        '${widget.teamData['members']} Member${int.parse(widget.teamData['members'] ?? '1') > 1 ? 's' : ''}',
-                        style: TextStyle(
-                          fontSize: 16,
-                          color: Colors.grey[600],
-                        ),
-                      ),
-                    ],
+                  // Member Count and Limit Info
+                  FutureBuilder<int>(
+                    future: _teamsService.getTeamMemberLimitForTeam(widget.teamData['id'] ?? ''),
+                    builder: (context, snapshot) {
+                      final memberCount = int.parse(widget.teamData['members'] ?? '1');
+                      final limit = snapshot.data ?? 4;
+                      
+                      return Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Row(
+                            children: [
+                              Icon(
+                                Icons.people,
+                                size: 20,
+                                color: Colors.grey[600],
+                              ),
+                              const SizedBox(width: 8),
+                              Text(
+                                '$memberCount Member${memberCount > 1 ? 's' : ''}',
+                                style: TextStyle(
+                                  fontSize: 16,
+                                  color: Colors.grey[600],
+                                ),
+                              ),
+                              if (limit != -1) ...[
+                                Text(
+                                  ' / $limit',
+                                  style: TextStyle(
+                                    fontSize: 16,
+                                    color: Colors.grey[400],
+                                  ),
+                                ),
+                              ],
+                            ],
+                          ),
+                          if (limit != -1 && memberCount >= limit) ...[
+                            const SizedBox(height: 4),
+                            Text(
+                              'Team is full',
+                              style: TextStyle(
+                                fontSize: 12,
+                                color: Colors.red[600],
+                                fontWeight: FontWeight.w500,
+                              ),
+                            ),
+                          ] else if (limit == -1) ...[
+                            const SizedBox(height: 4),
+                            Text(
+                              'Unlimited members (Premium)',
+                              style: TextStyle(
+                                fontSize: 12,
+                                color: Colors.green[600],
+                                fontWeight: FontWeight.w500,
+                              ),
+                            ),
+                          ],
+                        ],
+                      );
+                    },
                   ),
                 ],
               ),
@@ -124,10 +167,16 @@ class _DiscoveredTeamDetailsPageState extends State<DiscoveredTeamDetailsPage> {
                           }
                           
                           bool success;
+                          String message;
                           if (isJoined) {
                             success = await _teamsService.leaveTeam(teamId);
+                            message = success 
+                                ? 'Left ${widget.teamData['name']}'
+                                : 'Failed to leave ${widget.teamData['name']}';
                           } else {
-                            success = await _teamsService.joinTeam(teamId);
+                            final result = await _teamsService.joinTeamWithResult(teamId);
+                            success = result['success'] as bool;
+                            message = result['message'] as String;
                           }
                           
                           if (success) {
@@ -137,11 +186,7 @@ class _DiscoveredTeamDetailsPageState extends State<DiscoveredTeamDetailsPage> {
                             
                             ScaffoldMessenger.of(context).showSnackBar(
                               SnackBar(
-                                content: Text(
-                                  isJoined 
-                                      ? 'Joined ${widget.teamData['name']}!' 
-                                      : 'Left ${widget.teamData['name']}',
-                                ),
+                                content: Text(message),
                                 backgroundColor: Colors.green,
                                 duration: const Duration(seconds: 2),
                               ),
@@ -149,11 +194,9 @@ class _DiscoveredTeamDetailsPageState extends State<DiscoveredTeamDetailsPage> {
                           } else {
                             ScaffoldMessenger.of(context).showSnackBar(
                               SnackBar(
-                                content: Text(
-                                  'Failed to ${isJoined ? 'leave' : 'join'} ${widget.teamData['name']}',
-                                ),
+                                content: Text(message),
                                 backgroundColor: Colors.red,
-                                duration: const Duration(seconds: 2),
+                                duration: const Duration(seconds: 3),
                               ),
                             );
                           }

@@ -225,7 +225,7 @@ class FirebasePostsService extends ChangeNotifier {
     print('🖼️ Post $postId ($postType) has ${images.length} images:');
     for (int i = 0; i < images.length; i++) {
       String img = images[i];
-      print('  Image $i: ${img.length > 100 ? img.substring(0, 100) + "..." : img}');
+      print('  Image $i: ${img.length > 100 ? "${img.substring(0, 100)}..." : img}');
       if (img.startsWith('http')) {
         print('    Type: Network URL');
       } else if (img.startsWith('data:image/') || img.contains('base64')) {

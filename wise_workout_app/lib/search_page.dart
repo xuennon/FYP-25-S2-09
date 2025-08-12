@@ -430,12 +430,54 @@ class _SearchPageState extends State<SearchPage> with SingleTickerProviderStateM
                   children: [
                     Text(team.description),
                     const SizedBox(height: 4),
-                    Text(
-                      '${team.memberCount} members',
-                      style: TextStyle(
-                        color: Colors.grey[600],
-                        fontSize: 12,
-                      ),
+                    FutureBuilder<int>(
+                      future: _teamsService.getTeamMemberLimitForTeam(team.id),
+                      builder: (context, snapshot) {
+                        final memberCount = team.memberCount;
+                        final limit = snapshot.data ?? 4;
+                        
+                        return Row(
+                          children: [
+                            Text(
+                              '$memberCount member${memberCount > 1 ? 's' : ''}',
+                              style: TextStyle(
+                                color: Colors.grey[600],
+                                fontSize: 12,
+                              ),
+                            ),
+                            if (limit != -1) ...[
+                              Text(
+                                ' / $limit',
+                                style: TextStyle(
+                                  color: Colors.grey[400],
+                                  fontSize: 12,
+                                ),
+                              ),
+                              if (memberCount >= limit) ...[
+                                const SizedBox(width: 8),
+                                Text(
+                                  'Full',
+                                  style: TextStyle(
+                                    color: Colors.red[600],
+                                    fontSize: 12,
+                                    fontWeight: FontWeight.w500,
+                                  ),
+                                ),
+                              ],
+                            ] else ...[
+                              const SizedBox(width: 8),
+                              Text(
+                                'Unlimited',
+                                style: TextStyle(
+                                  color: Colors.green[600],
+                                  fontSize: 12,
+                                  fontWeight: FontWeight.w500,
+                                ),
+                              ),
+                            ],
+                          ],
+                        );
+                      },
                     ),
                   ],
                 ),
@@ -443,24 +485,30 @@ class _SearchPageState extends State<SearchPage> with SingleTickerProviderStateM
                   onPressed: () async {
                     try {
                       bool success;
+                      String message;
                       if (isJoined) {
                         success = await _teamsService.leaveTeam(team.id);
+                        message = success ? 'Left ${team.name}' : 'Failed to leave ${team.name}';
                       } else {
-                        success = await _teamsService.joinTeam(team.id);
+                        final result = await _teamsService.joinTeamWithResult(team.id);
+                        success = result['success'] as bool;
+                        message = result['message'] as String;
                       }
                       
                       if (success) {
                         ScaffoldMessenger.of(context).showSnackBar(
                           SnackBar(
-                            content: Text(isJoined ? 'Left ${team.name}' : 'Joined ${team.name}!'),
-                            duration: const Duration(seconds: 1),
+                            content: Text(message),
+                            backgroundColor: Colors.green,
+                            duration: const Duration(seconds: 2),
                           ),
                         );
                       } else {
                         ScaffoldMessenger.of(context).showSnackBar(
                           SnackBar(
-                            content: Text('Failed to ${isJoined ? 'leave' : 'join'} team'),
+                            content: Text(message),
                             backgroundColor: Colors.red,
+                            duration: const Duration(seconds: 3),
                           ),
                         );
                       }
@@ -492,12 +540,14 @@ class _SearchPageState extends State<SearchPage> with SingleTickerProviderStateM
                     MaterialPageRoute(
                       builder: (context) => DiscoveredTeamDetailsPage(
                         teamData: {
+                          'id': team.id, // Add the team ID
                           'name': team.name,
                           'description': team.description,
                           'members': team.memberCount.toString(),
                           'creator': team.createdBy,
                           'createdAt': team.createdAt.toString(),
                         },
+                        initialJoinedState: isJoined,
                       ),
                     ),
                   );

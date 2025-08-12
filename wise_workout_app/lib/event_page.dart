@@ -22,6 +22,7 @@ import 'joined_events_state.dart';
 import 'all_events_page.dart';
 import 'subscription_page.dart';
 import 'workout_record_page.dart';
+import 'test_programs_page.dart';
 
 class EventPage extends StatefulWidget {
   const EventPage({super.key});
@@ -127,6 +128,12 @@ class _EventPageState extends State<EventPage> with SingleTickerProviderStateMix
       if (mounted) {
         print('🔄 Programs refreshed at ${DateTime.now()}');
         print('📚 Total programs loaded: ${_programsService.allPrograms.length}');
+        
+        // Debug: Print each program
+        for (var program in _programsService.allPrograms) {
+          print('   📖 ${program.name} (ID: ${program.id}, Category: ${program.category}, Duration: ${program.duration})');
+        }
+        
         setState(() {}); // Force rebuild to show programs
       }
     } catch (e) {
@@ -388,6 +395,9 @@ class _EventPageState extends State<EventPage> with SingleTickerProviderStateMix
   }
 
   Widget _buildActiveTab() {
+    print('🎯 Building Programs tab - Total programs: ${_programsService.allPrograms.length}');
+    print('📋 Programs by category "$selectedProgramCategory": ${_programsService.getProgramsByCategory(selectedProgramCategory).length}');
+    
     return Column(
       children: [
         // Programs header
@@ -415,8 +425,22 @@ class _EventPageState extends State<EventPage> with SingleTickerProviderStateMix
                   else
                     IconButton(
                       icon: const Icon(Icons.refresh, size: 20),
-                      onPressed: _loadPrograms,
+                      onPressed: () {
+                        print('🔄 Manual refresh button pressed');
+                        _loadPrograms();
+                      },
                       tooltip: 'Refresh programs',
+                    ),
+                    // Debug button to test connection
+                    IconButton(
+                      icon: const Icon(Icons.bug_report, size: 20, color: Colors.red),
+                      onPressed: () {
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(builder: (context) => const TestProgramsPage()),
+                        );
+                      },
+                      tooltip: 'Debug Programs',
                     ),
                   Text(
                     '${_programsService.allPrograms.length} programs',
@@ -1416,7 +1440,13 @@ class _EventPageState extends State<EventPage> with SingleTickerProviderStateMix
   Widget _buildProgramsList() {
     final programs = _programsService.getProgramsByCategory(selectedProgramCategory);
     
+    print('📱 Building programs list: ${programs.length} programs for category "$selectedProgramCategory"');
+    for (var program in programs) {
+      print('   📚 ${program.name} (${program.category}) - ${program.duration}');
+    }
+    
     if (programs.isEmpty) {
+      print('❌ No programs to display - showing empty state');
       return Expanded(
         child: Center(
           child: Column(
@@ -1447,6 +1477,14 @@ class _EventPageState extends State<EventPage> with SingleTickerProviderStateMix
                   color: Colors.grey[600],
                 ),
               ),
+              const SizedBox(height: 16),
+              ElevatedButton(
+                onPressed: () {
+                  print('🔄 Retry button pressed from empty state');
+                  _loadPrograms();
+                },
+                child: const Text('Retry'),
+              ),
             ],
           ),
         ),
@@ -1472,7 +1510,10 @@ class _EventPageState extends State<EventPage> with SingleTickerProviderStateMix
                 Navigator.push(
                   context,
                   MaterialPageRoute(
-                    builder: (context) => ProgramDetailsPage(program: program),
+                    builder: (context) => ProgramDetailsPage(
+                      program: program,
+                      initialIsFavorite: false, // Default to false for now since event page doesn't track favorites
+                    ),
                   ),
                 );
               },

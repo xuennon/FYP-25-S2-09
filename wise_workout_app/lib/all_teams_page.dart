@@ -345,6 +345,16 @@ class _AllTeamsPageState extends State<AllTeamsPage> {
             maxLines: 2,
             overflow: TextOverflow.ellipsis,
           ),
+          const SizedBox(height: 4),
+          // Member count
+          Text(
+            '${team['members']} member${int.parse(team['members'] ?? '1') > 1 ? 's' : ''}',
+            style: TextStyle(
+              fontSize: 14,
+              color: Colors.grey[600],
+            ),
+            textAlign: TextAlign.center,
+          ),
         ],
       ),
     );
