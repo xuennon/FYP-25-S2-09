@@ -19,6 +19,15 @@ class FirebaseActivity {
   final double avgPace;
   final DateTime createdAt;
   final Map<String, dynamic>? metadata;
+  
+  // Enhanced pace and cadence analytics data
+  final double? avgCadence;
+  final double? peakCadence;
+  final double? bestPace;
+  final String? paceZone;
+  final String? cadenceConsistency;
+  final List<double>? paceDataPoints;
+  final List<double>? cadenceDataPoints;
 
   FirebaseActivity({
     required this.id,
@@ -38,6 +47,13 @@ class FirebaseActivity {
     required this.avgPace,
     required this.createdAt,
     this.metadata,
+    this.avgCadence,
+    this.peakCadence,
+    this.bestPace,
+    this.paceZone,
+    this.cadenceConsistency,
+    this.paceDataPoints,
+    this.cadenceDataPoints,
   });
 
   // Convert to Firebase document
@@ -60,6 +76,14 @@ class FirebaseActivity {
       'avgPace': avgPace,
       'createdAt': createdAt.toIso8601String(),
       'metadata': metadata ?? {},
+      // Enhanced analytics data
+      'avgCadence': avgCadence,
+      'peakCadence': peakCadence,
+      'bestPace': bestPace,
+      'paceZone': paceZone,
+      'cadenceConsistency': cadenceConsistency,
+      'paceDataPoints': paceDataPoints,
+      'cadenceDataPoints': cadenceDataPoints,
     };
   }
 
@@ -83,6 +107,14 @@ class FirebaseActivity {
       avgPace: (data['avgPace'] ?? 0.0).toDouble(),
       createdAt: DateTime.parse(data['createdAt']),
       metadata: data['metadata'] != null ? Map<String, dynamic>.from(data['metadata']) : null,
+      // Enhanced analytics data
+      avgCadence: data['avgCadence']?.toDouble(),
+      peakCadence: data['peakCadence']?.toDouble(),
+      bestPace: data['bestPace']?.toDouble(),
+      paceZone: data['paceZone'],
+      cadenceConsistency: data['cadenceConsistency'],
+      paceDataPoints: data['paceDataPoints'] != null ? List<double>.from(data['paceDataPoints']) : null,
+      cadenceDataPoints: data['cadenceDataPoints'] != null ? List<double>.from(data['cadenceDataPoints']) : null,
     );
   }
 
@@ -101,7 +133,47 @@ class FirebaseActivity {
       calories: calories,
       avgHeartRate: avgHeartRate,
       userColor: _getUserColor(userInitial),
+      // Additional numerical data for analysis
+      distanceKm: distanceKm,
+      durationSeconds: durationSeconds,
+      avgPace: avgPace,
+      totalSteps: _parseSteps(steps),
+      totalCalories: _parseCalories(calories),
+      avgHeartRateValue: _parseHeartRate(avgHeartRate),
+      // Firebase-linked analytics data
+      firebaseAvgCadence: avgCadence,
+      firebasePeakCadence: peakCadence,
+      firebaseBestPace: bestPace,
+      firebasePaceZone: paceZone,
+      firebaseCadenceConsistency: cadenceConsistency,
+      firebasePaceDataPoints: paceDataPoints,
+      firebaseCadenceDataPoints: cadenceDataPoints,
     );
+  }
+
+  // Helper methods to parse string values to numbers
+  int _parseSteps(String stepsStr) {
+    try {
+      return int.parse(stepsStr.replaceAll(',', '').replaceAll(' steps', ''));
+    } catch (e) {
+      return 0;
+    }
+  }
+
+  int _parseCalories(String caloriesStr) {
+    try {
+      return int.parse(caloriesStr.replaceAll(' kcal', '').replaceAll(',', ''));
+    } catch (e) {
+      return 0;
+    }
+  }
+
+  int _parseHeartRate(String hrStr) {
+    try {
+      return int.parse(hrStr.replaceAll(' bpm', ''));
+    } catch (e) {
+      return 0;
+    }
   }
 
   // Helper method to format date

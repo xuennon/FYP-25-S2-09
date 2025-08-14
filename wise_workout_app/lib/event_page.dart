@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'dart:async';
-import 'package:firebase_auth/firebase_auth.dart';
 import 'search_page.dart';
 import 'friend_list_page.dart';
 import 'settings_page.dart';
@@ -175,13 +174,6 @@ class _EventPageState extends State<EventPage> with SingleTickerProviderStateMix
           print('🎯 Event: ${event.name} | Sports: ${event.sportsDisplay} | Business: ${event.businessName}');
         }
         
-        // If no events found, run debug check
-        if (_eventsService.allEvents.isEmpty) {
-          print('⚠️ No events found! Running debug check...');
-          await _checkAuthenticationStatus();
-          await _eventsService.debugEventsCollection();
-        }
-        
         setState(() {}); // Force rebuild to show events
       }
     } catch (e) {
@@ -195,29 +187,6 @@ class _EventPageState extends State<EventPage> with SingleTickerProviderStateMix
           ),
         );
       }
-    }
-  }
-
-  // Add authentication check method
-  Future<void> _checkAuthenticationStatus() async {
-    final user = FirebaseAuth.instance.currentUser;
-    print('🔍 AUTHENTICATION DEBUG:');
-    if (user != null) {
-      print('✅ User is authenticated:');
-      print('   UID: ${user.uid}');
-      print('   Email: ${user.email ?? 'No email'}');
-      print('   Is Anonymous: ${user.isAnonymous}');
-      print('   Email Verified: ${user.emailVerified}');
-      print('   Provider: ${user.providerData.map((p) => p.providerId).join(', ')}');
-      
-      // Check if this matches Firebase rules requirements
-      if (user.isAnonymous) {
-        print('❌ User is ANONYMOUS - Firebase rules will deny access to events');
-      } else {
-        print('✅ User is REAL - should have access to events');
-      }
-    } else {
-      print('❌ User is NOT authenticated at all!');
     }
   }
 
@@ -329,23 +298,9 @@ class _EventPageState extends State<EventPage> with SingleTickerProviderStateMix
               ),
             ),
           ),
-          // Right side - Settings, Debug and Logout
+          // Right side - Settings and Logout
           Row(
             children: [
-              IconButton(
-                icon: const Icon(Icons.bug_report, color: Colors.orange),
-                onPressed: () async {
-                  print('🐛 Running debug check...');
-                  await _checkAuthenticationStatus();
-                  await _eventsService.debugEventsCollection();
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    const SnackBar(
-                      content: Text('Debug info printed to console'),
-                      backgroundColor: Colors.orange,
-                    ),
-                  );
-                },
-              ),
               IconButton(
                 icon: const Icon(Icons.settings),
                 onPressed: () {

@@ -113,15 +113,13 @@ class _SubscriptionPageState extends State<SubscriptionPage> {
                   SizedBox(
                     width: double.infinity,
                     height: 50,
-                    child: OutlinedButton(
+                    child: ElevatedButton(
                       onPressed: currentUserType == 'normal' ? null : () {
                         _handleSubscription('free');
                       },
-                      style: OutlinedButton.styleFrom(
-                        side: BorderSide(
-                          color: currentUserType == 'normal' ? Colors.orange : Colors.grey, 
-                          width: 2
-                        ),
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: currentUserType == 'normal' ? Colors.grey : Colors.orange,
+                        side: currentUserType == 'normal' ? const BorderSide(color: Colors.orange, width: 2) : null,
                         shape: RoundedRectangleBorder(
                           borderRadius: BorderRadius.circular(8),
                         ),
@@ -129,7 +127,7 @@ class _SubscriptionPageState extends State<SubscriptionPage> {
                       child: Text(
                         isLoadingSubscription ? 'Loading...' : (currentUserType == 'normal' ? 'In Use' : 'Select'),
                         style: TextStyle(
-                          color: currentUserType == 'normal' ? Colors.orange : Colors.grey,
+                          color: currentUserType == 'normal' ? Colors.orange : Colors.black,
                           fontSize: 16,
                           fontWeight: FontWeight.bold,
                         ),
@@ -196,14 +194,15 @@ class _SubscriptionPageState extends State<SubscriptionPage> {
                       },
                       style: ElevatedButton.styleFrom(
                         backgroundColor: currentUserType == 'premium' ? Colors.grey : Colors.orange,
+                        side: currentUserType == 'premium' ? const BorderSide(color: Colors.orange, width: 2) : null,
                         shape: RoundedRectangleBorder(
                           borderRadius: BorderRadius.circular(8),
                         ),
                       ),
                       child: Text(
                         isLoadingSubscription ? 'Loading...' : (currentUserType == 'premium' ? 'In Use' : 'Get Premium'),
-                        style: const TextStyle(
-                          color: Colors.black,
+                        style: TextStyle(
+                          color: currentUserType == 'premium' ? Colors.orange : Colors.black,
                           fontSize: 16,
                           fontWeight: FontWeight.bold,
                         ),

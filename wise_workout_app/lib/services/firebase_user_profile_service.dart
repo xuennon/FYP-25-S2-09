@@ -255,4 +255,28 @@ class FirebaseUserProfileService {
     String suspensionStatus = await getSuspensionStatus();
     return suspensionStatus == 'yes';
   }
+
+  // Get user profile by user ID
+  Future<Map<String, dynamic>?> getUserProfileById(String userId) async {
+    try {
+      print('Fetching profile for user ID: $userId');
+
+      DocumentSnapshot userDoc = await _firestore
+          .collection('users')
+          .doc(userId)
+          .get();
+
+      if (userDoc.exists) {
+        Map<String, dynamic> userData = userDoc.data() as Map<String, dynamic>;
+        print('User profile data retrieved for $userId: ${userData['username'] ?? 'No username'}');
+        return userData;
+      } else {
+        print('User document does not exist in Firestore for ID: $userId');
+        return null;
+      }
+    } catch (e) {
+      print('Error fetching user profile for ID $userId: $e');
+      return null;
+    }
+  }
 }

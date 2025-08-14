@@ -407,7 +407,7 @@ class _WorkoutRecordPageState extends State<WorkoutRecordPage> {
                     ),
                     
                     // Invisible spacer to maintain original positioning
-                    SizedBox(
+                    const SizedBox(
                       width: 70,
                       height: 70,
                     ),

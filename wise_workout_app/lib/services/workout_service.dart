@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'leaderboard_service.dart';
 import 'firebase_activities_service.dart';
+import 'firebase_events_service.dart';
 import '../joined_events_state.dart';
 
 class WorkoutService extends ChangeNotifier {
@@ -43,8 +45,13 @@ class WorkoutService extends ChangeNotifier {
 
   Future<void> _syncActivityToLeaderboards(WorkoutActivity activity) async {
     try {
+      // First ensure we have current joined events loaded
+      await _ensureJoinedEventsLoaded();
+      
       // Get list of joined event IDs
       List<String> joinedEventIds = _joinedEventsState.joinedEventIds.toList();
+      
+      print('🔍 Found ${joinedEventIds.length} joined events for syncing: $joinedEventIds');
       
       if (joinedEventIds.isNotEmpty) {
         print('🏆 Syncing activity ${activity.id} to ${joinedEventIds.length} event leaderboards');
@@ -55,9 +62,119 @@ class WorkoutService extends ChangeNotifier {
         } else {
           print('❌ Failed to sync activity to some leaderboards');
         }
+      } else {
+        print('📭 No joined events found - checking for team events where user is participant');
+        await _checkAndSyncToParticipatingEvents(activity);
       }
     } catch (e) {
       print('❌ Error syncing activity to leaderboards: $e');
+    }
+  }
+
+  // Ensure joined events are loaded from Firebase
+  /// Ensure joined events are loaded by discovering team events where user participates
+  Future<void> _ensureJoinedEventsLoaded() async {
+    final currentUserId = FirebaseAuth.instance.currentUser?.uid;
+    if (currentUserId == null) {
+      print('❌ No current user for joined events loading');
+      return;
+    }
+
+    try {
+      print('🔄 Ensuring joined events are loaded for user: $currentUserId');
+      
+      // Get current joined events
+      final joinedState = JoinedEventsState();
+      final currentJoinedEvents = Set<String>.from(joinedState.joinedEventIds);
+      
+      print('📊 Current joined events count: ${currentJoinedEvents.length}');
+      print('📋 Current joined events: $currentJoinedEvents');
+      
+      // If already have joined events, no need to reload
+      if (currentJoinedEvents.isNotEmpty) {
+        print('✅ Joined events already loaded, skipping discovery');
+        return;
+      }
+      
+      // Get all events where user is a participant using raw Firebase data
+      final eventsService = FirebaseEventsService();
+      final allEvents = await eventsService.getAllEventsForDebugging();
+      
+      Set<String> discoveredEventIds = {};
+      
+      for (final eventData in allEvents) {
+        final participants = eventData['participants'] as List<dynamic>? ?? [];
+        final eventId = eventData['id'] as String?;
+        final eventName = eventData['name'] as String? ?? 'Unknown';
+        
+        // Check if this is a team event using Firebase data
+        bool isTeamEvent = eventData['isTeamEvent'] == true || eventData['teamId'] != null;
+        
+        if (isTeamEvent && eventId != null && participants.contains(currentUserId)) {
+          discoveredEventIds.add(eventId);
+          print('🎯 Discovered participation in team event: $eventName ($eventId)');
+        }
+      }
+      
+      print('🔍 Discovered ${discoveredEventIds.length} team events with user participation');
+      
+      if (discoveredEventIds.isNotEmpty) {
+        // Add discovered events to joined events state
+        for (String eventId in discoveredEventIds) {
+          joinedState.joinEvent(eventId);
+        }
+        print('✅ Added ${discoveredEventIds.length} events to joined events state');
+        print('📋 Updated joined events: ${joinedState.joinedEventIds}');
+      } else {
+        print('📋 No team event participation found for user');
+      }
+      
+    } catch (e) {
+      print('❌ Error ensuring joined events loaded: $e');
+    }
+  }
+
+  // Check and sync to events where user is participating (fallback)
+  Future<void> _checkAndSyncToParticipatingEvents(WorkoutActivity activity) async {
+    try {
+      final FirebaseEventsService eventsService = FirebaseEventsService();
+      await eventsService.loadEvents();
+      
+      final currentUserId = FirebaseAuth.instance.currentUser?.uid;
+      if (currentUserId == null) return;
+      
+      // Get all events with raw data to check team event status
+      final allEventsData = await eventsService.getAllEventsForDebugging();
+      
+      List<String> participatingEventIds = [];
+      
+      for (final eventData in allEventsData) {
+        final participants = eventData['participants'] as List<dynamic>? ?? [];
+        final eventId = eventData['id'] as String?;
+        final eventName = eventData['name'] as String? ?? 'Unknown';
+        
+        // Check if this is a team event using Firebase data
+        bool isTeamEvent = eventData['isTeamEvent'] == true || eventData['teamId'] != null;
+        
+        if (isTeamEvent && eventId != null && participants.contains(currentUserId)) {
+          participatingEventIds.add(eventId);
+          print('🎯 Found participation in team event: $eventName ($eventId)');
+        }
+      }
+      
+      if (participatingEventIds.isNotEmpty) {
+        print('🏆 Direct syncing to ${participatingEventIds.length} participating team events');
+        
+        await _leaderboardService.syncActivityToLeaderboards(activity, participatingEventIds);
+        
+        // Also add to joined events state for future use
+        final joinedState = JoinedEventsState();
+        for (final eventId in participatingEventIds) {
+          joinedState.joinEvent(eventId);
+        }
+      }
+    } catch (e) {
+      print('❌ Error in fallback sync: $e');
     }
   }
 

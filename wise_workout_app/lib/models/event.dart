@@ -15,6 +15,13 @@ class Event {
   bool isActive; // Whether current user has joined this event
   final DateTime createdAt;
   final Map<String, dynamic>? metrics; // Metrics data (e.g., elevation)
+  // New fields for team events
+  final String? primaryMetricFromRoot; // Primary metric from root level (for new events)
+  final String? primaryMetricDisplayNameFromRoot; // Display name from root level
+  final bool? isLowerBetterFromRoot; // Whether lower is better from root level
+  final bool? isTeamEvent; // Whether this is a team event
+  final String? teamId; // Team ID for team events
+  final String? teamName; // Team name for team events
 
   Event({
     required this.id,
@@ -31,6 +38,12 @@ class Event {
     this.isActive = false,
     required this.createdAt,
     this.metrics,
+    this.primaryMetricFromRoot,
+    this.primaryMetricDisplayNameFromRoot,
+    this.isLowerBetterFromRoot,
+    this.isTeamEvent,
+    this.teamId,
+    this.teamName,
   });
 
   // Get formatted date range
@@ -98,6 +111,13 @@ class Event {
 
   // Get the primary metric for ranking (defined by business user)
   String get primaryMetric {
+    // First check if we have the new root-level primaryMetric field
+    if (primaryMetricFromRoot != null && primaryMetricFromRoot!.isNotEmpty) {
+      print('🎯 Event $id: Using root-level primaryMetric: "$primaryMetricFromRoot"');
+      return primaryMetricFromRoot!.toLowerCase();
+    }
+    
+    // Fall back to old logic for legacy events
     if (metrics == null || metrics!.isEmpty) {
       // Default ranking by time for most sports
       print('🎯 Event $id: No metrics defined, defaulting to durationSeconds');
@@ -127,15 +147,25 @@ class Event {
 
   // Get metric display name for UI
   String get primaryMetricDisplayName {
+    // First check if we have the new root-level field
+    if (primaryMetricDisplayNameFromRoot != null && primaryMetricDisplayNameFromRoot!.isNotEmpty) {
+      return primaryMetricDisplayNameFromRoot!;
+    }
+    
+    // Fall back to old logic based on computed primary metric
     switch (primaryMetric) {
       case 'distanceKm':
+      case 'distance':
         return 'Distance';
       case 'durationSeconds':
+      case 'time':
         return 'Time';
       case 'elevation':
         return 'Elevation';
       case 'avgPace':
         return 'Pace';
+      case 'steps':
+        return 'Steps';
       default:
         return 'Time';
     }
@@ -143,15 +173,24 @@ class Event {
 
   // Check if lower values are better for this metric (like time/pace)
   bool get isLowerBetter {
+    // First check if we have the new root-level field
+    if (isLowerBetterFromRoot != null) {
+      return isLowerBetterFromRoot!;
+    }
+    
+    // Fall back to old logic based on computed primary metric
     switch (primaryMetric) {
       case 'durationSeconds':
+      case 'time':
       case 'avgPace':
         return true; // Lower time/pace is better
       case 'distanceKm':
+      case 'distance':
       case 'elevation':
-        return false; // Higher distance/elevation is better
+      case 'steps':
+        return false; // Higher distance/elevation/steps is better
       default:
-        return true; // Default to lower is better
+        return true; // Default to lower is better (time-based)
     }
   }
 
@@ -270,6 +309,13 @@ class Event {
         maxParticipants: map['maxParticipants'] is int ? map['maxParticipants'] : null,
         createdAt: createdAt,
         metrics: metrics,
+        // Parse new fields for team events
+        primaryMetricFromRoot: map['primaryMetric']?.toString(),
+        primaryMetricDisplayNameFromRoot: map['primaryMetricDisplayName']?.toString(),
+        isLowerBetterFromRoot: map['isLowerBetter'] is bool ? map['isLowerBetter'] : null,
+        isTeamEvent: map['isTeamEvent'] is bool ? map['isTeamEvent'] : null,
+        teamId: map['teamId']?.toString(),
+        teamName: map['teamName']?.toString(),
       );
     } catch (e, stackTrace) {
       print('❌ Error creating Event from map: $e');
@@ -291,6 +337,13 @@ class Event {
         maxParticipants: null,
         createdAt: DateTime.now(),
         metrics: null,
+        // Default values for new fields
+        primaryMetricFromRoot: null,
+        primaryMetricDisplayNameFromRoot: null,
+        isLowerBetterFromRoot: null,
+        isTeamEvent: null,
+        teamId: null,
+        teamName: null,
       );
     }
   }

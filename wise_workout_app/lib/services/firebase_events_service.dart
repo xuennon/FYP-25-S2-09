@@ -58,6 +58,14 @@ class FirebaseEventsService extends ChangeNotifier {
           print('Document ID: ${doc.id}');
           print('Data: $data');
           
+          // Skip team events in the general events list
+          // Team events are identified by having 'isTeamEvent' = true or 'teamId' field
+          bool isTeamEvent = data['isTeamEvent'] == true || data['teamId'] != null;
+          if (isTeamEvent) {
+            print('🏃‍♂️ Skipping team event: ${data['name']} (will be loaded separately for teams)');
+            continue;
+          }
+          
           // Use the Event.fromMap factory constructor with better error handling
           Event event = Event.fromMap(doc.id, data);
           
@@ -435,6 +443,250 @@ class FirebaseEventsService extends ChangeNotifier {
         print('   2. Firebase security rules');
         print('   3. Firebase project configuration');
       }
+    }
+  }
+
+  // Create a new event
+  Future<String> createEvent(Map<String, dynamic> eventData) async {
+    try {
+      print('🔄 Creating new event...');
+      print('📝 Event data being saved to Firebase:');
+      print('   Name: ${eventData['name']}');
+      print('   Team ID: ${eventData['teamId']}');
+      print('   Is Team Event: ${eventData['isTeamEvent']}');
+      print('   Created By: ${eventData['createdBy']}');
+      print('   Sports: ${eventData['sports']}');
+      print('   Start Date: ${eventData['startDate']}');
+      print('   End Date: ${eventData['endDate']}');
+      
+      final currentUser = _auth.currentUser;
+      if (currentUser == null) {
+        throw Exception('User not authenticated');
+      }
+
+      // Add the event to Firestore 'events' collection
+      DocumentReference docRef = await _firestore.collection('events').add(eventData);
+      
+      print('✅ Event created successfully with ID: ${docRef.id}');
+      print('🔗 Event saved to Firebase path: events/${docRef.id}');
+      
+      // Verify the event was saved by reading it back
+      try {
+        DocumentSnapshot savedEvent = await docRef.get();
+        if (savedEvent.exists) {
+          Map<String, dynamic> savedData = savedEvent.data() as Map<String, dynamic>;
+          print('✅ Event verified in Firebase:');
+          print('   Saved Name: ${savedData['name']}');
+          print('   Saved Team ID: ${savedData['teamId']}');
+          print('   Saved Is Team Event: ${savedData['isTeamEvent']}');
+        } else {
+          print('⚠️ Warning: Event document not found after creation');
+        }
+      } catch (e) {
+        print('⚠️ Warning: Could not verify event was saved: $e');
+      }
+      
+      // Reload events to include the new one (for general events, not team events)
+      if (eventData['isTeamEvent'] != true) {
+        await loadEvents();
+      }
+      
+      return docRef.id;
+    } catch (e) {
+      print('❌ Error creating event: $e');
+      print('❌ Error details: ${e.toString()}');
+      if (e.toString().contains('permission-denied')) {
+        print('❌ Firebase permission denied - check Firestore security rules');
+        print('❌ Make sure events collection allows writes for authenticated users');
+      }
+      rethrow;
+    }
+  }
+
+  // Get events for a specific team
+  List<Event> getTeamEvents(String teamId) {
+    return _allEvents.where((event) {
+      // Check if event has teamId field or if businessId matches team ID
+      return (event as dynamic).teamId == teamId || event.businessId == teamId;
+    }).toList();
+  }
+
+  // Verify an event exists in Firebase (useful for debugging)
+  Future<bool> verifyEventExists(String eventId) async {
+    try {
+      DocumentSnapshot eventDoc = await _firestore.collection('events').doc(eventId).get();
+      if (eventDoc.exists) {
+        Map<String, dynamic> data = eventDoc.data() as Map<String, dynamic>;
+        print('✅ Event $eventId verified in Firebase:');
+        print('   Name: ${data['name']}');
+        print('   Team ID: ${data['teamId']}');
+        print('   Is Team Event: ${data['isTeamEvent']}');
+        return true;
+      } else {
+        print('❌ Event $eventId not found in Firebase');
+        return false;
+      }
+    } catch (e) {
+      print('❌ Error verifying event $eventId: $e');
+      return false;
+    }
+  }
+
+  // Get all events for debugging (includes team events)
+  Future<List<Map<String, dynamic>>> getAllEventsForDebugging() async {
+    try {
+      QuerySnapshot allEventsSnapshot = await _firestore.collection('events').get();
+      List<Map<String, dynamic>> allEvents = [];
+      
+      for (QueryDocumentSnapshot doc in allEventsSnapshot.docs) {
+        Map<String, dynamic> data = doc.data() as Map<String, dynamic>;
+        data['id'] = doc.id;
+        allEvents.add(data);
+      }
+      
+      print('🔍 Total events in Firebase: ${allEvents.length}');
+      int teamEvents = allEvents.where((e) => e['isTeamEvent'] == true || e['teamId'] != null).length;
+      print('🔍 Team events: $teamEvents');
+      print('🔍 Business events: ${allEvents.length - teamEvents}');
+      
+      return allEvents;
+    } catch (e) {
+      print('❌ Error getting all events: $e');
+      return [];
+    }
+  }
+
+  // Load team events specifically for a team
+  Future<List<Event>> loadTeamEvents(String teamId) async {
+    try {
+      print('🔄 Loading team events for team: $teamId');
+
+      // Query events that belong to this team using teamId field
+      QuerySnapshot teamEventsSnapshot = await _firestore
+          .collection('events')
+          .where('teamId', isEqualTo: teamId)
+          .get();
+
+      print('📄 Found ${teamEventsSnapshot.docs.length} team events for team: $teamId');
+
+      // If no events found with teamId, also try with businessId (for backwards compatibility)
+      if (teamEventsSnapshot.docs.isEmpty) {
+        print('🔍 No events found with teamId, trying businessId for backwards compatibility...');
+        teamEventsSnapshot = await _firestore
+            .collection('events')
+            .where('businessId', isEqualTo: teamId)
+            .where('isTeamEvent', isEqualTo: true)
+            .get();
+        print('📄 Found ${teamEventsSnapshot.docs.length} team events using businessId');
+      }
+
+      List<Event> teamEvents = [];
+
+      for (QueryDocumentSnapshot doc in teamEventsSnapshot.docs) {
+        try {
+          Map<String, dynamic> data = doc.data() as Map<String, dynamic>;
+          
+          print('📝 Processing team event: ${doc.id}');
+          print('   Name: ${data['name']}');
+          print('   Team ID: ${data['teamId']}');
+          print('   Is Team Event: ${data['isTeamEvent']}');
+          
+          // Use the Event.fromMap factory constructor
+          Event event = Event.fromMap(doc.id, data);
+          
+          // Check if current user has joined this event
+          if (currentUserId != null && event.participants.contains(currentUserId)) {
+            event.isActive = true;
+          }
+          
+          teamEvents.add(event);
+          
+          print('✅ Successfully loaded team event: ${event.name}');
+        } catch (e) {
+          print('❌ Error converting team event ${doc.id}: $e');
+          print('❌ Raw data: ${doc.data()}');
+        }
+      }
+
+      print('✅ Successfully loaded ${teamEvents.length} team events for team: $teamId');
+      
+      // Log team events for debugging
+      if (teamEvents.isNotEmpty) {
+        print('📋 Team Events Summary:');
+        for (Event event in teamEvents) {
+          print('   - ${event.name} (${event.sportsDisplay}) - ${event.participantCount} participants');
+        }
+      } else {
+        print('📋 No team events found for this team');
+      }
+      
+      return teamEvents;
+    } catch (e) {
+      print('❌ Error loading team events for team $teamId: $e');
+      print('❌ Error details: ${e.toString()}');
+      return [];
+    }
+  }
+
+  // Delete an event
+  Future<bool> deleteEvent(String eventId) async {
+    try {
+      final currentUser = _auth.currentUser;
+      if (currentUser == null) {
+        print('❌ User not authenticated');
+        return false;
+      }
+
+      print('🗑️ Attempting to delete event: $eventId');
+
+      // First, verify the event exists and the user has permission to delete it
+      DocumentSnapshot eventDoc = await _firestore
+          .collection('events')
+          .doc(eventId)
+          .get();
+
+      if (!eventDoc.exists) {
+        print('❌ Event not found: $eventId');
+        return false;
+      }
+
+      Map<String, dynamic> eventData = eventDoc.data() as Map<String, dynamic>;
+      String eventCreatedBy = eventData['createdBy'] ?? '';
+
+      // Check if the current user is the creator of the event
+      if (eventCreatedBy != currentUser.uid) {
+        print('❌ User does not have permission to delete event: $eventId');
+        return false;
+      }
+
+      print('✅ User has permission to delete event: $eventId');
+
+      // Delete related leaderboard data
+      try {
+        await _firestore
+            .collection('leaderboards')
+            .doc(eventId)
+            .delete();
+        print('✅ Deleted leaderboard data for event: $eventId');
+      } catch (e) {
+        print('⚠️ No leaderboard data found for event $eventId: $e');
+      }
+
+      // Delete the event document
+      await _firestore
+          .collection('events')
+          .doc(eventId)
+          .delete();
+
+      print('✅ Successfully deleted event: $eventId');
+
+      // Refresh the events list
+      await loadEvents();
+
+      return true;
+    } catch (e) {
+      print('❌ Error deleting event $eventId: $e');
+      return false;
     }
   }
 }

@@ -432,6 +432,203 @@ class FirebaseTeamsService extends ChangeNotifier {
     });
   }
 
+  // Generate shareable team link (prioritizes app opening over web)
+  Future<String> generateTeamLink(String teamId) async {
+    try {
+      final inviteToken = DateTime.now().millisecondsSinceEpoch.toString() + 
+                         teamId.substring(0, 6);
+      
+      // Store invite link data in Firebase
+      await _firestore
+        .collection('team_links')
+        .doc(inviteToken)
+        .set({
+          'teamId': teamId,
+          'createdBy': currentUserId,
+          'createdAt': FieldValue.serverTimestamp(),
+          'expiresAt': DateTime.now().add(const Duration(days: 30)).millisecondsSinceEpoch,
+          'isActive': true,
+          'clickCount': 0,
+        });
+      
+      // Use custom scheme - this should open directly in the app
+      return 'wiseworkout://team/$inviteToken';
+    } catch (e) {
+      print('❌ Error generating team link: $e');
+      throw Exception('Failed to generate team link');
+    }
+  }
+
+  // Generate a web-compatible team link as fallback
+  Future<String> generateWebCompatibleLink(String teamId) async {
+    try {
+      final inviteToken = DateTime.now().millisecondsSinceEpoch.toString() + 
+                         teamId.substring(0, 6);
+      
+      // Store invite link data in Firebase
+      await _firestore
+        .collection('team_links')
+        .doc(inviteToken)
+        .set({
+          'teamId': teamId,
+          'createdBy': currentUserId,
+          'createdAt': FieldValue.serverTimestamp(),
+          'expiresAt': DateTime.now().add(const Duration(days: 30)).millisecondsSinceEpoch,
+          'isActive': true,
+          'clickCount': 0,
+        });
+      
+      // Create a formatted message with clickable custom scheme
+      // Most messaging apps will make URLs starting with http/https clickable
+      return '''🏋️‍♂️ Join my Wise Workout team!
+
+Tap this link to open the app:
+wiseworkout://team/$inviteToken
+
+📱 If the link doesn't work:
+1. Make sure you have Wise Workout installed
+2. Copy and manually open: wiseworkout://team/$inviteToken
+3. Or download the app first from your app store
+
+Team invitation expires in 30 days.''';
+    } catch (e) {
+      print('❌ Error generating web compatible link: $e');
+      throw Exception('Failed to generate web compatible link');
+    }
+  }
+
+  // Generate app-specific deep link (for advanced users)
+  Future<String> generateAppDeepLink(String teamId) async {
+    try {
+      final inviteToken = DateTime.now().millisecondsSinceEpoch.toString() + 
+                         teamId.substring(0, 6);
+      
+      // Store invite link data in Firebase (reuse same token)
+      await _firestore
+        .collection('team_links')
+        .doc(inviteToken)
+        .set({
+          'teamId': teamId,
+          'createdBy': currentUserId,
+          'createdAt': FieldValue.serverTimestamp(),
+          'expiresAt': DateTime.now().add(const Duration(days: 30)).millisecondsSinceEpoch,
+          'isActive': true,
+          'clickCount': 0,
+        });
+      
+      // Return custom scheme for direct app opening (less compatible but faster)
+      return 'wiseworkout://team/$inviteToken';
+    } catch (e) {
+      print('❌ Error generating app deep link: $e');
+      throw Exception('Failed to generate app deep link');
+    }
+  }
+
+  // Get team details from invite link token
+  Future<Map<String, dynamic>?> getTeamFromLink(String linkToken) async {
+    try {
+      // Get invite link document
+      final linkDoc = await _firestore
+        .collection('team_links')
+        .doc(linkToken)
+        .get();
+
+      if (!linkDoc.exists) {
+        print('❌ Invite link not found: $linkToken');
+        return null;
+      }
+
+      final linkData = linkDoc.data()!;
+      
+      // Check if link is still active
+      if (!linkData['isActive']) {
+        print('❌ Invite link has been deactivated');
+        return null;
+      }
+
+      // Check expiration
+      final expiresAt = DateTime.fromMillisecondsSinceEpoch(linkData['expiresAt']);
+      if (DateTime.now().isAfter(expiresAt)) {
+        print('❌ Invite link has expired');
+        return null;
+      }
+
+      final teamId = linkData['teamId'];
+      
+      // Get team details
+      final teamDoc = await _firestore
+        .collection('teams')
+        .doc(teamId)
+        .get();
+
+      if (!teamDoc.exists) {
+        print('❌ Team not found: $teamId');
+        return null;
+      }
+
+      final teamData = teamDoc.data()!;
+      
+      // Increment click count
+      await _firestore
+        .collection('team_links')
+        .doc(linkToken)
+        .update({
+          'clickCount': FieldValue.increment(1),
+          'lastAccessed': FieldValue.serverTimestamp(),
+        });
+
+      // Check if user is already a member
+      final isAlreadyMember = teamData['members']?.contains(currentUserId) ?? false;
+
+      return {
+        'teamId': teamId,
+        'teamData': teamData,
+        'isAlreadyMember': isAlreadyMember,
+        'linkToken': linkToken,
+      };
+    } catch (e) {
+      print('❌ Error getting team from link: $e');
+      return null;
+    }
+  }
+
+  // Join team through invite link
+  Future<Map<String, dynamic>> joinTeamThroughLink(String linkToken) async {
+    try {
+      final linkInfo = await getTeamFromLink(linkToken);
+      
+      if (linkInfo == null) {
+        return {
+          'success': false,
+          'message': 'Invalid or expired invite link',
+        };
+      }
+
+      if (linkInfo['isAlreadyMember']) {
+        return {
+          'success': true,
+          'message': 'You are already a member of this team',
+          'teamId': linkInfo['teamId'],
+        };
+      }
+
+      // Use existing join team logic
+      final result = await joinTeamWithResult(linkInfo['teamId']);
+      
+      if (result['success']) {
+        result['teamId'] = linkInfo['teamId'];
+      }
+      
+      return result;
+    } catch (e) {
+      print('❌ Error joining team through link: $e');
+      return {
+        'success': false,
+        'message': 'Failed to join team: $e',
+      };
+    }
+  }
+
   // Clean up when service is disposed
   @override
   void dispose() {

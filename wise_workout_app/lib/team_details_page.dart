@@ -1,8 +1,16 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
+import 'package:url_launcher/url_launcher.dart';
 import 'edit_team_page.dart';
 import 'team_state.dart';
 import 'models/team.dart';
 import 'services/firebase_teams_service.dart';
+import 'team_members_page.dart';
+import 'create_team_event_page.dart';
+import 'team_events_page.dart';
+import 'team_event_details_page.dart';
+import 'services/firebase_events_service.dart';
+import 'models/event.dart';
 
 class TeamDetailsPage extends StatefulWidget {
   final Team teamData;
@@ -17,11 +25,67 @@ class _TeamDetailsPageState extends State<TeamDetailsPage> {
   late Team currentTeamData;
   final TeamState _teamState = TeamState();
   final FirebaseTeamsService _teamsService = FirebaseTeamsService();
+  final FirebaseEventsService _eventsService = FirebaseEventsService();
+  List<Event> _teamEvents = [];
 
   @override
   void initState() {
     super.initState();
     currentTeamData = widget.teamData;
+    _loadTeamEvents();
+  }
+
+  Future<void> _loadTeamEvents() async {
+    try {
+      print('🔄 Loading team events for: ${currentTeamData.name} (${currentTeamData.id})');
+      
+      // Load team events from Firebase
+      final teamEvents = await _eventsService.loadTeamEvents(currentTeamData.id);
+      
+      setState(() {
+        _teamEvents = teamEvents;
+      });
+      
+      print('✅ Loaded ${_teamEvents.length} team events for team details page');
+      
+      // Log team events for debugging
+      if (_teamEvents.isNotEmpty) {
+        print('📋 Team Events loaded:');
+        for (Event event in _teamEvents) {
+          print('   - ${event.name} (${event.sportsDisplay})');
+          print('     Start: ${event.startDate}');
+          print('     Participants: ${event.participantCount}');
+        }
+      } else {
+        print('📋 No team events found');
+        
+        // Debug: Check if there are any events in Firebase for this team
+        print('🔍 Debugging: Checking all events in Firebase...');
+        final allEvents = await _eventsService.getAllEventsForDebugging();
+        final relatedEvents = allEvents.where((e) => 
+          e['teamId'] == currentTeamData.id || 
+          e['businessId'] == currentTeamData.id ||
+          (e['isTeamEvent'] == true && e['businessName'] == currentTeamData.name)
+        ).toList();
+        
+        if (relatedEvents.isNotEmpty) {
+          print('🔍 Found ${relatedEvents.length} potentially related events:');
+          for (var event in relatedEvents) {
+            print('   - ${event['name']} (ID: ${event['id']})');
+            print('     Team ID: ${event['teamId']}');
+            print('     Business ID: ${event['businessId']}');
+            print('     Is Team Event: ${event['isTeamEvent']}');
+          }
+        } else {
+          print('🔍 No related events found in Firebase for this team');
+        }
+      }
+    } catch (e) {
+      print('❌ Error loading team events: $e');
+      setState(() {
+        _teamEvents = [];
+      });
+    }
   }  @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -103,13 +167,15 @@ class _TeamDetailsPageState extends State<TeamDetailsPage> {
               ),
             ),
             
-            // Action Buttons Row
-            Container(
-              padding: const EdgeInsets.symmetric(horizontal: 24),
-              child: Row(
-                children: [
-                  Expanded(
-                    child: _buildActionButton(
+            // Action Buttons Row - Horizontally Scrollable
+            SizedBox(
+              height: 110, // Increased height to accommodate text properly
+              child: SingleChildScrollView(
+                scrollDirection: Axis.horizontal,
+                padding: const EdgeInsets.symmetric(horizontal: 24),
+                child: Row(
+                  children: [
+                    _buildScrollableActionButton(
                       icon: Icons.edit,
                       label: 'Edit Team Details',
                       onTap: () async {
@@ -136,28 +202,50 @@ class _TeamDetailsPageState extends State<TeamDetailsPage> {
                         }
                       },
                     ),
-                  ),
-                  const SizedBox(width: 16),
-                  Expanded(
-                    child: _buildActionButton(
+                    const SizedBox(width: 16),
+                    _buildScrollableActionButton(
+                      icon: Icons.people,
+                      label: 'Member',
+                      onTap: () {
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder: (context) => TeamMembersPage(teamData: currentTeamData),
+                          ),
+                        );
+                      },
+                    ),
+                    const SizedBox(width: 16),
+                    _buildScrollableActionButton(
+                      icon: Icons.event,
+                      label: 'Event',
+                      onTap: () {
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder: (context) => TeamEventsPage(teamData: currentTeamData),
+                          ),
+                        );
+                      },
+                    ),
+                    const SizedBox(width: 16),
+                    _buildScrollableActionButton(
                       icon: Icons.share,
                       label: 'Share',
                       onTap: () {
                         _shareTeam();
                       },
                     ),
-                  ),
-                  const SizedBox(width: 16),
-                  Expanded(
-                    child: _buildActionButton(
+                    const SizedBox(width: 16),
+                    _buildScrollableActionButton(
                       icon: Icons.info_outline,
                       label: 'Overview',
                       onTap: () {
                         _showTeamOverview();
                       },
                     ),
-                  ),
-                ],
+                  ],
+                ),
               ),
             ),
             
@@ -169,19 +257,27 @@ class _TeamDetailsPageState extends State<TeamDetailsPage> {
               child: Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
-                  const Text(
-                    'No upcoming events',
-                    style: TextStyle(
+                  Text(
+                    _teamEvents.isEmpty ? 'No upcoming events' : 'Team Events',
+                    style: const TextStyle(
                       fontSize: 18,
                       fontWeight: FontWeight.w500,
                       color: Colors.black,
                     ),
                   ),
                   TextButton(
-                    onPressed: () {
-                      ScaffoldMessenger.of(context).showSnackBar(
-                        const SnackBar(content: Text('Create event coming soon!')),
+                    onPressed: () async {
+                      final result = await Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (context) => CreateTeamEventPage(teamData: currentTeamData),
+                        ),
                       );
+                      
+                      // If event was created successfully, reload the events
+                      if (result == true) {
+                        _loadTeamEvents();
+                      }
                     },
                     child: const Text(
                       'Create an event',
@@ -198,51 +294,60 @@ class _TeamDetailsPageState extends State<TeamDetailsPage> {
             
             const SizedBox(height: 16),
             
-            // Placeholder Event Card
-            Container(
-              margin: const EdgeInsets.symmetric(horizontal: 24),
-              padding: const EdgeInsets.all(20),
-              decoration: BoxDecoration(
-                color: Colors.grey[50],
-                borderRadius: BorderRadius.circular(12),
-                border: Border.all(color: Colors.grey[200]!),
+            // Event Cards or Placeholder
+            if (_teamEvents.isEmpty) ...[
+              // Placeholder Event Card
+              Container(
+                margin: const EdgeInsets.symmetric(horizontal: 24),
+                padding: const EdgeInsets.all(20),
+                decoration: BoxDecoration(
+                  color: Colors.grey[50],
+                  borderRadius: BorderRadius.circular(12),
+                  border: Border.all(color: Colors.grey[200]!),
+                ),
+                child: Column(
+                  children: [
+                    Container(
+                      width: 80,
+                      height: 80,
+                      decoration: BoxDecoration(
+                        color: Colors.grey[300],
+                        borderRadius: BorderRadius.circular(8),
+                      ),
+                      child: const Icon(
+                        Icons.event,
+                        size: 40,
+                        color: Colors.grey,
+                      ),
+                    ),
+                    const SizedBox(height: 16),
+                    Text(
+                      'Create your first team event',
+                      style: TextStyle(
+                        fontSize: 16,
+                        fontWeight: FontWeight.w500,
+                        color: Colors.grey[700],
+                      ),
+                    ),
+                    const SizedBox(height: 8),
+                    Text(
+                      'Organize activities and challenges for your team members',
+                      textAlign: TextAlign.center,
+                      style: TextStyle(
+                        fontSize: 14,
+                        color: Colors.grey[600],
+                      ),
+                    ),
+                  ],
+                ),
               ),
-              child: Column(
-                children: [
-                  Container(
-                    width: 80,
-                    height: 80,
-                    decoration: BoxDecoration(
-                      color: Colors.grey[300],
-                      borderRadius: BorderRadius.circular(8),
-                    ),
-                    child: const Icon(
-                      Icons.event,
-                      size: 40,
-                      color: Colors.grey,
-                    ),
-                  ),
-                  const SizedBox(height: 16),
-                  Text(
-                    'Create your first team event',
-                    style: TextStyle(
-                      fontSize: 16,
-                      fontWeight: FontWeight.w500,
-                      color: Colors.grey[700],
-                    ),
-                  ),
-                  const SizedBox(height: 8),
-                  Text(
-                    'Organize activities and challenges for your team members',
-                    textAlign: TextAlign.center,
-                    style: TextStyle(
-                      fontSize: 14,
-                      color: Colors.grey[600],
-                    ),
-                  ),
-                ],
-              ),
-            ),
+            ] else ...[
+              // Display Team Events
+              ...(_teamEvents.map((event) => Container(
+                margin: const EdgeInsets.symmetric(horizontal: 24, vertical: 8),
+                child: _buildEventCard(event),
+              )).toList()),
+            ],
             
             const SizedBox(height: 32),
             
@@ -281,47 +386,313 @@ class _TeamDetailsPageState extends State<TeamDetailsPage> {
     );
   }
 
-  Widget _buildActionButton({
+  Widget _buildScrollableActionButton({
     required IconData icon,
     required String label,
     required VoidCallback onTap,
   }) {
     return GestureDetector(
       onTap: onTap,
-      child: Container(
-        padding: const EdgeInsets.symmetric(vertical: 16),
-        decoration: BoxDecoration(
-          color: Colors.grey[100],
-          borderRadius: BorderRadius.circular(12),
-        ),
+      child: SizedBox(
+        width: 100, // Fixed width for horizontal scrolling
         child: Column(
+          mainAxisSize: MainAxisSize.min, // Use minimum space needed
           children: [
             Container(
-              width: 48,
-              height: 48,
+              padding: const EdgeInsets.all(16),
               decoration: BoxDecoration(
-                color: Colors.grey[300],
-                shape: BoxShape.circle,
+                color: Colors.grey[100],
+                borderRadius: BorderRadius.circular(12),
               ),
-              child: Icon(
-                icon,
-                size: 24,
-                color: Colors.grey[700],
-              ),
-            ),
-            const SizedBox(height: 8),
-            Text(
-              label,
-              textAlign: TextAlign.center,
-              style: TextStyle(
-                fontSize: 12,
-                fontWeight: FontWeight.w500,
-                color: Colors.grey[700],
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Container(
+                    width: 48,
+                    height: 48,
+                    decoration: BoxDecoration(
+                      color: Colors.grey[300],
+                      shape: BoxShape.circle,
+                    ),
+                    child: Icon(
+                      icon,
+                      size: 24,
+                      color: Colors.grey[700],
+                    ),
+                  ),
+                  const SizedBox(height: 8),
+                  SizedBox(
+                    height: 20, // Fixed height for text area
+                    child: Text(
+                      label,
+                      textAlign: TextAlign.center,
+                      maxLines: 2,
+                      overflow: TextOverflow.ellipsis,
+                      style: TextStyle(
+                        fontSize: 9, // Even smaller font
+                        fontWeight: FontWeight.w500,
+                        color: Colors.grey[700],
+                        height: 1.0, // Tighter line height
+                      ),
+                    ),
+                  ),
+                ],
               ),
             ),
           ],
         ),
       ),
+    );
+  }
+
+  Widget _buildEventCard(Event event) {
+    return GestureDetector(
+      onTap: () {
+        Navigator.push(
+          context,
+          MaterialPageRoute(
+            builder: (context) => TeamEventDetailsPage(
+              event: event,
+              team: currentTeamData,
+            ),
+          ),
+        );
+      },
+      child: Container(
+        width: double.infinity,
+        padding: const EdgeInsets.all(16),
+        decoration: BoxDecoration(
+          color: Colors.white,
+          borderRadius: BorderRadius.circular(12),
+          boxShadow: [
+            BoxShadow(
+              color: Colors.grey.withOpacity(0.1),
+              spreadRadius: 1,
+              blurRadius: 4,
+              offset: const Offset(0, 2),
+            ),
+          ],
+        ),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Row(
+              children: [
+                Container(
+                  width: 50,
+                  height: 50,
+                  decoration: BoxDecoration(
+                    color: Colors.orange.withOpacity(0.1),
+                    borderRadius: BorderRadius.circular(8),
+                  ),
+                  child: _getEventIcon(event.primarySport),
+                ),
+                const SizedBox(width: 12),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        event.name,
+                        style: const TextStyle(
+                          fontSize: 16,
+                          fontWeight: FontWeight.bold,
+                          color: Colors.black,
+                        ),
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                      ),
+                      const SizedBox(height: 4),
+                      Text(
+                        event.dateRange,
+                        style: TextStyle(
+                          fontSize: 14,
+                          color: Colors.grey[600],
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+                Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                  decoration: BoxDecoration(
+                    color: event.isUpcoming ? Colors.blue.withOpacity(0.1) : 
+                          event.isOngoing ? Colors.green.withOpacity(0.1) : Colors.grey.withOpacity(0.1),
+                    borderRadius: BorderRadius.circular(20),
+                  ),
+                  child: Text(
+                    event.isUpcoming ? 'Upcoming' : 
+                    event.isOngoing ? 'Active' : 'Ended',
+                    style: TextStyle(
+                      fontSize: 12,
+                      color: event.isUpcoming ? Colors.blue : 
+                             event.isOngoing ? Colors.green : Colors.grey,
+                      fontWeight: FontWeight.w500,
+                    ),
+                  ),
+                ),
+              ],
+            ),
+            if (event.description.isNotEmpty) ...[
+              const SizedBox(height: 12),
+              Text(
+                event.description,
+                style: TextStyle(
+                  fontSize: 14,
+                  color: Colors.grey[700],
+                  height: 1.4,
+                ),
+                maxLines: 2,
+                overflow: TextOverflow.ellipsis,
+              ),
+            ],
+            const SizedBox(height: 12),
+            Row(
+              children: [
+                Icon(
+                  Icons.people,
+                  size: 16,
+                  color: Colors.grey[600],
+                ),
+                const SizedBox(width: 4),
+                Text(
+                  '${event.participantCount} participants',
+                  style: TextStyle(
+                    fontSize: 12,
+                    color: Colors.grey[600],
+                  ),
+                ),
+                const Spacer(),
+                // Join/Leave button
+                _buildJoinButton(event),
+              ],
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Future<void> _toggleEventJoin(Event event) async {
+    final currentUserId = _eventsService.currentUserId;
+    if (currentUserId == null) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Please log in to join events'),
+          backgroundColor: Colors.red,
+        ),
+      );
+      return;
+    }
+    
+    final isJoined = event.participants.contains(currentUserId);
+    
+    try {
+      if (isJoined) {
+        // Leave event
+        await _eventsService.leaveEvent(event.id);
+        
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Left "${event.name}" successfully'),
+            backgroundColor: Colors.orange,
+          ),
+        );
+      } else {
+        // Join event
+        bool success = await _eventsService.joinEvent(event.id);
+        if (success) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text('Joined "${event.name}" successfully!'),
+              backgroundColor: Colors.green,
+            ),
+          );
+        } else {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text('Failed to join "${event.name}"'),
+              backgroundColor: Colors.red,
+            ),
+          );
+        }
+      }
+      
+      // Refresh the team events to update participant count and join state
+      await _loadTeamEvents();
+      
+    } catch (e) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text('Error: $e'),
+          backgroundColor: Colors.red,
+        ),
+      );
+    }
+  }
+
+  Widget _buildJoinButton(Event event) {
+    final currentUserId = _eventsService.currentUserId;
+    final isJoined = currentUserId != null && event.participants.contains(currentUserId);
+    
+    return GestureDetector(
+      onTap: () => _toggleEventJoin(event),
+      behavior: HitTestBehavior.opaque, // Prevent event bubbling to parent
+      child: Container(
+        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+        decoration: BoxDecoration(
+          color: isJoined ? Colors.red.withOpacity(0.1) : Colors.orange,
+          borderRadius: BorderRadius.circular(20),
+          border: isJoined ? Border.all(color: Colors.red, width: 1) : null,
+        ),
+        child: Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Icon(
+              isJoined ? Icons.exit_to_app : Icons.add,
+              size: 16,
+              color: isJoined ? Colors.red : Colors.white,
+            ),
+            const SizedBox(width: 4),
+            Text(
+              isJoined ? 'Leave' : 'Join Event',
+              style: TextStyle(
+                fontSize: 12,
+                color: isJoined ? Colors.red : Colors.white,
+                fontWeight: FontWeight.w600,
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _getEventIcon(String sportType) {
+    IconData iconData;
+    switch (sportType.toLowerCase()) {
+      case 'run':
+        iconData = Icons.directions_run;
+        break;
+      case 'ride':
+        iconData = Icons.directions_bike;
+        break;
+      case 'swim':
+        iconData = Icons.pool;
+        break;
+      case 'walk':
+        iconData = Icons.directions_walk;
+        break;
+      case 'hike':
+        iconData = Icons.hiking;
+        break;
+      default:
+        iconData = Icons.sports;
+    }
+    return Icon(
+      iconData,
+      size: 28,
+      color: Colors.orange,
     );
   }
 
@@ -383,7 +754,7 @@ class _TeamDetailsPageState extends State<TeamDetailsPage> {
               const SizedBox(height: 8),
               Text('Members: ${currentTeamData.memberCount}'),
               const SizedBox(height: 8),
-              const Text('Events: 0'),
+              Text('Events: ${_teamEvents.length}'),
               const SizedBox(height: 8),
               Text('Created: ${currentTeamData.createdAt.toString().split(' ')[0]}'),
               if (currentTeamData.description.isNotEmpty) ...[
@@ -509,7 +880,7 @@ class _TeamDetailsPageState extends State<TeamDetailsPage> {
           child: Container(
             padding: const EdgeInsets.all(16),
             constraints: BoxConstraints(
-              maxHeight: MediaQuery.of(context).size.height * 0.3,
+              maxHeight: MediaQuery.of(context).size.height * 0.45,
               maxWidth: MediaQuery.of(context).size.width * 0.9,
             ),
             child: Column(
@@ -517,8 +888,15 @@ class _TeamDetailsPageState extends State<TeamDetailsPage> {
               crossAxisAlignment: CrossAxisAlignment.center,
               children: [
                 Row(
-                  mainAxisAlignment: MainAxisAlignment.end,
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
+                    const Text(
+                      'Share Team',
+                      style: TextStyle(
+                        fontSize: 20,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
                     IconButton(
                       icon: const Icon(Icons.close),
                       onPressed: () {
@@ -527,39 +905,127 @@ class _TeamDetailsPageState extends State<TeamDetailsPage> {
                     ),
                   ],
                 ),
-                const SizedBox(height: 16),
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                  children: [
-                    // Copy to Clipboard option
-                    _buildShareOption(
-                      icon: Icons.copy, 
-                      label: 'Copy to\nClipboard', 
-                      backgroundColor: const Color(0xFFF2F2F0),
-                      onTap: () {
-                        // Generate a link for the current team
-                        String teamLink = 'https://wiseworkout.com/teams/${currentTeamData.name.replaceAll(' ', '_').toLowerCase()}';
-                        
-                        // Copy to clipboard
-                        // In a real app, you would use package:flutter/services.dart to access the clipboard
-                        Navigator.of(context).pop();
-                        ScaffoldMessenger.of(context).showSnackBar(
-                          SnackBar(content: Text('Team link copied to clipboard: $teamLink')),
-                        );
-                      }
+                const SizedBox(height: 8),
+                Text(
+                  'Choose your preferred sharing method:',
+                  style: TextStyle(
+                    fontSize: 14,
+                    color: Colors.grey[600],
+                  ),
+                  textAlign: TextAlign.center,
+                ),
+                const SizedBox(height: 20),
+                
+                // Quick Copy - Direct App Link (Most Direct)
+                SizedBox(
+                  width: double.infinity,
+                  child: ElevatedButton.icon(
+                    icon: const Icon(Icons.open_in_new, color: Colors.white),
+                    label: const Text('Copy Direct App Link', style: TextStyle(color: Colors.white, fontSize: 16)),
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: Colors.blue,
+                      padding: const EdgeInsets.symmetric(vertical: 15),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(12),
+                      ),
                     ),
-                    
-                    // Share To option
-                    _buildShareOption(
-                      icon: Icons.share, 
-                      label: 'Share\nTo', 
-                      backgroundColor: const Color(0xFFF2F2F0),
-                      onTap: () {
-                        Navigator.of(context).pop();
-                        _showSocialShareDialog();
-                      }
+                    onPressed: () async {
+                      Navigator.of(context).pop();
+                      await _generateAndCopyClickableLink();
+                    },
+                  ),
+                ),
+                
+                const SizedBox(height: 8),
+                Text(
+                  'Opens directly in app (recommended)',
+                  style: TextStyle(
+                    fontSize: 12,
+                    color: Colors.grey[500],
+                    fontStyle: FontStyle.italic,
+                  ),
+                  textAlign: TextAlign.center,
+                ),
+                
+                const SizedBox(height: 16),
+                
+                // Alternative Clickable HTTPS Link Option
+                SizedBox(
+                  width: double.infinity,
+                  child: OutlinedButton.icon(
+                    icon: Icon(Icons.link, color: Theme.of(context).primaryColor),
+                    label: const Text('Copy Invitation Message', style: TextStyle(fontSize: 14)),
+                    style: OutlinedButton.styleFrom(
+                      padding: const EdgeInsets.symmetric(vertical: 14),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(12),
+                      ),
+                      side: BorderSide(color: Theme.of(context).primaryColor),
+                    ),
+                    onPressed: () async {
+                      Navigator.of(context).pop();
+                      await _generateAndCopyShareMessage();
+                    },
+                  ),
+                ),
+                
+                const SizedBox(height: 8),
+                Text(
+                  'Formatted message with team invitation and instructions',
+                  style: TextStyle(
+                    fontSize: 12,
+                    color: Colors.grey[500],
+                    fontStyle: FontStyle.italic,
+                  ),
+                  textAlign: TextAlign.center,
+                ),
+                
+                const SizedBox(height: 16),
+                
+                // Additional Options Row
+                Row(
+                  children: [
+                    Expanded(
+                      child: OutlinedButton.icon(
+                        icon: const Icon(Icons.share, size: 18),
+                        label: const Text('Social Media', style: TextStyle(fontSize: 12)),
+                        style: OutlinedButton.styleFrom(
+                          padding: const EdgeInsets.symmetric(vertical: 12),
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(8),
+                          ),
+                        ),
+                        onPressed: () async {
+                          Navigator.of(context).pop();
+                          await _showShareOptionsDialog();
+                        },
+                      ),
                     ),
                   ],
+                ),
+                
+                const SizedBox(height: 16),
+                Container(
+                  padding: const EdgeInsets.all(12),
+                  decoration: BoxDecoration(
+                    color: Colors.blue.withOpacity(0.1),
+                    borderRadius: BorderRadius.circular(8),
+                  ),
+                  child: Row(
+                    children: [
+                      Icon(Icons.info_outline, size: 16, color: Colors.blue[600]),
+                      const SizedBox(width: 8),
+                      Expanded(
+                        child: Text(
+                          'Clickable Link works on all messaging platforms and opens the app automatically.',
+                          style: TextStyle(
+                            fontSize: 12,
+                            color: Colors.blue[700],
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
                 ),
               ],
             ),
@@ -569,7 +1035,227 @@ class _TeamDetailsPageState extends State<TeamDetailsPage> {
     );
   }
 
-  void _showSocialShareDialog() {
+  Future<void> _generateAndCopyClickableLink() async {
+    try {
+      // Show loading
+      showDialog(
+        context: context,
+        barrierDismissible: false,
+        builder: (context) => const Center(
+          child: CircularProgressIndicator(),
+        ),
+      );
+
+      // Generate direct app link
+      final directAppLink = await _teamsService.generateTeamLink(currentTeamData.id);
+      
+      // Close loading dialog
+      Navigator.of(context).pop();
+      
+      // Copy to clipboard
+      await Clipboard.setData(ClipboardData(text: directAppLink));
+      
+      // Show success message with link preview
+      _showLinkCopiedDialog('Direct App Link', directAppLink, 
+        'This link opens directly in the Wise Workout app. Share it with team members who have the app installed.');
+    } catch (e) {
+      if (Navigator.canPop(context)) {
+        Navigator.of(context).pop();
+      }
+      
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text('Error generating direct app link: $e'),
+          backgroundColor: Colors.red,
+        ),
+      );
+    }
+  }
+
+  Future<void> _generateAndCopyShareMessage() async {
+    try {
+      // Show loading
+      showDialog(
+        context: context,
+        barrierDismissible: false,
+        builder: (context) => const Center(
+          child: CircularProgressIndicator(),
+        ),
+      );
+
+      // Generate share message with instructions
+      final shareMessage = await _teamsService.generateWebCompatibleLink(currentTeamData.id);
+      
+      // Close loading dialog
+      Navigator.of(context).pop();
+      
+      // Copy to clipboard
+      await Clipboard.setData(ClipboardData(text: shareMessage));
+      
+      // Show success message with link preview
+      _showLinkCopiedDialog('Team Invitation', shareMessage, 
+        'Complete formatted message with team invitation. Recipients can tap the link to open the app.');
+    } catch (e) {
+      if (Navigator.canPop(context)) {
+        Navigator.of(context).pop();
+      }
+      
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text('Error generating team invitation: $e'),
+          backgroundColor: Colors.red,
+        ),
+      );
+    }
+  }
+
+  Future<void> _showShareOptionsDialog() async {
+    try {
+      // Show loading
+      showDialog(
+        context: context,
+        barrierDismissible: false,
+        builder: (context) => const Center(
+          child: CircularProgressIndicator(),
+        ),
+      );
+
+      // Generate clickable link for sharing (most compatible)
+      final shareLink = await _teamsService.generateTeamLink(currentTeamData.id);
+      
+      // Close loading dialog
+      Navigator.of(context).pop();
+      
+      // Show social sharing dialog
+      _showSocialShareDialog(shareLink);
+    } catch (e) {
+      if (Navigator.canPop(context)) {
+        Navigator.of(context).pop();
+      }
+      
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text('Error preparing share options: $e'),
+          backgroundColor: Colors.red,
+        ),
+      );
+    }
+  }
+
+  void _showLinkCopiedDialog(String linkType, String link, String description) {
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: Row(
+          children: [
+            const Icon(Icons.check_circle, color: Colors.green),
+            const SizedBox(width: 8),
+            Text('$linkType Copied!'),
+          ],
+        ),
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(description),
+            const SizedBox(height: 16),
+            Container(
+              padding: const EdgeInsets.all(12),
+              decoration: BoxDecoration(
+                color: Colors.grey[100],
+                borderRadius: BorderRadius.circular(8),
+                border: Border.all(color: Colors.grey[300]!),
+              ),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Row(
+                    children: [
+                      const Icon(Icons.link, size: 16, color: Colors.purple),
+                      const SizedBox(width: 8),
+                      Text(
+                        linkType,
+                        style: const TextStyle(
+                          fontWeight: FontWeight.bold,
+                          color: Colors.purple,
+                        ),
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 8),
+                  SelectableText(
+                    link,
+                    style: TextStyle(
+                      fontSize: 12,
+                      color: Colors.grey[700],
+                      fontFamily: 'monospace',
+                    ),
+                  ),
+                ],
+              ),
+            ),
+            const SizedBox(height: 12),
+            Row(
+              children: [
+                const Icon(Icons.info_outline, size: 16, color: Colors.blue),
+                const SizedBox(width: 8),
+                Expanded(
+                  child: Text(
+                    'Link copied to clipboard. Paste it anywhere to share!',
+                    style: TextStyle(
+                      fontSize: 12,
+                      color: Colors.blue[700],
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          ],
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context),
+            child: const Text('Close'),
+          ),
+          ElevatedButton(
+            onPressed: () async {
+              Navigator.pop(context);
+              await _testLink(link);
+            },
+            style: ElevatedButton.styleFrom(
+              backgroundColor: Colors.purple,
+            ),
+            child: const Text('Test Link', style: TextStyle(color: Colors.white)),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Future<void> _testLink(String link) async {
+    try {
+      final uri = Uri.parse(link);
+      if (await canLaunchUrl(uri)) {
+        await launchUrl(uri, mode: LaunchMode.externalApplication);
+      } else {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('Cannot test this link on this device'),
+            backgroundColor: Colors.orange,
+          ),
+        );
+      }
+    } catch (e) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text('Error testing link: $e'),
+          backgroundColor: Colors.red,
+        ),
+      );
+    }
+  }
+
+  void _showSocialShareDialog(String teamLink) {
     showDialog(
       context: context,
       builder: (BuildContext context) {
@@ -580,7 +1266,7 @@ class _TeamDetailsPageState extends State<TeamDetailsPage> {
           child: Container(
             padding: const EdgeInsets.all(16),
             constraints: BoxConstraints(
-              maxHeight: MediaQuery.of(context).size.height * 0.5,
+              maxHeight: MediaQuery.of(context).size.height * 0.6,
               maxWidth: MediaQuery.of(context).size.width * 0.9,
             ),
             child: Column(
@@ -588,10 +1274,40 @@ class _TeamDetailsPageState extends State<TeamDetailsPage> {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 const Text(
-                  'Share via',
+                  'Share Team Invite',
                   style: TextStyle(
                     fontSize: 24,
                     fontWeight: FontWeight.bold,
+                  ),
+                ),
+                const SizedBox(height: 16),
+                Container(
+                  padding: const EdgeInsets.all(12),
+                  decoration: BoxDecoration(
+                    color: Colors.grey[100],
+                    borderRadius: BorderRadius.circular(8),
+                  ),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        'Team: ${currentTeamData.name}',
+                        style: const TextStyle(fontWeight: FontWeight.bold),
+                      ),
+                      const SizedBox(height: 8),
+                      const Text(
+                        'Invite Link:',
+                        style: TextStyle(fontWeight: FontWeight.w500),
+                      ),
+                      const SizedBox(height: 4),
+                      SelectableText(
+                        teamLink,
+                        style: const TextStyle(
+                          color: Colors.purple,
+                          fontSize: 12,
+                        ),
+                      ),
+                    ],
                   ),
                 ),
                 const SizedBox(height: 24),
@@ -606,9 +1322,7 @@ class _TeamDetailsPageState extends State<TeamDetailsPage> {
                       textColor: Colors.white,
                       onTap: () {
                         Navigator.of(context).pop();
-                        ScaffoldMessenger.of(context).showSnackBar(
-                          const SnackBar(content: Text('Team shared to X (Twitter)')),
-                        );
+                        _shareToSocialMedia('X', teamLink);
                       }
                     ),
                     _buildSocialMediaButton(
@@ -619,9 +1333,7 @@ class _TeamDetailsPageState extends State<TeamDetailsPage> {
                       textColor: Colors.white,
                       onTap: () {
                         Navigator.of(context).pop();
-                        ScaffoldMessenger.of(context).showSnackBar(
-                          const SnackBar(content: Text('Team shared to Facebook')),
-                        );
+                        _shareToSocialMedia('Facebook', teamLink);
                       }
                     ),
                     _buildSocialMediaButton(
@@ -632,9 +1344,7 @@ class _TeamDetailsPageState extends State<TeamDetailsPage> {
                       textColor: Colors.white,
                       onTap: () {
                         Navigator.of(context).pop();
-                        ScaffoldMessenger.of(context).showSnackBar(
-                          const SnackBar(content: Text('Team shared to WhatsApp')),
-                        );
+                        _shareToSocialMedia('WhatsApp', teamLink);
                       }
                     ),
                     _buildSocialMediaButton(
@@ -644,9 +1354,7 @@ class _TeamDetailsPageState extends State<TeamDetailsPage> {
                       textColor: Colors.white,
                       onTap: () {
                         Navigator.of(context).pop();
-                        ScaffoldMessenger.of(context).showSnackBar(
-                          const SnackBar(content: Text('Team shared to Instagram')),
-                        );
+                        _shareToSocialMedia('Instagram', teamLink);
                       }
                     ),
                     _buildSocialMediaButton(
@@ -657,9 +1365,7 @@ class _TeamDetailsPageState extends State<TeamDetailsPage> {
                       textColor: Colors.white,
                       onTap: () {
                         Navigator.of(context).pop();
-                        ScaffoldMessenger.of(context).showSnackBar(
-                          const SnackBar(content: Text('Team shared via Messages')),
-                        );
+                        _shareToSocialMedia('Messages', teamLink);
                       }
                     ),
                     _buildSocialMediaButton(
@@ -670,10 +1376,35 @@ class _TeamDetailsPageState extends State<TeamDetailsPage> {
                       textColor: Colors.white,
                       onTap: () {
                         Navigator.of(context).pop();
-                        ScaffoldMessenger.of(context).showSnackBar(
-                          const SnackBar(content: Text('Team shared via Email')),
-                        );
+                        _shareToSocialMedia('Email', teamLink);
                       }
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 16),
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.end,
+                  children: [
+                    TextButton(
+                      onPressed: () => Navigator.of(context).pop(),
+                      child: const Text('Close'),
+                    ),
+                    const SizedBox(width: 8),
+                    ElevatedButton(
+                      onPressed: () async {
+                        Navigator.of(context).pop();
+                        await Clipboard.setData(ClipboardData(text: teamLink));
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          const SnackBar(
+                            content: Text('Team invite link copied to clipboard!'),
+                            backgroundColor: Colors.green,
+                          ),
+                        );
+                      },
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: Colors.purple,
+                      ),
+                      child: const Text('Copy Link', style: TextStyle(color: Colors.white)),
                     ),
                   ],
                 ),
@@ -685,30 +1416,104 @@ class _TeamDetailsPageState extends State<TeamDetailsPage> {
     );
   }
 
-  Widget _buildShareOption({
-    required IconData icon, 
-    required String label, 
-    required VoidCallback onTap,
-    required Color backgroundColor,
-  }) {
-    return InkWell(
-      onTap: onTap,
-      child: Column(
-        children: [
-          Container(
-            width: 70,
-            height: 70,
-            decoration: BoxDecoration(
-              color: backgroundColor,
-              shape: BoxShape.circle,
+  void _shareToSocialMedia(String platform, String teamLink) {
+    // Create a more engaging share message
+    final shareText = '''🏃‍♂️ Join my team "${currentTeamData.name}" on Wise Workout!
+
+💪 Let's crush our fitness goals together!
+
+Click the link below to join:
+$teamLink
+
+#WiseWorkout #FitnessTeam #WorkoutTogether''';
+    
+    // Show platform-specific sharing
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text('Ready to share to $platform'),
+        backgroundColor: Colors.green,
+        duration: const Duration(seconds: 4),
+        action: SnackBarAction(
+          label: 'Copy Message',
+          textColor: Colors.white,
+          onPressed: () async {
+            await Clipboard.setData(ClipboardData(text: shareText));
+            ScaffoldMessenger.of(context).showSnackBar(
+              const SnackBar(
+                content: Text('Complete share message copied! The link will be clickable when pasted.'),
+                backgroundColor: Colors.blue,
+              ),
+            );
+          },
+        ),
+      ),
+    );
+
+    // Also show the sharing preview
+    _showSharePreview(platform, shareText, teamLink);
+  }
+
+  void _showSharePreview(String platform, String shareText, String teamLink) {
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: Text('Share to $platform'),
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            const Text(
+              'Preview of your share message:',
+              style: TextStyle(fontWeight: FontWeight.bold),
             ),
-            child: Icon(icon, size: 30, color: Colors.black87),
+            const SizedBox(height: 12),
+            Container(
+              padding: const EdgeInsets.all(12),
+              decoration: BoxDecoration(
+                color: Colors.grey[100],
+                borderRadius: BorderRadius.circular(8),
+              ),
+              child: Text(
+                shareText,
+                style: const TextStyle(fontSize: 14),
+              ),
+            ),
+            const SizedBox(height: 16),
+            Row(
+              children: [
+                const Icon(Icons.info_outline, size: 16, color: Colors.blue),
+                const SizedBox(width: 8),
+                Expanded(
+                  child: Text(
+                    'The link will be clickable when shared on $platform',
+                    style: TextStyle(
+                      fontSize: 12,
+                      color: Colors.blue[700],
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          ],
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context),
+            child: const Text('Close'),
           ),
-          const SizedBox(height: 8),
-          Text(
-            label,
-            textAlign: TextAlign.center,
-            style: const TextStyle(fontSize: 14),
+          ElevatedButton(
+            onPressed: () async {
+              Navigator.pop(context);
+              await Clipboard.setData(ClipboardData(text: shareText));
+              ScaffoldMessenger.of(context).showSnackBar(
+                const SnackBar(
+                  content: Text('Share message copied to clipboard!'),
+                  backgroundColor: Colors.green,
+                ),
+              );
+            },
+            style: ElevatedButton.styleFrom(backgroundColor: Colors.purple),
+            child: const Text('Copy Message', style: TextStyle(color: Colors.white)),
           ),
         ],
       ),

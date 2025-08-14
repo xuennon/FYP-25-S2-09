@@ -67,20 +67,26 @@ class LeaderboardService {
         Map<String, dynamic> data = doc.data() as Map<String, dynamic>;
         EventLeaderboard leaderboard = EventLeaderboard.fromMap(data);
         
-        // Filter entries to only include current participants
-        List<LeaderboardEntry> filteredEntries = leaderboard.entries
-            .where((entry) => currentParticipants.contains(entry.userId))
-            .toList();
-        
-        print('📊 Total entries: ${leaderboard.entries.length}, Filtered entries: ${filteredEntries.length}');
+        // Filter entries to only include current participants (if participants list exists)
+        List<LeaderboardEntry> filteredEntries;
+        if (currentParticipants.isNotEmpty) {
+          filteredEntries = leaderboard.entries
+              .where((entry) => currentParticipants.contains(entry.userId))
+              .toList();
+          print('📊 Total entries: ${leaderboard.entries.length}, Filtered entries: ${filteredEntries.length}');
+        } else {
+          // If no participants list found, show all entries (fallback for null event data)
+          filteredEntries = leaderboard.entries;
+          print('📊 No participants filter applied, showing all ${filteredEntries.length} entries');
+        }
         
         // Create filtered leaderboard with current event metric info
         EventLeaderboard filteredLeaderboard = EventLeaderboard(
           eventId: leaderboard.eventId,
           entries: filteredEntries,
           lastUpdated: leaderboard.lastUpdated,
-          primaryMetric: primaryMetric,
-          isLowerBetter: isLowerBetter,
+          primaryMetric: primaryMetric ?? 'distance', // Default to distance if null
+          isLowerBetter: isLowerBetter ?? false, // Default to higher is better
         );
         
         print('✅ Found leaderboard with ${filteredLeaderboard.entries.length} active entries');

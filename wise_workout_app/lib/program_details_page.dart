@@ -196,23 +196,23 @@ class _ProgramDetailsPageState extends State<ProgramDetailsPage> {
                   borderRadius: BorderRadius.circular(8),
                   border: Border.all(color: Colors.orange.withOpacity(0.3)),
                 ),
-                child: Column(
+                child: const Column(
                   children: [
                     Icon(
                       Icons.star,
                       color: Colors.orange,
                       size: 24,
                     ),
-                    const SizedBox(height: 8),
-                    const Text(
+                    SizedBox(height: 8),
+                    Text(
                       'Upgrade to Premium',
                       style: TextStyle(
                         fontWeight: FontWeight.bold,
                         fontSize: 16,
                       ),
                     ),
-                    const SizedBox(height: 4),
-                    const Text(
+                    SizedBox(height: 4),
+                    Text(
                       'Get unlimited favorites and more features!',
                       textAlign: TextAlign.center,
                       style: TextStyle(fontSize: 14),

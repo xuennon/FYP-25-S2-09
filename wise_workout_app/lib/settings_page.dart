@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'integration_page.dart';
 import 'services/firebase_subscription_service.dart';
 import 'subscription_page.dart';
+import 'current_subscription_page.dart';
 
 class SettingsPage extends StatefulWidget {
   const SettingsPage({super.key});
@@ -11,7 +12,6 @@ class SettingsPage extends StatefulWidget {
 }
 
 class _SettingsPageState extends State<SettingsPage> {
-  bool privacyModeEnabled = false;
   String selectedLanguage = 'English';
   String currentPlan = 'Free';
   bool isLoadingSubscription = true;
@@ -63,19 +63,6 @@ class _SettingsPageState extends State<SettingsPage> {
       body: ListView(
         padding: const EdgeInsets.all(16),
         children: [
-          _buildSectionHeader('Privacy'),
-          _buildSwitchTile(
-            title: 'Private Account',
-            subtitle: 'Only followers can see your posts',
-            value: privacyModeEnabled,
-            onChanged: (value) {
-              setState(() {
-                privacyModeEnabled = value;
-              });
-            },
-          ),
-          
-          const SizedBox(height: 24),
           _buildSectionHeader('General'),
           _buildSettingsTile(
             title: 'Your Workout Fitness Subscription',
@@ -146,30 +133,6 @@ class _SettingsPageState extends State<SettingsPage> {
           fontWeight: FontWeight.bold,
           color: Colors.black87,
         ),
-      ),
-    );
-  }
-
-  Widget _buildSwitchTile({
-    required String title,
-    required String subtitle,
-    required bool value,
-    required ValueChanged<bool> onChanged,
-  }) {
-    return Card(
-      margin: const EdgeInsets.only(bottom: 8),
-      child: SwitchListTile(
-        title: Text(
-          title,
-          style: const TextStyle(
-            fontWeight: FontWeight.w500,
-            fontSize: 16,
-          ),
-        ),
-        subtitle: Text(subtitle),
-        value: value,
-        onChanged: onChanged,
-        activeColor: Colors.blue,
       ),
     );
   }
@@ -384,9 +347,20 @@ class _SettingsPageState extends State<SettingsPage> {
             ElevatedButton(
               onPressed: () {
                 Navigator.of(context).pop();
-                _navigateToSubscriptionPage().then((_) {
-                  _loadSubscriptionStatus();
-                });
+                if (currentPlan == 'Premium') {
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (context) => const CurrentSubscriptionPage(),
+                    ),
+                  ).then((_) {
+                    _loadSubscriptionStatus();
+                  });
+                } else {
+                  _navigateToSubscriptionPage().then((_) {
+                    _loadSubscriptionStatus();
+                  });
+                }
               },
               style: ElevatedButton.styleFrom(
                 backgroundColor: Colors.purple,

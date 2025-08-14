@@ -61,18 +61,6 @@ class IntegrationPage extends StatelessWidget {
               );
             },
           ),
-          
-          const SizedBox(height: 32),
-          _buildSectionHeader('Devices'),
-          const SizedBox(height: 8),
-          _buildDeviceTile(
-            icon: Icons.watch,
-            title: 'Connect a device',
-            subtitle: 'Upload directly to wise workout from a third party device',
-            onTap: () {
-              // Handle device connection
-            },
-          ),
         ],
       ),
     );
@@ -136,46 +124,4 @@ class IntegrationPage extends StatelessWidget {
     );
   }
 
-  Widget _buildDeviceTile({
-    required IconData icon,
-    required String title,
-    required String subtitle,
-    required VoidCallback onTap,
-  }) {
-    return Container(
-      margin: const EdgeInsets.only(bottom: 8),
-      child: ListTile(
-        contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-        leading: Container(
-          width: 50,
-          height: 50,
-          decoration: BoxDecoration(
-            shape: BoxShape.circle,
-            color: Colors.grey[100],
-          ),
-          child: Icon(
-            icon,
-            color: Colors.grey[700],
-            size: 28,
-          ),
-        ),
-        title: Text(
-          title,
-          style: const TextStyle(
-            fontWeight: FontWeight.w600,
-            fontSize: 16,
-            color: Colors.black87,
-          ),
-        ),
-        subtitle: Text(
-          subtitle,
-          style: TextStyle(
-            fontSize: 14,
-            color: Colors.grey[600],
-          ),
-        ),
-        onTap: onTap,
-      ),
-    );
-  }
 }
