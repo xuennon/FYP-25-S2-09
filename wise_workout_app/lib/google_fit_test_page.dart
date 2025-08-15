@@ -35,7 +35,7 @@ class _GoogleFitTestPageState extends State<GoogleFitTestPage> {
     });
 
     try {
-      print('🚀 Starting Google Fit connection test');
+      print('🚀 Starting Google Fit connection');
       final bool success = await _googleFitService.connectToGoogleFit();
       
       setState(() {
@@ -81,7 +81,7 @@ class _GoogleFitTestPageState extends State<GoogleFitTestPage> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Google Fit Test'),
+        title: const Text('Google Fit'),
         backgroundColor: Colors.blue,
         foregroundColor: Colors.white,
       ),
@@ -91,7 +91,7 @@ class _GoogleFitTestPageState extends State<GoogleFitTestPage> {
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
             const Text(
-              'Google Fit Connection Test',
+              'Google Fit Connection',
               style: TextStyle(
                 fontSize: 24,
                 fontWeight: FontWeight.bold,
@@ -124,7 +124,7 @@ class _GoogleFitTestPageState extends State<GoogleFitTestPage> {
               child: _isLoading
                   ? const CircularProgressIndicator(color: Colors.white)
                   : const Text(
-                      'Test Google Fit Connection',
+                      'Google Fit Connection',
                       style: TextStyle(fontSize: 18),
                     ),
             ),
@@ -132,7 +132,7 @@ class _GoogleFitTestPageState extends State<GoogleFitTestPage> {
             const SizedBox(height: 20),
             
             const Text(
-              'Instructions:\n\n1. Tap "Test Google Fit Connection"\n2. Sign in with your Google account\n3. Grant fitness permissions\n4. Check if fitness data is retrieved:\n   • Step count\n   • Calories burned\n   • Distance traveled\n   • Move minutes\n   • Average heart rate',
+              'Instructions:\n\n1. Tap "Google Fit Connection"\n2. Sign in with your Google account\n3. Grant fitness permissions\n4. Check if fitness data is retrieved:\n   • Step count\n   • Calories burned\n   • Distance traveled\n   • Move minutes\n   • Average heart rate',
               style: TextStyle(fontSize: 14, color: Colors.grey),
             ),
           ],

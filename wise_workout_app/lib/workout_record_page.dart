@@ -132,7 +132,7 @@ class _WorkoutRecordPageState extends State<WorkoutRecordPage> {
               Text('Calories: $_calories kcal'),
               const SizedBox(height: 10),
               const Text(
-                '✅ Saved to Firebase and synced to leaderboards!',
+                '✅ Synced to leaderboards!',
                 style: TextStyle(color: Colors.green),
               ),
             ],

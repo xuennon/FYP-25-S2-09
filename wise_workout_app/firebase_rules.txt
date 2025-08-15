@@ -1,0 +1,62 @@
+// Add these rules to your Firebase Firestore Security Rules
+// Go to Firebase Console -> Firestore Database -> Rules and add this:
+
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    // Users collection - users can read/write their own data
+    match /users/{userId} {
+      allow read, write: if request.auth != null && request.auth.uid == userId;
+      
+      // Following subcollection
+      match /following/{followId} {
+        allow read, write: if request.auth != null && request.auth.uid == userId;
+      }
+      
+      // Followers subcollection  
+      match /followers/{followerId} {
+        allow read, write: if request.auth != null;
+        allow create: if request.auth != null && request.auth.uid == request.resource.data.userId;
+      }
+    }
+    
+    // Posts collection - authenticated users can read all posts and interact
+    match /posts/{postId} {
+      allow read: if request.auth != null;
+      allow create: if request.auth != null && 
+        request.auth.uid == request.resource.data.userId;
+      
+      // Allow post owner full control
+      allow update, delete: if request.auth != null && 
+        request.auth.uid == resource.data.userId;
+      
+      // Allow all authenticated users to update posts for likes and comments
+      // This is safe because the app logic controls what fields are updated
+      allow update: if request.auth != null;
+    }
+    
+    // Events collection - events created by business users
+    match /events/{eventId} {
+      // Allow all authenticated users to read events
+      allow read: if request.auth != null;
+      
+      // Allow business users to create events
+      // Note: Business user creation should be handled by admin/backend
+      allow create: if request.auth != null;
+      
+      // Allow business users to update/delete their own events
+      // Handle both uid (business format) and businessId (mobile format)
+      allow update, delete: if request.auth != null && 
+        (request.auth.uid == resource.data.uid || 
+         request.auth.uid == resource.data.businessId);
+      
+      // Allow all authenticated users to join/leave events (update participants)
+      allow update: if request.auth != null;
+    }
+    
+    // Allow users to read other users' basic info for search
+    match /users/{userId} {
+      allow read: if request.auth != null;
+    }
+  }
+}

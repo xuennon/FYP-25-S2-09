@@ -3,6 +3,8 @@ import 'package:flutter/services.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:url_launcher/url_launcher.dart';
+import 'package:app_links/app_links.dart';
+import 'dart:async';
 import 'firebase_options.dart';
 import 'user_home_page.dart';
 import 'services/firebase_auth_service.dart';
@@ -10,11 +12,165 @@ import 'services/user_profile_service.dart';
 import 'services/firebase_user_profile_service.dart';
 import 'services/firebase_teams_service.dart';
 import 'team_details_page.dart';
+import 'discovered_team_details_page.dart';
 import 'models/team.dart';
 import 'reset_password_page.dart';
 
 // Global navigation key for deep linking
 final GlobalKey<NavigatorState> navigatorKey = GlobalKey<NavigatorState>();
+
+// Global function to handle deep links from anywhere in the app
+void handleGlobalDeepLink(String link) {
+  print('🌐 Global deep link handler called with: $link');
+  
+  // Extract team link token from URL
+  final uri = Uri.parse(link);
+  String? linkToken;
+  
+  // Debug: Print URI components
+  print('🔍 Global URI Debug:');
+  print('   Scheme: ${uri.scheme}');
+  print('   Host: ${uri.host}');
+  print('   Path: ${uri.path}');
+  print('   PathSegments: ${uri.pathSegments}');
+  print('   PathSegments length: ${uri.pathSegments.length}');
+  if (uri.pathSegments.isNotEmpty) {
+    print('   First path segment: "${uri.pathSegments[0]}"');
+    if (uri.pathSegments.length > 1) {
+      print('   Second path segment: "${uri.pathSegments[1]}"');
+    }
+  }
+  
+  // Handle different URL formats
+  if (uri.scheme == 'wiseworkout' && uri.host == 'team' && uri.pathSegments.isNotEmpty) {
+    // Custom scheme: wiseworkout://team/TOKEN (host is 'team', path is '/TOKEN')
+    linkToken = uri.pathSegments[0];
+    print('🔗 Found custom scheme token: $linkToken');
+  } else if (uri.scheme == 'https') {
+    if (uri.host == 'wiseworkout.app' && uri.pathSegments.length >= 2 && uri.pathSegments[0] == 'join') {
+      // New HTTPS format: https://wiseworkout.app/join/TOKEN
+      linkToken = uri.pathSegments[1];
+      print('🔗 Found wiseworkout.app token: $linkToken');
+    } else if (uri.host == 'fyp-25-s2-09.web.app' && uri.pathSegments.length >= 2 && uri.pathSegments[0] == 'join') {
+      // Firebase hosting format: https://fyp-25-s2-09.web.app/join/TOKEN
+      linkToken = uri.pathSegments[1];
+      print('🔗 Found Firebase hosting token: $linkToken');
+    } else if (uri.host == 'wiseworkout.app' && uri.path.startsWith('/join-team')) {
+      // Legacy HTTPS format: https://wiseworkout.app/join-team?token=TOKEN
+      linkToken = uri.queryParameters['token'];
+      print('🔗 Found legacy query token: $linkToken');
+    } else if (uri.host == 'wiseworkout.com' && uri.pathSegments.length >= 2 && uri.pathSegments[0] == 'team') {
+      // Legacy format: https://wiseworkout.com/team/TOKEN
+      linkToken = uri.pathSegments[1];
+      print('🔗 Found wiseworkout.com token: $linkToken');
+    }
+  }
+  
+  if (linkToken != null) {
+    print('✅ Extracted link token: $linkToken');
+    _handleGlobalTeamLink(linkToken);
+  } else {
+    print('❌ No valid link token found in: $link');
+  }
+}
+
+// Global function to handle team links
+Future<void> _handleGlobalTeamLink(String linkToken) async {
+  print('🔗 Processing team link globally with token: $linkToken');
+  
+  try {
+    // Check if user is authenticated
+    final user = FirebaseAuth.instance.currentUser;
+    if (user == null) {
+      print('⚠️ User not authenticated, redirecting to login');
+      navigatorKey.currentState?.pushAndRemoveUntil(
+        MaterialPageRoute(builder: (context) => const LoginPage()),
+        (route) => false,
+      );
+      return;
+    }
+
+    final teamsService = FirebaseTeamsService();
+    print('🔍 Fetching team info from token...');
+    final linkInfo = await teamsService.getTeamFromLink(linkToken);
+    
+    if (linkInfo != null) {
+      print('✅ Team info retrieved successfully');
+      final teamData = linkInfo['teamData'] as Map<String, dynamic>;
+      final teamId = linkInfo['teamId'] as String;
+      final isAlreadyMember = linkInfo['isAlreadyMember'] as bool;
+      
+      print('📋 Team Details:');
+      print('   - Team ID: $teamId');
+      print('   - Team Name: ${teamData['name']}');
+      print('   - Is Already Member: $isAlreadyMember');
+      
+      if (isAlreadyMember) {
+        print('👤 User is already a member - navigating to TeamDetailsPage');
+        // User is already a member - navigate to TeamDetailsPage
+        final teamObject = Team.fromMap(teamData, teamId);
+        // First navigate to UserHomePage as base, then push TeamDetailsPage
+        navigatorKey.currentState?.pushAndRemoveUntil(
+          MaterialPageRoute(builder: (context) => const UserHomePage()),
+          (route) => false,
+        );
+        navigatorKey.currentState?.push(
+          MaterialPageRoute(
+            builder: (context) => TeamDetailsPage(teamData: teamObject),
+          ),
+        );
+      } else {
+        print('🆕 User is not a member - navigating to DiscoveredTeamDetailsPage');
+        // User is not a member - navigate to DiscoveredTeamDetailsPage
+        final teamDataMap = <String, String>{
+          'id': teamId,
+          'name': teamData['name']?.toString() ?? 'Unknown Team',
+          'description': teamData['description']?.toString() ?? '',
+          'members': (teamData['members'] as List<dynamic>?)?.length.toString() ?? '0',
+        };
+        
+        print('📝 Team Data Map: $teamDataMap');
+        
+        // First navigate to UserHomePage as base, then push DiscoveredTeamDetailsPage
+        navigatorKey.currentState?.pushAndRemoveUntil(
+          MaterialPageRoute(builder: (context) => const UserHomePage()),
+          (route) => false,
+        );
+        navigatorKey.currentState?.push(
+          MaterialPageRoute(
+            builder: (context) => DiscoveredTeamDetailsPage(
+              teamData: teamDataMap,
+              initialJoinedState: false,
+            ),
+          ),
+        );
+      }
+      print('✅ Navigation completed successfully');
+    } else {
+      print('❌ No team info returned - invalid or expired link');
+      final context = navigatorKey.currentContext;
+      if (context != null) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('Invalid or expired team invite link'),
+            backgroundColor: Colors.red,
+          ),
+        );
+      }
+    }
+  } catch (e) {
+    print('❌ Error handling global team link: $e');
+    final context = navigatorKey.currentContext;
+    if (context != null) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text('Error opening team link: $e'),
+          backgroundColor: Colors.red,
+        ),
+      );
+    }
+  }
+}
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -33,11 +189,15 @@ class MyApp extends StatefulWidget {
 
 class _MyAppState extends State<MyApp> {
   String? _pendingTeamLink;
+  StreamSubscription<Uri>? _linkStreamSubscription;
+  late AppLinks _appLinks;
 
   @override
   void initState() {
     super.initState();
+    _appLinks = AppLinks();
     _initializeDeepLinking();
+    _setupAppLinksListening();
   }
 
   void _initializeDeepLinking() {
@@ -45,38 +205,103 @@ class _MyAppState extends State<MyApp> {
     FirebaseAuth.instance.authStateChanges().listen((User? user) {
       if (user != null && _pendingTeamLink != null) {
         // User is authenticated, handle the pending team link
+        print('🔗 User authenticated, processing pending link: $_pendingTeamLink');
         _handleTeamLink(_pendingTeamLink!);
         _pendingTeamLink = null;
       }
     });
   }
 
+  void _setupAppLinksListening() async {
+    try {
+      // Listen for deep links when app is running
+      _linkStreamSubscription = _appLinks.uriLinkStream.listen((Uri uri) {
+        print('📱 Received deep link while app is running: $uri');
+        handleIncomingLink(uri.toString());
+      }, onError: (err) {
+        print('❌ Deep link stream error: $err');
+      });
+
+      // Get initial link when app is opened from a link
+      final Uri? initialUri = await _appLinks.getInitialLink();
+      if (initialUri != null) {
+        print('📱 App opened with initial link: $initialUri');
+        handleIncomingLink(initialUri.toString());
+      }
+    } on PlatformException catch (e) {
+      print('❌ Error setting up deep link listening: $e');
+    } catch (e) {
+      print('❌ Unexpected error in deep link setup: $e');
+    }
+  }
+
+  @override
+  void dispose() {
+    _linkStreamSubscription?.cancel();
+    super.dispose();
+  }
+
   Future<void> _handleTeamLink(String linkToken) async {
+    print('🔗 Handling team link with token: $linkToken');
     try {
       final teamsService = FirebaseTeamsService();
+      print('🔍 Fetching team info from token...');
       final linkInfo = await teamsService.getTeamFromLink(linkToken);
       
       if (linkInfo != null) {
-        // Create Team object from the team data
-        final teamData = Team.fromMap(linkInfo['teamData'], linkInfo['teamId']);
+        print('✅ Team info retrieved successfully');
+        final teamData = linkInfo['teamData'] as Map<String, dynamic>;
+        final teamId = linkInfo['teamId'] as String;
+        final isAlreadyMember = linkInfo['isAlreadyMember'] as bool;
         
-        // Navigate to team details page
-        navigatorKey.currentState?.pushAndRemoveUntil(
-          MaterialPageRoute(
-            builder: (context) => TeamDetailsPage(teamData: teamData),
-          ),
-          (route) => false,
-        );
+        print('📋 Team Details:');
+        print('   - Team ID: $teamId');
+        print('   - Team Name: ${teamData['name']}');
+        print('   - Is Already Member: $isAlreadyMember');
         
-        // If user is not already a member, show join dialog
-        if (!linkInfo['isAlreadyMember']) {
-          await Future.delayed(const Duration(milliseconds: 500));
-          final context = navigatorKey.currentContext;
-          if (context != null) {
-            _showJoinTeamDialog(context, teamData, linkToken);
-          }
+        if (isAlreadyMember) {
+          print('👤 User is already a member - navigating to TeamDetailsPage');
+          // User is already a member - navigate to TeamDetailsPage
+          final teamObject = Team.fromMap(teamData, teamId);
+          // First navigate to UserHomePage as base, then push TeamDetailsPage
+          navigatorKey.currentState?.pushAndRemoveUntil(
+            MaterialPageRoute(builder: (context) => const UserHomePage()),
+            (route) => false,
+          );
+          navigatorKey.currentState?.push(
+            MaterialPageRoute(
+              builder: (context) => TeamDetailsPage(teamData: teamObject),
+            ),
+          );
+        } else {
+          print('🆕 User is not a member - navigating to DiscoveredTeamDetailsPage');
+          // User is not a member - navigate to DiscoveredTeamDetailsPage
+          final teamDataMap = <String, String>{
+            'id': teamId,
+            'name': teamData['name']?.toString() ?? 'Unknown Team',
+            'description': teamData['description']?.toString() ?? '',
+            'members': (teamData['members'] as List<dynamic>?)?.length.toString() ?? '0',
+          };
+          
+          print('📝 Team Data Map: $teamDataMap');
+          
+          // First navigate to UserHomePage as base, then push DiscoveredTeamDetailsPage
+          navigatorKey.currentState?.pushAndRemoveUntil(
+            MaterialPageRoute(builder: (context) => const UserHomePage()),
+            (route) => false,
+          );
+          navigatorKey.currentState?.push(
+            MaterialPageRoute(
+              builder: (context) => DiscoveredTeamDetailsPage(
+                teamData: teamDataMap,
+                initialJoinedState: false,
+              ),
+            ),
+          );
         }
+        print('✅ Navigation completed successfully');
       } else {
+        print('❌ No team info returned - invalid or expired link');
         // Show error for invalid link
         final context = navigatorKey.currentContext;
         if (context != null) {
@@ -102,134 +327,62 @@ class _MyAppState extends State<MyApp> {
     }
   }
 
-  void _showJoinTeamDialog(BuildContext context, Team teamData, String linkToken) {
-    showDialog(
-      context: context,
-      builder: (BuildContext context) {
-        return AlertDialog(
-          title: Text('Join ${teamData.name}?'),
-          content: Column(
-            mainAxisSize: MainAxisSize.min,
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              const Text('You\'ve been invited to join this team:'),
-              const SizedBox(height: 8),
-              Container(
-                padding: const EdgeInsets.all(12),
-                decoration: BoxDecoration(
-                  color: Colors.purple.withOpacity(0.1),
-                  borderRadius: BorderRadius.circular(8),
-                ),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      teamData.name,
-                      style: const TextStyle(
-                        fontWeight: FontWeight.bold,
-                        fontSize: 16,
-                      ),
-                    ),
-                    if (teamData.description.isNotEmpty) ...[
-                      const SizedBox(height: 4),
-                      Text(
-                        teamData.description,
-                        style: TextStyle(color: Colors.grey[600]),
-                      ),
-                    ],
-                    const SizedBox(height: 8),
-                    Text('Members: ${teamData.members.length}'),
-                  ],
-                ),
-              ),
-            ],
-          ),
-          actions: [
-            TextButton(
-              onPressed: () {
-                Navigator.of(context).pop();
-              },
-              child: const Text('Cancel'),
-            ),
-            ElevatedButton(
-              onPressed: () async {
-                Navigator.of(context).pop();
-                
-                // Show loading
-                showDialog(
-                  context: context,
-                  barrierDismissible: false,
-                  builder: (context) => const Center(
-                    child: CircularProgressIndicator(),
-                  ),
-                );
-                
-                try {
-                  final teamsService = FirebaseTeamsService();
-                  final result = await teamsService.joinTeamThroughLink(linkToken);
-                  
-                  Navigator.of(context).pop(); // Close loading dialog
-                  
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    SnackBar(
-                      content: Text(result['message']),
-                      backgroundColor: result['success'] ? Colors.green : Colors.red,
-                    ),
-                  );
-                } catch (e) {
-                  Navigator.of(context).pop(); // Close loading dialog
-                  
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    SnackBar(
-                      content: Text('Error joining team: $e'),
-                      backgroundColor: Colors.red,
-                    ),
-                  );
-                }
-              },
-              style: ElevatedButton.styleFrom(
-                backgroundColor: Colors.purple,
-              ),
-              child: const Text('Join Team', style: TextStyle(color: Colors.white)),
-            ),
-          ],
-        );
-      },
-    );
-  }
-
   // Method to handle incoming deep links from external sources
   void handleIncomingLink(String link) {
+    print('🔗 Processing incoming link: $link');
+    
     // Extract team link token from URL
     final uri = Uri.parse(link);
     String? linkToken;
     
+    // Debug: Print URI components
+    print('🔍 URI Debug:');
+    print('   Scheme: ${uri.scheme}');
+    print('   Host: ${uri.host}');
+    print('   Path: ${uri.path}');
+    print('   PathSegments: ${uri.pathSegments}');
+    print('   PathSegments length: ${uri.pathSegments.length}');
+    if (uri.pathSegments.isNotEmpty) {
+      print('   First path segment: "${uri.pathSegments[0]}"');
+      if (uri.pathSegments.length > 1) {
+        print('   Second path segment: "${uri.pathSegments[1]}"');
+      }
+    }
+    
     // Handle different URL formats
-    if (uri.scheme == 'wiseworkout' && uri.pathSegments.length >= 2 && uri.pathSegments[0] == 'team') {
-      // Custom scheme: wiseworkout://team/TOKEN
-      linkToken = uri.pathSegments[1];
+    if (uri.scheme == 'wiseworkout' && uri.host == 'team' && uri.pathSegments.isNotEmpty) {
+      // Custom scheme: wiseworkout://team/TOKEN (host is 'team', path is '/TOKEN')
+      linkToken = uri.pathSegments[0];
+      print('🔗 Found custom scheme token: $linkToken');
     } else if (uri.scheme == 'https') {
       if (uri.host == 'wiseworkout.app' && uri.pathSegments.length >= 2 && uri.pathSegments[0] == 'join') {
         // New HTTPS format: https://wiseworkout.app/join/TOKEN
         linkToken = uri.pathSegments[1];
-      } else if (uri.host == 'wise-workout.web.app' && uri.pathSegments.length >= 2 && uri.pathSegments[0] == 'join') {
-        // Firebase hosting format: https://wise-workout.web.app/join/TOKEN
+        print('🔗 Found wiseworkout.app token: $linkToken');
+      } else if (uri.host == 'fyp-25-s2-09.web.app' && uri.pathSegments.length >= 2 && uri.pathSegments[0] == 'join') {
+        // Firebase hosting format: https://fyp-25-s2-09.web.app/join/TOKEN
         linkToken = uri.pathSegments[1];
+        print('🔗 Found Firebase hosting token: $linkToken');
       } else if (uri.host == 'wiseworkout.app' && uri.path.startsWith('/join-team')) {
         // Legacy HTTPS format: https://wiseworkout.app/join-team?token=TOKEN
         linkToken = uri.queryParameters['token'];
+        print('🔗 Found legacy query token: $linkToken');
       } else if (uri.host == 'wiseworkout.com' && uri.pathSegments.length >= 2 && uri.pathSegments[0] == 'team') {
         // Legacy format: https://wiseworkout.com/team/TOKEN
         linkToken = uri.pathSegments[1];
+        print('🔗 Found wiseworkout.com token: $linkToken');
       }
     }
     
     if (linkToken != null) {
+      print('✅ Extracted link token: $linkToken');
       // Check if user is authenticated
       final user = FirebaseAuth.instance.currentUser;
       if (user != null) {
+        print('✅ User is authenticated, handling team link immediately');
         _handleTeamLink(linkToken);
       } else {
+        print('⚠️ User not authenticated, storing link for later');
         // Store the link to handle after authentication
         _pendingTeamLink = linkToken;
         // Navigate to login page
@@ -238,6 +391,8 @@ class _MyAppState extends State<MyApp> {
           (route) => false,
         );
       }
+    } else {
+      print('❌ No valid link token found in: $link');
     }
   }
 

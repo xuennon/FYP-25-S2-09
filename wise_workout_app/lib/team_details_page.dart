@@ -706,26 +706,6 @@ class _TeamDetailsPageState extends State<TeamDetailsPage> {
             mainAxisSize: MainAxisSize.min,
             children: [
               ListTile(
-                leading: const Icon(Icons.edit),
-                title: const Text('Edit Team Info'),
-                onTap: () {
-                  Navigator.pop(context);
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    const SnackBar(content: Text('Edit team info coming soon!')),
-                  );
-                },
-              ),
-              ListTile(
-                leading: const Icon(Icons.person_add),
-                title: const Text('Invite Members'),
-                onTap: () {
-                  Navigator.pop(context);
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    const SnackBar(content: Text('Invite members coming soon!')),
-                  );
-                },
-              ),
-              ListTile(
                 leading: const Icon(Icons.delete, color: Colors.red),
                 title: const Text('Delete Team', style: TextStyle(color: Colors.red)),
                 onTap: () {
@@ -880,13 +860,13 @@ class _TeamDetailsPageState extends State<TeamDetailsPage> {
           child: Container(
             padding: const EdgeInsets.all(16),
             constraints: BoxConstraints(
-              maxHeight: MediaQuery.of(context).size.height * 0.45,
+              maxHeight: MediaQuery.of(context).size.height * 0.7,
               maxWidth: MediaQuery.of(context).size.width * 0.9,
             ),
             child: Column(
               mainAxisSize: MainAxisSize.min,
-              crossAxisAlignment: CrossAxisAlignment.center,
               children: [
+                // Fixed Header
                 Row(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
@@ -905,126 +885,137 @@ class _TeamDetailsPageState extends State<TeamDetailsPage> {
                     ),
                   ],
                 ),
-                const SizedBox(height: 8),
-                Text(
-                  'Choose your preferred sharing method:',
-                  style: TextStyle(
-                    fontSize: 14,
-                    color: Colors.grey[600],
-                  ),
-                  textAlign: TextAlign.center,
-                ),
-                const SizedBox(height: 20),
-                
-                // Quick Copy - Direct App Link (Most Direct)
-                SizedBox(
-                  width: double.infinity,
-                  child: ElevatedButton.icon(
-                    icon: const Icon(Icons.open_in_new, color: Colors.white),
-                    label: const Text('Copy Direct App Link', style: TextStyle(color: Colors.white, fontSize: 16)),
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: Colors.blue,
-                      padding: const EdgeInsets.symmetric(vertical: 15),
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(12),
-                      ),
-                    ),
-                    onPressed: () async {
-                      Navigator.of(context).pop();
-                      await _generateAndCopyClickableLink();
-                    },
-                  ),
-                ),
-                
-                const SizedBox(height: 8),
-                Text(
-                  'Opens directly in app (recommended)',
-                  style: TextStyle(
-                    fontSize: 12,
-                    color: Colors.grey[500],
-                    fontStyle: FontStyle.italic,
-                  ),
-                  textAlign: TextAlign.center,
-                ),
-                
-                const SizedBox(height: 16),
-                
-                // Alternative Clickable HTTPS Link Option
-                SizedBox(
-                  width: double.infinity,
-                  child: OutlinedButton.icon(
-                    icon: Icon(Icons.link, color: Theme.of(context).primaryColor),
-                    label: const Text('Copy Invitation Message', style: TextStyle(fontSize: 14)),
-                    style: OutlinedButton.styleFrom(
-                      padding: const EdgeInsets.symmetric(vertical: 14),
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(12),
-                      ),
-                      side: BorderSide(color: Theme.of(context).primaryColor),
-                    ),
-                    onPressed: () async {
-                      Navigator.of(context).pop();
-                      await _generateAndCopyShareMessage();
-                    },
-                  ),
-                ),
-                
-                const SizedBox(height: 8),
-                Text(
-                  'Formatted message with team invitation and instructions',
-                  style: TextStyle(
-                    fontSize: 12,
-                    color: Colors.grey[500],
-                    fontStyle: FontStyle.italic,
-                  ),
-                  textAlign: TextAlign.center,
-                ),
-                
-                const SizedBox(height: 16),
-                
-                // Additional Options Row
-                Row(
-                  children: [
-                    Expanded(
-                      child: OutlinedButton.icon(
-                        icon: const Icon(Icons.share, size: 18),
-                        label: const Text('Social Media', style: TextStyle(fontSize: 12)),
-                        style: OutlinedButton.styleFrom(
-                          padding: const EdgeInsets.symmetric(vertical: 12),
-                          shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(8),
+                // Scrollable Content
+                Flexible(
+                  child: SingleChildScrollView(
+                    child: Column(
+                      mainAxisSize: MainAxisSize.min,
+                      crossAxisAlignment: CrossAxisAlignment.center,
+                      children: [
+                        const SizedBox(height: 8),
+                        Text(
+                          'Choose your preferred sharing method:',
+                          style: TextStyle(
+                            fontSize: 14,
+                            color: Colors.grey[600],
+                          ),
+                          textAlign: TextAlign.center,
+                        ),
+                        const SizedBox(height: 16),
+                        
+                        // Quick Copy - Direct App Link (Most Direct)
+                        SizedBox(
+                          width: double.infinity,
+                          child: ElevatedButton.icon(
+                            icon: const Icon(Icons.open_in_new, color: Colors.white),
+                            label: const Text('Copy Link', style: TextStyle(color: Colors.white, fontSize: 14)),
+                            style: ElevatedButton.styleFrom(
+                              backgroundColor: Colors.blue,
+                              padding: const EdgeInsets.symmetric(vertical: 15),
+                              shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(12),
+                              ),
+                            ),
+                            onPressed: () async {
+                              Navigator.of(context).pop();
+                              await _generateAndCopyClickableLink();
+                            },
                           ),
                         ),
-                        onPressed: () async {
-                          Navigator.of(context).pop();
-                          await _showShareOptionsDialog();
-                        },
-                      ),
-                    ),
-                  ],
-                ),
-                
-                const SizedBox(height: 16),
-                Container(
-                  padding: const EdgeInsets.all(12),
-                  decoration: BoxDecoration(
-                    color: Colors.blue.withOpacity(0.1),
-                    borderRadius: BorderRadius.circular(8),
-                  ),
-                  child: Row(
-                    children: [
-                      Icon(Icons.info_outline, size: 16, color: Colors.blue[600]),
-                      const SizedBox(width: 8),
-                      Expanded(
-                        child: Text(
-                          'Clickable Link works on all messaging platforms and opens the app automatically.',
+                        
+                        const SizedBox(height: 6),
+                        Text(
+                          'Opens directly in app (recommended)',
                           style: TextStyle(
                             fontSize: 12,
-                            color: Colors.blue[700],
+                            color: Colors.grey[500],
+                            fontStyle: FontStyle.italic,
+                          ),
+                          textAlign: TextAlign.center,
+                        ),
+                        
+                        const SizedBox(height: 12),
+                        
+                        // Alternative Clickable HTTPS Link Option
+                        SizedBox(
+                          width: double.infinity,
+                          child: OutlinedButton.icon(
+                            icon: Icon(Icons.link, color: Theme.of(context).primaryColor),
+                            label: const Text('Copy Message', style: TextStyle(fontSize: 14)),
+                            style: OutlinedButton.styleFrom(
+                              padding: const EdgeInsets.symmetric(vertical: 14),
+                              shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(12),
+                              ),
+                              side: BorderSide(color: Theme.of(context).primaryColor),
+                            ),
+                            onPressed: () async {
+                              Navigator.of(context).pop();
+                              await _generateAndCopyShareMessage();
+                            },
                           ),
                         ),
-                      ),
-                    ],
+                        
+                        const SizedBox(height: 6),
+                        Text(
+                          'Complete team invitation with clickable link',
+                          style: TextStyle(
+                            fontSize: 12,
+                            color: Colors.grey[500],
+                            fontStyle: FontStyle.italic,
+                          ),
+                          textAlign: TextAlign.center,
+                        ),
+                        
+                        const SizedBox(height: 12),
+                        
+                        // Additional Options Row
+                        Row(
+                          children: [
+                            Expanded(
+                              child: OutlinedButton.icon(
+                                icon: const Icon(Icons.share, size: 18),
+                                label: const Text('Social Media', style: TextStyle(fontSize: 12)),
+                                style: OutlinedButton.styleFrom(
+                                  padding: const EdgeInsets.symmetric(vertical: 12),
+                                  shape: RoundedRectangleBorder(
+                                    borderRadius: BorderRadius.circular(8),
+                                  ),
+                                ),
+                                onPressed: () async {
+                                  Navigator.of(context).pop();
+                                  await _showShareOptionsDialog();
+                                },
+                              ),
+                            ),
+                          ],
+                        ),
+                        
+                        const SizedBox(height: 12),
+                        Container(
+                          padding: const EdgeInsets.all(12),
+                          decoration: BoxDecoration(
+                            color: Colors.blue.withOpacity(0.1),
+                            borderRadius: BorderRadius.circular(8),
+                          ),
+                          child: Row(
+                            children: [
+                              Icon(Icons.info_outline, size: 16, color: Colors.blue[600]),
+                              const SizedBox(width: 8),
+                              Expanded(
+                                child: Text(
+                                  'Clickable Link works on all messaging platforms and opens the app automatically.',
+                                  style: TextStyle(
+                                    fontSize: 12,
+                                    color: Colors.blue[700],
+                                  ),
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                      ],
+                    ),
                   ),
                 ),
               ],
@@ -1046,18 +1037,18 @@ class _TeamDetailsPageState extends State<TeamDetailsPage> {
         ),
       );
 
-      // Generate direct app link
-      final directAppLink = await _teamsService.generateTeamLink(currentTeamData.id);
+      // Generate clickable Firebase Hosting link (HTTPS URL)
+      final clickableLink = await _teamsService.generateWebCompatibleLink(currentTeamData.id);
       
       // Close loading dialog
       Navigator.of(context).pop();
       
       // Copy to clipboard
-      await Clipboard.setData(ClipboardData(text: directAppLink));
+      await Clipboard.setData(ClipboardData(text: clickableLink));
       
       // Show success message with link preview
-      _showLinkCopiedDialog('Direct App Link', directAppLink, 
-        'This link opens directly in the Wise Workout app. Share it with team members who have the app installed.');
+      _showLinkCopiedDialog('Clickable Team Link', clickableLink, 
+        'This HTTPS link is clickable everywhere and will automatically open the app when tapped.');
     } catch (e) {
       if (Navigator.canPop(context)) {
         Navigator.of(context).pop();
@@ -1065,7 +1056,7 @@ class _TeamDetailsPageState extends State<TeamDetailsPage> {
       
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
-          content: Text('Error generating direct app link: $e'),
+          content: Text('Error generating clickable link: $e'),
           backgroundColor: Colors.red,
         ),
       );
@@ -1083,18 +1074,28 @@ class _TeamDetailsPageState extends State<TeamDetailsPage> {
         ),
       );
 
-      // Generate share message with instructions
-      final shareMessage = await _teamsService.generateWebCompatibleLink(currentTeamData.id);
+      // Generate clickable Firebase Hosting link
+      final clickableLink = await _teamsService.generateWebCompatibleLink(currentTeamData.id);
+      
+      // Create a formatted invitation message with the clickable link
+      final formattedMessage = '''🏃‍♂️ Join my team "${currentTeamData.name}" on Wise Workout!
+
+💪 Let's crush our fitness goals together!
+
+Tap this link to join:
+$clickableLink
+
+#WiseWorkout #FitnessTeam #WorkoutTogether''';
       
       // Close loading dialog
       Navigator.of(context).pop();
       
       // Copy to clipboard
-      await Clipboard.setData(ClipboardData(text: shareMessage));
+      await Clipboard.setData(ClipboardData(text: formattedMessage));
       
       // Show success message with link preview
-      _showLinkCopiedDialog('Team Invitation', shareMessage, 
-        'Complete formatted message with team invitation. Recipients can tap the link to open the app.');
+      _showLinkCopiedDialog('Team Invitation Message', formattedMessage, 
+        'Complete formatted message with clickable link. Perfect for sharing on social media or messaging apps.');
     } catch (e) {
       if (Navigator.canPop(context)) {
         Navigator.of(context).pop();
@@ -1120,8 +1121,8 @@ class _TeamDetailsPageState extends State<TeamDetailsPage> {
         ),
       );
 
-      // Generate clickable link for sharing (most compatible)
-      final shareLink = await _teamsService.generateTeamLink(currentTeamData.id);
+      // Generate clickable HTTPS link for sharing (most compatible and clickable)
+      final shareLink = await _teamsService.generateWebCompatibleLink(currentTeamData.id);
       
       // Close loading dialog
       Navigator.of(context).pop();
@@ -1150,67 +1151,80 @@ class _TeamDetailsPageState extends State<TeamDetailsPage> {
           children: [
             const Icon(Icons.check_circle, color: Colors.green),
             const SizedBox(width: 8),
-            Text('$linkType Copied!'),
+            Expanded(
+              child: Text('$linkType Copied!'),
+            ),
           ],
         ),
-        content: Column(
-          mainAxisSize: MainAxisSize.min,
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Text(description),
-            const SizedBox(height: 16),
-            Container(
-              padding: const EdgeInsets.all(12),
-              decoration: BoxDecoration(
-                color: Colors.grey[100],
-                borderRadius: BorderRadius.circular(8),
-                border: Border.all(color: Colors.grey[300]!),
-              ),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Row(
-                    children: [
-                      const Icon(Icons.link, size: 16, color: Colors.purple),
-                      const SizedBox(width: 8),
-                      Text(
-                        linkType,
-                        style: const TextStyle(
-                          fontWeight: FontWeight.bold,
-                          color: Colors.purple,
+        content: SingleChildScrollView(
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(description),
+              const SizedBox(height: 16),
+              Container(
+                width: double.infinity,
+                padding: const EdgeInsets.all(12),
+                decoration: BoxDecoration(
+                  color: Colors.grey[100],
+                  borderRadius: BorderRadius.circular(8),
+                  border: Border.all(color: Colors.grey[300]!),
+                ),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Row(
+                      children: [
+                        const Icon(Icons.link, size: 16, color: Colors.purple),
+                        const SizedBox(width: 8),
+                        Expanded(
+                          child: Text(
+                            linkType,
+                            style: const TextStyle(
+                              fontWeight: FontWeight.bold,
+                              color: Colors.purple,
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
+                    const SizedBox(height: 8),
+                    Container(
+                      width: double.infinity,
+                      constraints: const BoxConstraints(maxHeight: 100),
+                      child: SingleChildScrollView(
+                        child: SelectableText(
+                          link,
+                          style: TextStyle(
+                            fontSize: 11,
+                            color: Colors.grey[700],
+                            fontFamily: 'monospace',
+                          ),
                         ),
                       ),
-                    ],
-                  ),
-                  const SizedBox(height: 8),
-                  SelectableText(
-                    link,
-                    style: TextStyle(
-                      fontSize: 12,
-                      color: Colors.grey[700],
-                      fontFamily: 'monospace',
+                    ),
+                  ],
+                ),
+              ),
+              const SizedBox(height: 12),
+              Row(
+                children: [
+                  const Icon(Icons.info_outline, size: 16, color: Colors.blue),
+                  const SizedBox(width: 8),
+                  Expanded(
+                    child: Text(
+                      'Link copied to clipboard. Paste it anywhere to share!',
+                      style: TextStyle(
+                        fontSize: 12,
+                        color: Colors.blue[700],
+                      ),
                     ),
                   ),
                 ],
               ),
-            ),
-            const SizedBox(height: 12),
-            Row(
-              children: [
-                const Icon(Icons.info_outline, size: 16, color: Colors.blue),
-                const SizedBox(width: 8),
-                Expanded(
-                  child: Text(
-                    'Link copied to clipboard. Paste it anywhere to share!',
-                    style: TextStyle(
-                      fontSize: 12,
-                      color: Colors.blue[700],
-                    ),
-                  ),
-                ),
-              ],
-            ),
-          ],
+            ],
+          ),
         ),
         actions: [
           TextButton(

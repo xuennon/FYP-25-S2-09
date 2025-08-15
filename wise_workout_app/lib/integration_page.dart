@@ -50,8 +50,8 @@ class IntegrationPage extends StatelessWidget {
           _buildAppTile(
             icon: Icons.bug_report,
             iconColor: Colors.blue,
-            title: 'Test Google Fit Connection',
-            subtitle: 'Debug and test your Google Fit setup',
+            title: 'Google Fit Connection',
+            subtitle: 'Test your Google Fit setup',
             onTap: () {
               Navigator.push(
                 context,

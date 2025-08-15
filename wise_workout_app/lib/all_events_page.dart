@@ -229,30 +229,6 @@ class _AllEventsPageState extends State<AllEventsPage> {
             onPressed: _loadJoinedEvents,
             tooltip: 'Refresh events',
           ),
-          // Debug shortlist button
-          IconButton(
-            icon: const Icon(Icons.bug_report, color: Colors.orange),
-            onPressed: () async {
-              print('🐛 DEBUG: Shortlist State');
-              print('⭐ Local Shortlisted Event IDs: ${_shortlistEventsState.shortlistedEventIds}');
-              print('📅 Joined Events: ${_joinedEvents.length}');
-              print('⭐ Shortlisted Events: ${_shortlistedEvents.length}');
-              for (var event in _shortlistedEvents) {
-                print('  - ${event.name} (${event.id})');
-              }
-              
-              // Debug Firebase sync
-              await _shortlistEventsState.debugFirebaseSync();
-              
-              ScaffoldMessenger.of(context).showSnackBar(
-                SnackBar(
-                  content: Text('${_shortlistedEvents.length} shortlisted events found. Check console for Firebase debug info.'),
-                  backgroundColor: Colors.orange,
-                ),
-              );
-            },
-            tooltip: 'Debug shortlist & Firebase',
-          ),
         ],
       ),
       body: _isLoading

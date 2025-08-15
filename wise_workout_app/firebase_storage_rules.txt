@@ -1,0 +1,59 @@
+// Firebase Storage Security Rules for Wise Workout App
+rules_version = '2';
+service firebase.storage {
+  match /b/{bucket}/o {
+    
+    // User profile images - can be read by anyone, only updated by owner
+    match /profile_images/{userId}/{allPaths=**} {
+      allow read: if true; // Anyone can view profile images
+      allow write: if request.auth != null && request.auth.uid == userId;
+    }
+    
+    // Post images - can be read by anyone, only created by owner
+    match /posts/{userId}/{allPaths=**} {
+      allow read: if true; // Anyone can view post images
+      allow write: if request.auth != null && request.auth.uid == userId;
+    }
+    
+    // Business images - can be read by anyone, only created by business owner
+    match /business/{userId}/{allPaths=**} {
+      allow read: if true; // Anyone can view business images
+      allow write: if request.auth != null && request.auth.uid == userId;
+    }
+    
+    // Event images - can be read by anyone, only created by event creator
+    match /events/{userId}/{allPaths=**} {
+      allow read: if true; // Anyone can view event images
+      allow write: if request.auth != null && request.auth.uid == userId;
+    }
+    
+    // Team images - can be read by anyone, only created by team members
+    match /teams/{teamId}/{allPaths=**} {
+      allow read: if true; // Anyone can view team images
+      allow write: if request.auth != null;
+    }
+    
+    // General uploads - authenticated users only
+    match /uploads/{userId}/{allPaths=**} {
+      allow read: if true; // Anyone can view uploads
+      allow write: if request.auth != null && request.auth.uid == userId;
+    }
+    
+    // Test files (for debugging) - authenticated users only
+    match /test/{allPaths=**} {
+      allow read, write: if request.auth != null;
+    }
+    
+    // File size and type validation for all uploads
+    function isValidImage() {
+      return request.resource.size < 10 * 1024 * 1024 && // Max 10MB
+             request.resource.contentType.matches('image/.*');
+    }
+    
+    // Apply image validation to all image paths
+    match /{allPaths=**} {
+      allow write: if request.auth != null && 
+                      (request.resource.contentType.matches('image/.*') ? isValidImage() : true);
+    }
+  }
+}

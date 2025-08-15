@@ -502,14 +502,6 @@ class _DiscoveredTeamDetailsPageState extends State<DiscoveredTeamDetailsPage> {
                         _showTeamOverview();
                       },
                     ),
-                    const SizedBox(width: 16),
-                    _buildScrollableActionButton(
-                      icon: Icons.bug_report,
-                      label: 'Debug',
-                      onTap: () {
-                        _showDebugInfo();
-                      },
-                    ),
                   ],
                 ),
               ),
@@ -726,64 +718,6 @@ class _DiscoveredTeamDetailsPageState extends State<DiscoveredTeamDetailsPage> {
           ],
         ),
       ),
-    );
-  }
-
-  void _showDebugInfo() {
-    showDialog(
-      context: context,
-      builder: (BuildContext context) {
-        return AlertDialog(
-          title: const Text('Debug Info'),
-          content: SingleChildScrollView(
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text('Team ID: ${widget.teamData['id']}'),
-                Text('Team Name: ${widget.teamData['name']}'),
-                Text('Joined Status: $isJoined'),
-                const SizedBox(height: 16),
-                Text('Events Count: ${_teamEvents.length}'),
-                if (_teamEvents.isNotEmpty) ...[
-                  const SizedBox(height: 8),
-                  const Text('Events:', style: TextStyle(fontWeight: FontWeight.bold)),
-                  ..._teamEvents.map((event) => Padding(
-                    padding: const EdgeInsets.only(left: 16, top: 4),
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text('- ${event.name}'),
-                        Text('  ID: ${event.id}', style: const TextStyle(fontSize: 12, color: Colors.grey)),
-                        Text('  Team ID: ${event.businessId}', style: const TextStyle(fontSize: 12, color: Colors.grey)),
-                        Text('  Is Team Event: ${(event as dynamic).isTeamEvent ?? 'N/A'}', style: const TextStyle(fontSize: 12, color: Colors.grey)),
-                      ],
-                    ),
-                  )).toList(),
-                ],
-              ],
-            ),
-          ),
-          actions: [
-            TextButton(
-              onPressed: () {
-                Navigator.of(context).pop();
-              },
-              child: const Text('Close'),
-            ),
-            TextButton(
-              onPressed: () async {
-                Navigator.of(context).pop();
-                await _loadTeamEvents();
-                ScaffoldMessenger.of(context).showSnackBar(
-                  const SnackBar(content: Text('Events reloaded!')),
-                );
-              },
-              child: const Text('Reload Events'),
-            ),
-          ],
-        );
-      },
     );
   }
 

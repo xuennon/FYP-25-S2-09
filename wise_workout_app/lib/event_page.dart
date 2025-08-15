@@ -21,7 +21,6 @@ import 'joined_events_state.dart';
 import 'all_events_page.dart';
 import 'subscription_page.dart';
 import 'workout_record_page.dart';
-import 'test_programs_page.dart';
 
 class EventPage extends StatefulWidget {
   const EventPage({super.key});
@@ -386,17 +385,6 @@ class _EventPageState extends State<EventPage> with SingleTickerProviderStateMix
                       },
                       tooltip: 'Refresh programs',
                     ),
-                    // Debug button to test connection
-                    IconButton(
-                      icon: const Icon(Icons.bug_report, size: 20, color: Colors.red),
-                      onPressed: () {
-                        Navigator.push(
-                          context,
-                          MaterialPageRoute(builder: (context) => const TestProgramsPage()),
-                        );
-                      },
-                      tooltip: 'Debug Programs',
-                    ),
                   Text(
                     '${_programsService.allPrograms.length} programs',
                     style: TextStyle(
@@ -468,15 +456,6 @@ class _EventPageState extends State<EventPage> with SingleTickerProviderStateMix
                       onPressed: _loadEvents,
                       tooltip: 'Refresh events',
                     ),
-                  // Debug button
-                  IconButton(
-                    icon: const Icon(Icons.bug_report, size: 18),
-                    onPressed: () async {
-                      print('🔍 DEBUG: Manual check triggered');
-                      await _eventsService.debugEventsCollection();
-                    },
-                    tooltip: 'Debug events',
-                  ),
                   Text(
                     '${_eventsService.allEvents.length} events',
                     style: TextStyle(

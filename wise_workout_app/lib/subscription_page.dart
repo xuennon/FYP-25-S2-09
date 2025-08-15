@@ -107,8 +107,6 @@ class _SubscriptionPageState extends State<SubscriptionPage> {
                   _buildFeatureItem('✓ Access to basic workouts', Colors.white),
                   _buildFeatureItem('✓ Limited exercise tracking', Colors.white),
                   _buildFeatureItem('✓ Daily reminders', Colors.white),
-                  _buildFeatureItem('✗ Personalized training', Colors.grey),
-                  _buildFeatureItem('✗ Nutrition planning', Colors.grey),
                   const SizedBox(height: 20),
                   SizedBox(
                     width: double.infinity,
@@ -162,7 +160,7 @@ class _SubscriptionPageState extends State<SubscriptionPage> {
                     text: const TextSpan(
                       children: [
                         TextSpan(
-                          text: '\$5.10',
+                          text: '\$3.90',
                           style: TextStyle(
                             color: Colors.orange,
                             fontSize: 24,
@@ -182,8 +180,9 @@ class _SubscriptionPageState extends State<SubscriptionPage> {
                   const SizedBox(height: 16),
                   _buildFeatureItem('✓ All free features', Colors.white),
                   _buildFeatureItem('✓ Personalized fitness plans', Colors.white),
-                  _buildFeatureItem('✓ Full workout library', Colors.white),
-                  _buildFeatureItem('✓ Progress tracking and analytics', Colors.white),
+                  _buildFeatureItem('✓ Unlimited program subscription', Colors.white),
+                  _buildFeatureItem('✓ Unlimited team member', Colors.white),
+                  _buildFeatureItem('✓ Analytics', Colors.white),
                   const SizedBox(height: 20),
                   SizedBox(
                     width: double.infinity,
@@ -248,7 +247,7 @@ class _SubscriptionPageState extends State<SubscriptionPage> {
           content: Text(
             planType == 'free'
               ? 'You are selecting the Free plan for \$0.00/month. This includes basic workouts and limited features.'
-              : 'You are selecting the Premium plan for \$5.10/month. This includes all features and personalized fitness plans.',
+              : 'You are selecting the Premium plan for \$3.90/month. This includes all features and personalized fitness plans.',
           ),
           actions: [
             TextButton(

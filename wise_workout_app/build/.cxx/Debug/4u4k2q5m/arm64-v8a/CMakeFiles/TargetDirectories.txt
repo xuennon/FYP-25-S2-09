@@ -1,2 +1,0 @@
-C:/Users/lenovo/Program/FYP-25-S2-09-main/wise_workout_app/build/.cxx/Debug/4u4k2q5m/arm64-v8a/CMakeFiles/edit_cache.dir
-C:/Users/lenovo/Program/FYP-25-S2-09-main/wise_workout_app/build/.cxx/Debug/4u4k2q5m/arm64-v8a/CMakeFiles/rebuild_cache.dir

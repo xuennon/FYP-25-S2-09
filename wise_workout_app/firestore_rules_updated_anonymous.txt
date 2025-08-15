@@ -1,0 +1,114 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    
+    // Admin users - manage their own documents
+    match /users/{userId} {
+      allow read, write if request.auth != null && request.auth.uid == userId;
+    }
+
+    // Business users - manage own documents  
+    match /businessUsers/{userId} {
+      allow read, write if request.auth != null && request.auth.uid == userId;
+      allow read if request.auth != null; // Allow users to read business profiles
+    }
+
+    // Regular users
+    match /users/{userId} {
+      allow read, write if request.auth != null && request.auth.uid == userId;
+    }
+
+    // Following/followers (subcollection)
+    match /users/{userId}/following/{followingId} {
+      allow read, write if request.auth != null && request.auth.uid == userId;
+    }
+
+    // Followers (subcollection)
+    match /users/{userId}/followers/{followerId} {
+      allow read, write if request.auth != null && request.auth.uid == userId;
+      allow write if request.auth != null && request.auth.uid == followerId;
+    }
+
+    // Services (training programs) - public readable, creator only writable
+    match /services/{serviceId} {
+      allow read if request.auth != null; // Allow authenticated users (including anonymous)
+      allow write if request.auth != null && 
+        (resource == null || resource.data.createdBy == request.auth.uid);
+    }
+
+    // Social Posts
+    match /posts/{postId} {
+      allow read if request.auth != null; // Require authentication
+      allow create if request.auth != null && request.auth.uid == resource.data.userId;
+      allow update, delete if request.auth != null && request.auth.uid == resource.data.userId;
+    }
+
+    // Comments subcollection under posts
+    match /posts/{postId}/comments/{commentId} {
+      allow read if request.auth != null;
+      allow create if request.auth != null && request.auth.uid == resource.data.userId;
+      allow update, delete if request.auth != null && request.auth.uid == resource.data.userId;
+    }
+
+    // Programs/services - business users can write, all authenticated users can read
+    match /services/{serviceId} {
+      allow read if request.auth != null;
+      allow create, update, delete if request.auth != null && 
+        exists(/databases/$(database)/documents/businessUsers/$(request.auth.uid));
+    }
+
+    // Events - PUBLIC READ with authentication required
+    match /events/{eventId} {
+      allow read if request.auth != null; // Require authentication (including anonymous)
+      allow create if request.auth != null && 
+        exists(/databases/$(database)/documents/businessUsers/$(request.auth.uid));
+      allow update if request.auth != null && (
+        // Allow creator to update everything
+        resource.data.createdBy == request.auth.uid ||
+        // Allow users to join/leave events (only participants field)
+        (request.writeFields.hasOnly(['participants']) && 
+         request.auth.uid != null)
+      );
+      allow delete if request.auth != null && resource.data.createdBy == request.auth.uid;
+    }
+
+    // Leaderboard - business users can write, admins can read
+    match /leaderboard/{userId} {
+      allow read if request.auth != null && 
+        exists(/databases/$(database)/documents/adminUsers/$(request.auth.uid));
+      allow write if request.auth != null && 
+        exists(/databases/$(database)/documents/businessUsers/$(request.auth.uid));
+    }
+
+    // Teams collection - allow authenticated users to read/write
+    match /teams/{teamId} {
+      allow read if request.auth != null;
+      allow create if request.auth != null;
+      allow update if request.auth != null && (
+        resource.data.createdBy == request.auth.uid ||
+        request.auth.uid in resource.data.members
+      );
+      allow delete if request.auth != null && resource.data.createdBy == request.auth.uid;
+    }
+
+    // Fitness Data
+    match /fitnessData/{userId} {
+      allow read, write if request.auth != null && request.auth.uid == userId;
+    }
+
+    // Subscriptions
+    match /subscriptions/{userId} {
+      allow read, write if request.auth != null && request.auth.uid == userId;
+    }
+
+    // User analytics/metrics
+    match /analytics/{userId} {
+      allow read, write if request.auth != null && request.auth.uid == userId;
+    }
+
+    // Default rule: deny everything else
+    match /{document=**} {
+      allow read, write: if false;
+    }
+  }
+}

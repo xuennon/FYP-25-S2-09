@@ -58,6 +58,17 @@
                       android:host="wiseworkout.app" 
                       android:pathPrefix="/join" />
             </intent-filter>
+            
+            <!-- Firebase hosting domain for team invites -->
+            <intent-filter android:autoVerify="false" android:priority="999">
+                <action android:name="android.intent.action.VIEW" />
+                <category android:name="android.intent.category.DEFAULT" />
+                <category android:name="android.intent.category.BROWSABLE" />
+                <!-- Firebase hosting domain -->
+                <data android:scheme="https"
+                      android:host="fyp-25-s2-09.web.app" 
+                      android:pathPrefix="/join" />
+            </intent-filter>
         </activity>
         <!-- Don't delete the meta-data below.
              This is used by the Flutter tool to generate GeneratedPluginRegistrant.java -->

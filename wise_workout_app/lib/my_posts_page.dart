@@ -6,6 +6,7 @@ import 'services/firebase_posts_service.dart';
 import 'widgets/user_avatar.dart';
 import 'widgets/post_image_widget.dart';
 import 'individual_post_page.dart';
+import 'edit_post_page.dart';
 
 class MyPostsPage extends StatefulWidget {
   const MyPostsPage({super.key});
@@ -297,11 +298,20 @@ class _MyPostsPageState extends State<MyPostsPage> {
               ListTile(
                 leading: const Icon(Icons.edit, color: Colors.blue),
                 title: const Text('Edit Post'),
-                onTap: () {
+                onTap: () async {
                   Navigator.pop(context);
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    const SnackBar(content: Text('Edit functionality coming soon!')),
+                  // Navigate to EditPostPage
+                  final result = await Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (context) => EditPostPage(post: post),
+                    ),
                   );
+                  
+                  // If post was updated, refresh the posts list
+                  if (result == true) {
+                    await _loadMyPosts();
+                  }
                 },
               ),
               ListTile(

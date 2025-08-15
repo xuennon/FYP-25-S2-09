@@ -1,0 +1,28 @@
+[
+  {
+    "category": "Crossfit",
+    "createdBy": "ZZQCBD1IPfH3UvUFuSKtl6ew2Y2",
+    "description": "Metcon workouts involve short, high-intensity exercises",
+    "duration": "8 weeks",
+    "name": "Healthline",
+    "imageUrl": "",
+    "features": [],
+    "isActive": true,
+    "createdAt": "2025-01-30T10:00:00Z"
+  },
+  {
+    "category": "Dance - Zumba",
+    "createdBy": "business_456_user_id",
+    "description": "Fun and energetic Zumba dance fitness program with electronic dance music",
+    "duration": "2 weeks", 
+    "name": "Dancing - EDM",
+    "imageUrl": "",
+    "features": [
+      "Live dance sessions",
+      "Music playlist access", 
+      "Choreography tutorials"
+    ],
+    "isActive": true,
+    "createdAt": "2025-01-30T11:00:00Z"
+  }
+]

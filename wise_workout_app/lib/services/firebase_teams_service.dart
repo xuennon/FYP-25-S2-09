@@ -435,24 +435,57 @@ class FirebaseTeamsService extends ChangeNotifier {
   // Generate shareable team link (prioritizes app opening over web)
   Future<String> generateTeamLink(String teamId) async {
     try {
-      final inviteToken = DateTime.now().millisecondsSinceEpoch.toString() + 
-                         teamId.substring(0, 6);
+      // Simplified approach: Check for active tokens without complex query
+      final currentTime = DateTime.now().millisecondsSinceEpoch;
       
-      // Store invite link data in Firebase
-      await _firestore
+      // Query just by teamId and isActive first (simpler index)
+      final existingTokenQuery = await _firestore
         .collection('team_links')
-        .doc(inviteToken)
-        .set({
-          'teamId': teamId,
-          'createdBy': currentUserId,
-          'createdAt': FieldValue.serverTimestamp(),
-          'expiresAt': DateTime.now().add(const Duration(days: 30)).millisecondsSinceEpoch,
-          'isActive': true,
-          'clickCount': 0,
-        });
+        .where('teamId', isEqualTo: teamId)
+        .where('isActive', isEqualTo: true)
+        .get();
+
+      String inviteToken;
       
-      // Use custom scheme - this should open directly in the app
-      return 'wiseworkout://team/$inviteToken';
+      // Filter results in memory to find non-expired tokens
+      final validTokens = existingTokenQuery.docs.where((doc) {
+        final data = doc.data();
+        final expiresAt = data['expiresAt'] as int?;
+        return expiresAt != null && expiresAt > currentTime;
+      }).toList();
+      
+      if (validTokens.isNotEmpty) {
+        // Sort by expiry date (latest first) and reuse the newest valid token
+        validTokens.sort((a, b) {
+          final aExpiry = a.data()['expiresAt'] as int;
+          final bExpiry = b.data()['expiresAt'] as int;
+          return bExpiry.compareTo(aExpiry);
+        });
+        
+        inviteToken = validTokens.first.id;
+        print('♻️ Reusing existing team link token: $inviteToken');
+      } else {
+        // Create new token only if none exists
+        inviteToken = DateTime.now().millisecondsSinceEpoch.toString() + 
+                     teamId.substring(0, 6);
+        
+        // Store new invite link data in Firebase
+        await _firestore
+          .collection('team_links')
+          .doc(inviteToken)
+          .set({
+            'teamId': teamId,
+            'createdBy': currentUserId,
+            'createdAt': FieldValue.serverTimestamp(),
+            'expiresAt': DateTime.now().add(const Duration(days: 30)).millisecondsSinceEpoch,
+            'isActive': true,
+            'clickCount': 0,
+          });
+        print('🆕 Created new team link token: $inviteToken');
+      }
+      
+      // Return HTTPS URL for maximum compatibility and clickability
+      return 'https://fyp-25-s2-09.web.app/join/$inviteToken';
     } catch (e) {
       print('❌ Error generating team link: $e');
       throw Exception('Failed to generate team link');
@@ -462,35 +495,57 @@ class FirebaseTeamsService extends ChangeNotifier {
   // Generate a web-compatible team link as fallback
   Future<String> generateWebCompatibleLink(String teamId) async {
     try {
-      final inviteToken = DateTime.now().millisecondsSinceEpoch.toString() + 
-                         teamId.substring(0, 6);
+      // Simplified approach: Check for active tokens without complex query
+      final currentTime = DateTime.now().millisecondsSinceEpoch;
       
-      // Store invite link data in Firebase
-      await _firestore
+      // Query just by teamId and isActive first (simpler index)
+      final existingTokenQuery = await _firestore
         .collection('team_links')
-        .doc(inviteToken)
-        .set({
-          'teamId': teamId,
-          'createdBy': currentUserId,
-          'createdAt': FieldValue.serverTimestamp(),
-          'expiresAt': DateTime.now().add(const Duration(days: 30)).millisecondsSinceEpoch,
-          'isActive': true,
-          'clickCount': 0,
-        });
+        .where('teamId', isEqualTo: teamId)
+        .where('isActive', isEqualTo: true)
+        .get();
+
+      String inviteToken;
       
-      // Create a formatted message with clickable custom scheme
-      // Most messaging apps will make URLs starting with http/https clickable
-      return '''🏋️‍♂️ Join my Wise Workout team!
-
-Tap this link to open the app:
-wiseworkout://team/$inviteToken
-
-📱 If the link doesn't work:
-1. Make sure you have Wise Workout installed
-2. Copy and manually open: wiseworkout://team/$inviteToken
-3. Or download the app first from your app store
-
-Team invitation expires in 30 days.''';
+      // Filter results in memory to find non-expired tokens
+      final validTokens = existingTokenQuery.docs.where((doc) {
+        final data = doc.data();
+        final expiresAt = data['expiresAt'] as int?;
+        return expiresAt != null && expiresAt > currentTime;
+      }).toList();
+      
+      if (validTokens.isNotEmpty) {
+        // Sort by expiry date (latest first) and reuse the newest valid token
+        validTokens.sort((a, b) {
+          final aExpiry = (a.data())['expiresAt'] as int;
+          final bExpiry = (b.data())['expiresAt'] as int;
+          return bExpiry.compareTo(aExpiry);
+        });
+        
+        inviteToken = validTokens.first.id;
+        print('♻️ Reusing existing web-compatible token: $inviteToken');
+      } else {
+        // Create new token only if none exists
+        inviteToken = DateTime.now().millisecondsSinceEpoch.toString() + 
+                     teamId.substring(0, 6);
+        
+        // Store new invite link data in Firebase
+        await _firestore
+          .collection('team_links')
+          .doc(inviteToken)
+          .set({
+            'teamId': teamId,
+            'createdBy': currentUserId,
+            'createdAt': FieldValue.serverTimestamp(),
+            'expiresAt': DateTime.now().add(const Duration(days: 30)).millisecondsSinceEpoch,
+            'isActive': true,
+            'clickCount': 0,
+          });
+        print('🆕 Created new web-compatible token: $inviteToken');
+      }
+      
+      // Return Firebase Hosting URL that will redirect to the app
+      return 'https://fyp-25-s2-09.web.app/join/$inviteToken';
     } catch (e) {
       print('❌ Error generating web compatible link: $e');
       throw Exception('Failed to generate web compatible link');
@@ -500,21 +555,54 @@ Team invitation expires in 30 days.''';
   // Generate app-specific deep link (for advanced users)
   Future<String> generateAppDeepLink(String teamId) async {
     try {
-      final inviteToken = DateTime.now().millisecondsSinceEpoch.toString() + 
-                         teamId.substring(0, 6);
+      // Simplified approach: Check for active tokens without complex query
+      final currentTime = DateTime.now().millisecondsSinceEpoch;
       
-      // Store invite link data in Firebase (reuse same token)
-      await _firestore
+      // Query just by teamId and isActive first (simpler index)
+      final existingTokenQuery = await _firestore
         .collection('team_links')
-        .doc(inviteToken)
-        .set({
-          'teamId': teamId,
-          'createdBy': currentUserId,
-          'createdAt': FieldValue.serverTimestamp(),
-          'expiresAt': DateTime.now().add(const Duration(days: 30)).millisecondsSinceEpoch,
-          'isActive': true,
-          'clickCount': 0,
+        .where('teamId', isEqualTo: teamId)
+        .where('isActive', isEqualTo: true)
+        .get();
+
+      String inviteToken;
+      
+      // Filter results in memory to find non-expired tokens
+      final validTokens = existingTokenQuery.docs.where((doc) {
+        final data = doc.data();
+        final expiresAt = data['expiresAt'] as int?;
+        return expiresAt != null && expiresAt > currentTime;
+      }).toList();
+      
+      if (validTokens.isNotEmpty) {
+        // Sort by expiry date (latest first) and reuse the newest valid token
+        validTokens.sort((a, b) {
+          final aExpiry = a.data()['expiresAt'] as int;
+          final bExpiry = b.data()['expiresAt'] as int;
+          return bExpiry.compareTo(aExpiry);
         });
+        
+        inviteToken = validTokens.first.id;
+        print('♻️ Reusing existing app deep link token: $inviteToken');
+      } else {
+        // Create new token only if none exists
+        inviteToken = DateTime.now().millisecondsSinceEpoch.toString() + 
+                     teamId.substring(0, 6);
+        
+        // Store new invite link data in Firebase
+        await _firestore
+          .collection('team_links')
+          .doc(inviteToken)
+          .set({
+            'teamId': teamId,
+            'createdBy': currentUserId,
+            'createdAt': FieldValue.serverTimestamp(),
+            'expiresAt': DateTime.now().add(const Duration(days: 30)).millisecondsSinceEpoch,
+            'isActive': true,
+            'clickCount': 0,
+          });
+        print('🆕 Created new app deep link token: $inviteToken');
+      }
       
       // Return custom scheme for direct app opening (less compatible but faster)
       return 'wiseworkout://team/$inviteToken';

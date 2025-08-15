@@ -5,7 +5,6 @@ import 'widgets/user_avatar.dart';
 import 'services/user_profile_service.dart';
 import 'services/firebase_posts_service.dart';
 import 'services/firebase_storage_service.dart';
-import 'test_firebase_storage.dart';
 
 class WritePostPage extends StatefulWidget {
   final Function(Map<String, dynamic>)? onPostCreated;
@@ -94,10 +93,6 @@ class _WritePostPageState extends State<WritePostPage> {
     setState(() {
       _selectedImages.removeAt(index);
     });
-  }
-
-  void _testFirebaseStorage() async {
-    await FirebaseStorageTest.testConnection();
   }
 
   void _publishPost() async {
@@ -424,16 +419,6 @@ class _WritePostPageState extends State<WritePostPage> {
                         onTap: _addImage,
                       ),
                     ],
-                  ),
-                  const SizedBox(height: 16),
-                  // Debug button - remove this after fixing the issue
-                  ElevatedButton(
-                    onPressed: _testFirebaseStorage,
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: Colors.blue,
-                      foregroundColor: Colors.white,
-                    ),
-                    child: const Text('Test Firebase Storage (Debug)'),
                   ),
                 ],
               ),

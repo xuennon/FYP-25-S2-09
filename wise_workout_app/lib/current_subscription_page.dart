@@ -87,7 +87,7 @@ class _CurrentSubscriptionPageState extends State<CurrentSubscriptionPage> {
                       text: TextSpan(
                         children: [
                           TextSpan(
-                            text: currentUserType == 'premium' ? '\$5.10' : '\$0.00',
+                            text: currentUserType == 'premium' ? '\$3.90' : '\$0.00',
                             style: const TextStyle(
                               color: Colors.orange,
                               fontSize: 24,
@@ -108,14 +108,13 @@ class _CurrentSubscriptionPageState extends State<CurrentSubscriptionPage> {
                     if (currentUserType == 'premium') ...[
                       _buildFeatureItem('✓ All free features', Colors.white),
                       _buildFeatureItem('✓ Personalized fitness plans', Colors.white),
-                      _buildFeatureItem('✓ Full workout library', Colors.white),
-                      _buildFeatureItem('✓ Progress tracking and analytics', Colors.white),
+                      _buildFeatureItem('✓ Unlimited program subscription', Colors.white),
+                      _buildFeatureItem('✓ Unlimited team member', Colors.white),
+                      _buildFeatureItem('✓ Analytics', Colors.white),
                     ] else ...[
                       _buildFeatureItem('✓ Access to basic workouts', Colors.white),
                       _buildFeatureItem('✓ Limited exercise tracking', Colors.white),
                       _buildFeatureItem('✓ Daily reminders', Colors.white),
-                      _buildFeatureItem('✗ Personalized training', Colors.grey),
-                      _buildFeatureItem('✗ Nutrition planning', Colors.grey),
                     ],
                     const SizedBox(height: 20),
                     SizedBox(

@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'activity_details_page.dart';
 import 'services/workout_service.dart';
 import 'services/firebase_activities_service.dart';
-import 'services/activity_test_data.dart';
 import 'models/firebase_activity.dart';
 
 class ActivitiesPage extends StatefulWidget {
@@ -133,51 +132,6 @@ class _ActivitiesPageState extends State<ActivitiesPage> with WidgetsBindingObse
         ),
         centerTitle: false,
         actions: [
-          // Debug button to check Firebase connection and data
-          IconButton(
-            icon: const Icon(Icons.bug_report, color: Colors.blue),
-            onPressed: () async {
-              print('🔍 DEBUG: Checking Firebase activities...');
-              print('👤 Current user: ${_firebaseActivitiesService.currentUserId}');
-              
-              // Force reload
-              await _loadActivitiesWithRetry();
-              
-              // Check what we have
-              final activities = _firebaseActivitiesService.userActivities;
-              print('📊 Total activities found: ${activities.length}');
-              
-              for (int i = 0; i < activities.length && i < 3; i++) {
-                final activity = activities[i];
-                print('Activity $i: ${activity.activityType} - ${activity.userName} - ${activity.userId}');
-              }
-              
-              if (mounted) {
-                ScaffoldMessenger.of(context).showSnackBar(
-                  SnackBar(
-                    content: Text('Found ${activities.length} activities. Check console for details.'),
-                    backgroundColor: activities.isEmpty ? Colors.red : Colors.green,
-                  ),
-                );
-              }
-            },
-          ),
-          // Debug button to add sample activities
-          IconButton(
-            icon: const Icon(Icons.add_circle_outline, color: Colors.grey),
-            onPressed: () async {
-              await ActivityTestData.addSampleActivities();
-              await _loadActivitiesWithRetry();
-              if (mounted) {
-                ScaffoldMessenger.of(context).showSnackBar(
-                  const SnackBar(
-                    content: Text('Sample activities added!'),
-                    backgroundColor: Colors.green,
-                  ),
-                );
-              }
-            },
-          ),
           IconButton(
             icon: const Icon(Icons.refresh, color: Colors.black),
             onPressed: () {

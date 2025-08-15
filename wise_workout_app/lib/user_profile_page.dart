@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'services/firebase_friend_service.dart';
-import 'activities_page.dart';
+import 'user_activities_page.dart';
 import 'user_posts_page.dart';
 import 'user_teams_page.dart';
 import 'user_events_page.dart';
@@ -293,19 +293,17 @@ class _UserProfilePageState extends State<UserProfilePage> {
                     icon: Icons.timeline,
                     title: 'Activities',
                     onTap: () {
-                      Navigator.push(
-                        context,
-                        MaterialPageRoute(builder: (context) => const ActivitiesPage()),
-                      );
-                    },
-                  ),
-                  _buildMenuItem(
-                    icon: Icons.bar_chart,
-                    title: 'Statistics',
-                    onTap: () {
-                      ScaffoldMessenger.of(context).showSnackBar(
-                        const SnackBar(content: Text('Statistics coming soon!')),
-                      );
+                      if (_targetUserId != null) {
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder: (context) => UserActivitiesPage(
+                              username: widget.username,
+                              userId: _targetUserId!,
+                            ),
+                          ),
+                        );
+                      }
                     },
                   ),
                   _buildMenuItemWithCount(

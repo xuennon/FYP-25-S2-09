@@ -255,15 +255,6 @@ class _MyProfilePageState extends State<MyProfilePage> {
             },
           ),
           _buildMenuItem(
-            icon: Icons.bar_chart,
-            title: 'Statistics',
-            onTap: () {
-              ScaffoldMessenger.of(context).showSnackBar(
-                const SnackBar(content: Text('Statistics coming soon!')),
-              );
-            },
-          ),
-          _buildMenuItem(
             icon: Icons.article,
             title: 'Posts',
             onTap: () {

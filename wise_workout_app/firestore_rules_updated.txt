@@ -1,0 +1,121 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    
+    // Admin users - manage their own documents
+    match /users/{userId} {
+      allow read, write if request.auth != null && request.auth.uid == userId;
+    }
+
+    // Business users - manage own documents  
+    match /businessUsers/{userId} {
+      allow read, write if request.auth != null && request.auth.uid == userId;
+      allow read if request.auth != null; // Allow users to read business profiles
+    }
+
+    // Regular users
+    match /users/{userId} {
+      allow read, write if request.auth != null && request.auth.uid == userId;
+    }
+
+    // Following/followers (subcollection)
+    match /users/{userId}/following/{followingId} {
+      allow read, write if request.auth != null && request.auth.uid == userId;
+    }
+
+    // Followers (subcollection)
+    match /users/{userId}/followers/{followerId} {
+      allow read, write if request.auth != null && request.auth.uid == userId;
+      allow write if request.auth != null && request.auth.uid == followerId;
+    }
+
+    // Services (training programs) - public readable, creator only writable
+    match /services/{serviceId} {
+      allow read; // Public read access for all authenticated users
+      allow write if request.auth != null && 
+        (resource == null || resource.data.createdBy == request.auth.uid);
+    }
+
+    // Social Posts
+    match /posts/{postId} {
+      allow read if true; // Public read
+      allow create if request.auth != null && request.auth.uid == resource.data.userId;
+      allow update, delete if request.auth != null && request.auth.uid == resource.data.userId;
+    }
+
+    // Comments subcollection under posts
+    match /posts/{postId}/comments/{commentId} {
+      allow read if true;
+      allow create if request.auth != null && request.auth.uid == resource.data.userId;
+      allow update, delete if request.auth != null && request.auth.uid == resource.data.userId;
+    }
+
+    // Likes subcollection (optional)
+    match /posts/{postId}/likes/{likeId} {
+      allow read, write if request.auth != null;
+    }
+
+    // Business posts
+    match /businessPosts/{postId} {
+      allow read if true;
+      allow create, update, delete if request.auth != null && 
+        exists(/databases/$(database)/documents/businessUsers/$(request.auth.uid));
+    }
+
+    // Events - UPDATED TO ALLOW JOINING
+    match /events/{eventId} {
+      allow read if true; // Public read access
+      allow create if request.auth != null && 
+        exists(/databases/$(database)/documents/businessUsers/$(request.auth.uid));
+      allow update if request.auth != null && (
+        // Allow creator to update everything
+        resource.data.createdBy == request.auth.uid ||
+        // Allow users to join/leave events (only participants field)
+        (request.writeFields.hasOnly(['participants']) && 
+         request.auth.uid != null)
+      );
+      allow delete if request.auth != null && resource.data.createdBy == request.auth.uid;
+    }
+
+    // Leaderboard - business users can write, admins can read
+    match /leaderboard/{leaderId} {
+      allow read if request.auth != null;
+      allow write if request.auth != null && 
+        exists(/databases/$(database)/documents/businessUsers/$(request.auth.uid));
+    }
+
+    // Testimonials - public read access
+    match /testimonials/{documentId} {
+      allow read if true;
+      allow write if request.auth != null;
+    }
+
+    // Teams - authenticated users can create and read, members can update
+    match /teams/{teamId} {
+      allow read if true; // Public read access for team discovery
+      allow create if request.auth != null && request.auth.uid == request.resource.data.createdBy;
+      allow update if request.auth != null && (
+        // Team creator can update everything
+        resource.data.createdBy == request.auth.uid ||
+        // Members can join/leave (only members field)
+        (request.writeFields.hasOnly(['members']) && 
+         request.auth.uid != null)
+      );
+      allow delete if request.auth != null && resource.data.createdBy == request.auth.uid;
+    }
+
+    // Feedback - authenticated users can create, only they can read their own
+    match /feedback/{feedbackId} {
+      allow read if request.auth != null && resource.data.userId == request.auth.uid;
+      allow create if request.auth != null && request.auth.uid == request.resource.data.userId;
+      // Admin access for feedback management (you can add admin role checking here)
+      allow read, update if request.auth != null && 
+        exists(/databases/$(database)/documents/businessUsers/$(request.auth.uid));
+    }
+
+    // Default deny
+    match /{document=**} {
+      allow read, write: if false;
+    }
+  }
+}

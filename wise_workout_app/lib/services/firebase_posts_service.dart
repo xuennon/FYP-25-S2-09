@@ -374,6 +374,69 @@ class FirebasePostsService extends ChangeNotifier {
     }
   }
 
+  // Update an existing post
+  Future<bool> updatePost({
+    required String postId,
+    required String content,
+    required List<String> imageUrls,
+  }) async {
+    try {
+      if (currentUserId == null) {
+        print('❌ Error: User not authenticated');
+        return false;
+      }
+
+      if (content.trim().isEmpty && imageUrls.isEmpty) {
+        print('❌ Error: Post must have either content or images');
+        return false;
+      }
+
+      print('📝 Updating post with ID: $postId');
+      print('📄 New content: ${content.substring(0, math.min(50, content.length))}...');
+      print('🖼️ Number of images: ${imageUrls.length}');
+
+      // Check if the post belongs to the current user
+      DocumentSnapshot postDoc = await _firestore.collection('posts').doc(postId).get();
+      if (!postDoc.exists) {
+        print('❌ Error: Post not found');
+        return false;
+      }
+
+      String postUserId = postDoc.get('userId');
+      if (postUserId != currentUserId) {
+        print('❌ Error: User not authorized to update this post');
+        return false;
+      }
+
+      // Update post data
+      Map<String, dynamic> updateData = {
+        'content': content.trim(),
+        'images': imageUrls,
+        'updatedAt': FieldValue.serverTimestamp(),
+      };
+
+      print('🔥 Updating post in Firebase...');
+
+      // Update in Firebase
+      await _firestore.collection('posts').doc(postId).update(updateData);
+      
+      print('✅ Post updated successfully');
+
+      // Wait a moment for Firebase to process
+      await Future.delayed(const Duration(milliseconds: 500));
+
+      // Reload feed to show updated post
+      print('🔄 Reloading feed to show updated post...');
+      await loadFeedPosts();
+      
+      return true;
+    } catch (e) {
+      print('❌ Error updating post: $e');
+      print('📋 Error details: ${e.toString()}');
+      return false;
+    }
+  }
+
   // Like/unlike a post (handles both regular posts and business posts)
   Future<void> toggleLike(String postId) async {
     try {
