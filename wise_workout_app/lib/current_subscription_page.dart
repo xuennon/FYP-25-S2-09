@@ -37,6 +37,8 @@ class _CurrentSubscriptionPageState extends State<CurrentSubscriptionPage> {
 
   @override
   Widget build(BuildContext context) {
+    final bool isIos = _subscriptionService.requiresExternalSubscriptionManagement;
+
     return Scaffold(
       backgroundColor: Colors.white,
       appBar: AppBar(
@@ -150,10 +152,17 @@ class _CurrentSubscriptionPageState extends State<CurrentSubscriptionPage> {
                   height: 50,
                   child: TextButton(
                     onPressed: _isProcessing ? null : () {
+                      if (isIos) {
+                        _showIosSubscriptionDialog();
+                        return;
+                      }
+
                       _showCancelSubscriptionDialog();
                     },
                     child: Text(
-                      _isProcessing ? 'Processing...' : 'Cancel Subscription',
+                      _isProcessing
+                          ? 'Processing...'
+                          : (isIos ? 'Manage in App Store' : 'Cancel Subscription'),
                       style: const TextStyle(
                         color: Colors.orange,
                         fontSize: 16,
@@ -272,6 +281,28 @@ class _CurrentSubscriptionPageState extends State<CurrentSubscriptionPage> {
                       'Cancel Subscription',
                       style: TextStyle(color: Colors.white),
                     ),
+            ),
+          ],
+        );
+      },
+    );
+  }
+
+  void _showIosSubscriptionDialog() {
+    showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          title: const Text('Manage Subscription'),
+          content: const Text(
+            'Subscription changes on iOS need to be completed through the App Store.',
+          ),
+          actions: [
+            TextButton(
+              onPressed: () {
+                Navigator.of(context).pop();
+              },
+              child: const Text('OK'),
             ),
           ],
         );

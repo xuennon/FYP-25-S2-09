@@ -1,5 +1,6 @@
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:flutter/foundation.dart';
 
 class FirebaseSubscriptionService {
   static final FirebaseSubscriptionService _instance = FirebaseSubscriptionService._internal();
@@ -8,6 +9,9 @@ class FirebaseSubscriptionService {
 
   final FirebaseAuth _auth = FirebaseAuth.instance;
   final FirebaseFirestore _firestore = FirebaseFirestore.instance;
+
+  bool get requiresExternalSubscriptionManagement =>
+      !kIsWeb && defaultTargetPlatform == TargetPlatform.iOS;
 
   // Get current user
   User? get currentUser => _auth.currentUser;
@@ -70,11 +74,25 @@ class FirebaseSubscriptionService {
 
   // Activate free subscription
   Future<bool> activateFreeSubscription() async {
+    if (requiresExternalSubscriptionManagement) {
+      debugPrint(
+        'Subscription downgrades on iOS must be managed outside the app.',
+      );
+      return false;
+    }
+
     return await updateUserSubscription('normal');
   }
 
   // Activate premium subscription
   Future<bool> activatePremiumSubscription() async {
+    if (requiresExternalSubscriptionManagement) {
+      debugPrint(
+        'Premium upgrades on iOS must be managed outside the app.',
+      );
+      return false;
+    }
+
     return await updateUserSubscription('premium');
   }
 

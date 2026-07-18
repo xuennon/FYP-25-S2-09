@@ -37,6 +37,8 @@ class _SubscriptionPageState extends State<SubscriptionPage> {
 
   @override
   Widget build(BuildContext context) {
+    final bool isIos = _subscriptionService.requiresExternalSubscriptionManagement;
+
     return Scaffold(
       backgroundColor: Colors.white,
       appBar: AppBar(
@@ -62,8 +64,28 @@ class _SubscriptionPageState extends State<SubscriptionPage> {
           padding: const EdgeInsets.all(16.0),
           child: Column(
           children: [
-            // Free Plan Container
-            Container(
+           if (isIos) ...[
+             Container(
+               width: double.infinity,
+               padding: const EdgeInsets.all(16),
+               margin: const EdgeInsets.only(bottom: 16),
+               decoration: BoxDecoration(
+                 color: Colors.orange.shade50,
+                 borderRadius: BorderRadius.circular(12),
+                 border: Border.all(color: Colors.orange),
+               ),
+               child: const Text(
+                 'Subscription changes are not available in the iOS app right now. Please manage purchases through the App Store.',
+                 style: TextStyle(
+                   color: Colors.black87,
+                   fontSize: 14,
+                   height: 1.4,
+                 ),
+               ),
+             ),
+           ],
+           // Free Plan Container
+           Container(
               width: double.infinity,
               padding: const EdgeInsets.all(24),
               margin: const EdgeInsets.only(bottom: 16),
@@ -112,20 +134,24 @@ class _SubscriptionPageState extends State<SubscriptionPage> {
                     width: double.infinity,
                     height: 50,
                     child: ElevatedButton(
-                      onPressed: currentUserType == 'normal' ? null : () {
+                      onPressed: isIos || currentUserType == 'normal' ? null : () {
                         _handleSubscription('free');
                       },
                       style: ElevatedButton.styleFrom(
-                        backgroundColor: currentUserType == 'normal' ? Colors.grey : Colors.orange,
-                        side: currentUserType == 'normal' ? const BorderSide(color: Colors.orange, width: 2) : null,
+                        backgroundColor: isIos || currentUserType == 'normal' ? Colors.grey : Colors.orange,
+                        side: isIos || currentUserType == 'normal' ? const BorderSide(color: Colors.orange, width: 2) : null,
                         shape: RoundedRectangleBorder(
                           borderRadius: BorderRadius.circular(8),
                         ),
                       ),
                       child: Text(
-                        isLoadingSubscription ? 'Loading...' : (currentUserType == 'normal' ? 'In Use' : 'Select'),
+                        isLoadingSubscription
+                            ? 'Loading...'
+                            : isIos
+                                ? (currentUserType == 'normal' ? 'In Use' : 'Manage on iOS')
+                                : (currentUserType == 'normal' ? 'In Use' : 'Select'),
                         style: TextStyle(
-                          color: currentUserType == 'normal' ? Colors.orange : Colors.black,
+                          color: isIos || currentUserType == 'normal' ? Colors.orange : Colors.black,
                           fontSize: 16,
                           fontWeight: FontWeight.bold,
                         ),
@@ -188,20 +214,24 @@ class _SubscriptionPageState extends State<SubscriptionPage> {
                     width: double.infinity,
                     height: 50,
                     child: ElevatedButton(
-                      onPressed: currentUserType == 'premium' ? null : () {
+                      onPressed: isIos || currentUserType == 'premium' ? null : () {
                         _handleSubscription('premium');
                       },
                       style: ElevatedButton.styleFrom(
-                        backgroundColor: currentUserType == 'premium' ? Colors.grey : Colors.orange,
-                        side: currentUserType == 'premium' ? const BorderSide(color: Colors.orange, width: 2) : null,
+                        backgroundColor: isIos || currentUserType == 'premium' ? Colors.grey : Colors.orange,
+                        side: isIos || currentUserType == 'premium' ? const BorderSide(color: Colors.orange, width: 2) : null,
                         shape: RoundedRectangleBorder(
                           borderRadius: BorderRadius.circular(8),
                         ),
                       ),
                       child: Text(
-                        isLoadingSubscription ? 'Loading...' : (currentUserType == 'premium' ? 'In Use' : 'Get Premium'),
+                        isLoadingSubscription
+                            ? 'Loading...'
+                            : isIos
+                                ? (currentUserType == 'premium' ? 'In Use' : 'Unavailable on iOS')
+                                : (currentUserType == 'premium' ? 'In Use' : 'Get Premium'),
                         style: TextStyle(
-                          color: currentUserType == 'premium' ? Colors.orange : Colors.black,
+                          color: isIos || currentUserType == 'premium' ? Colors.orange : Colors.black,
                           fontSize: 16,
                           fontWeight: FontWeight.bold,
                         ),
