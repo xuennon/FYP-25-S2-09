@@ -45,7 +45,7 @@ class _SubscriptionPageState extends State<SubscriptionPage> {
     final String freeButtonLabel = isLoadingSubscription
         ? 'Loading...'
         : isIos
-            ? (currentUserType == 'normal' ? 'In Use' : 'Manage on iOS')
+            ? (currentUserType == 'normal' ? 'In Use' : 'Unavailable on iOS')
             : (currentUserType == 'normal' ? 'In Use' : 'Select');
     final String premiumButtonLabel = isLoadingSubscription
         ? 'Loading...'

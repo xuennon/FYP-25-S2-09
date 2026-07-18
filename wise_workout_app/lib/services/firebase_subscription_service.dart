@@ -76,7 +76,7 @@ class FirebaseSubscriptionService {
   Future<bool> activateFreeSubscription() async {
     if (requiresExternalSubscriptionManagement) {
       debugPrint(
-        'Subscription downgrades on iOS must be managed outside the app.',
+        'Free subscription changes on iOS must be managed outside the app.',
       );
       return false;
     }
@@ -88,7 +88,7 @@ class FirebaseSubscriptionService {
   Future<bool> activatePremiumSubscription() async {
     if (requiresExternalSubscriptionManagement) {
       debugPrint(
-        'Premium upgrades on iOS must be managed outside the app.',
+        'Premium subscription changes on iOS must be managed outside the app.',
       );
       return false;
     }
