@@ -9,7 +9,8 @@ class SubscriptionPage extends StatefulWidget {
 }
 
 class _SubscriptionPageState extends State<SubscriptionPage> {
-  final FirebaseSubscriptionService _subscriptionService = FirebaseSubscriptionService();
+  final FirebaseSubscriptionService _subscriptionService =
+      FirebaseSubscriptionService();
   bool _isProcessing = false;
   String currentUserType = 'normal';
   bool isLoadingSubscription = true;
@@ -37,7 +38,20 @@ class _SubscriptionPageState extends State<SubscriptionPage> {
 
   @override
   Widget build(BuildContext context) {
-    final bool isIos = _subscriptionService.requiresExternalSubscriptionManagement;
+    final bool isIos =
+        _subscriptionService.requiresExternalSubscriptionManagement;
+    final bool disableFreeAction = isIos || currentUserType == 'normal';
+    final bool disablePremiumAction = isIos || currentUserType == 'premium';
+    final String freeButtonLabel = isLoadingSubscription
+        ? 'Loading...'
+        : isIos
+            ? (currentUserType == 'normal' ? 'In Use' : 'Manage on iOS')
+            : (currentUserType == 'normal' ? 'In Use' : 'Select');
+    final String premiumButtonLabel = isLoadingSubscription
+        ? 'Loading...'
+        : isIos
+            ? (currentUserType == 'premium' ? 'In Use' : 'Unavailable on iOS')
+            : (currentUserType == 'premium' ? 'In Use' : 'Get Premium');
 
     return Scaffold(
       backgroundColor: Colors.white,
@@ -63,186 +77,206 @@ class _SubscriptionPageState extends State<SubscriptionPage> {
         child: SingleChildScrollView(
           padding: const EdgeInsets.all(16.0),
           child: Column(
-          children: [
-           if (isIos) ...[
-             Container(
-               width: double.infinity,
-               padding: const EdgeInsets.all(16),
-               margin: const EdgeInsets.only(bottom: 16),
-               decoration: BoxDecoration(
-                 color: Colors.orange.shade50,
-                 borderRadius: BorderRadius.circular(12),
-                 border: Border.all(color: Colors.orange),
-               ),
-               child: const Text(
-                 'Subscription changes are not available in the iOS app right now. Please manage purchases through the App Store.',
-                 style: TextStyle(
-                   color: Colors.black87,
-                   fontSize: 14,
-                   height: 1.4,
-                 ),
-               ),
-             ),
-           ],
-           // Free Plan Container
-           Container(
-              width: double.infinity,
-              padding: const EdgeInsets.all(24),
-              margin: const EdgeInsets.only(bottom: 16),
-              decoration: BoxDecoration(
-                color: Colors.black87,
-                borderRadius: BorderRadius.circular(16),
-              ),
-              child: Column(
-                children: [
-                  const Text(
-                    'Free',
+            children: [
+              if (isIos)
+                Container(
+                  width: double.infinity,
+                  padding: const EdgeInsets.all(16),
+                  margin: const EdgeInsets.only(bottom: 16),
+                  decoration: BoxDecoration(
+                    color: Colors.orange.shade50,
+                    borderRadius: BorderRadius.circular(12),
+                    border: Border.all(color: Colors.orange),
+                  ),
+                  child: const Text(
+                    'Subscription changes are not available in the iOS app right now. Please manage purchases through the App Store.',
                     style: TextStyle(
-                      color: Colors.white,
-                      fontSize: 28,
-                      fontWeight: FontWeight.bold,
+                      color: Colors.black87,
+                      fontSize: 14,
+                      height: 1.4,
                     ),
                   ),
-                  const SizedBox(height: 8),
-                  RichText(
-                    text: const TextSpan(
-                      children: [
-                        TextSpan(
-                          text: '\$0.00',
+                ),
+
+              Container(
+                width: double.infinity,
+                padding: const EdgeInsets.all(24),
+                margin: const EdgeInsets.only(bottom: 16),
+                decoration: BoxDecoration(
+                  color: Colors.black87,
+                  borderRadius: BorderRadius.circular(16),
+                ),
+                child: Column(
+                  children: [
+                    const Text(
+                      'Free',
+                      style: TextStyle(
+                        color: Colors.white,
+                        fontSize: 28,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                    const SizedBox(height: 8),
+                    RichText(
+                      text: const TextSpan(
+                        children: [
+                          TextSpan(
+                            text: '\$0.00',
+                            style: TextStyle(
+                              color: Colors.green,
+                              fontSize: 24,
+                              fontWeight: FontWeight.bold,
+                            ),
+                          ),
+                          TextSpan(
+                            text: '/month',
+                            style: TextStyle(
+                              color: Colors.white,
+                              fontSize: 16,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                    const SizedBox(height: 16),
+                    _buildFeatureItem('✓ Access to basic workouts', Colors.white),
+                    _buildFeatureItem(
+                      '✓ Limited exercise tracking',
+                      Colors.white,
+                    ),
+                    _buildFeatureItem('✓ Daily reminders', Colors.white),
+                    const SizedBox(height: 20),
+                    SizedBox(
+                      width: double.infinity,
+                      height: 50,
+                      child: ElevatedButton(
+                        onPressed: disableFreeAction
+                            ? null
+                            : () {
+                                _handleSubscription('free');
+                              },
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor:
+                              disableFreeAction ? Colors.grey : Colors.orange,
+                          side: disableFreeAction
+                              ? const BorderSide(
+                                  color: Colors.orange,
+                                  width: 2,
+                                )
+                              : null,
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(8),
+                          ),
+                        ),
+                        child: Text(
+                          freeButtonLabel,
                           style: TextStyle(
-                            color: Colors.green,
-                            fontSize: 24,
+                            color: disableFreeAction
+                                ? Colors.orange
+                                : Colors.black,
+                            fontSize: 16,
                             fontWeight: FontWeight.bold,
                           ),
                         ),
-                        TextSpan(
-                          text: '/month',
-                          style: TextStyle(
-                            color: Colors.white,
-                            fontSize: 16,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+
+              Container(
+                width: double.infinity,
+                padding: const EdgeInsets.all(24),
+                decoration: BoxDecoration(
+                  color: Colors.black87,
+                  borderRadius: BorderRadius.circular(16),
+                  border: Border.all(color: Colors.orange, width: 2),
+                ),
+                child: Column(
+                  children: [
+                    const Text(
+                      'Premium',
+                      style: TextStyle(
+                        color: Colors.white,
+                        fontSize: 28,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                    const SizedBox(height: 8),
+                    RichText(
+                      text: const TextSpan(
+                        children: [
+                          TextSpan(
+                            text: '\$3.90',
+                            style: TextStyle(
+                              color: Colors.orange,
+                              fontSize: 24,
+                              fontWeight: FontWeight.bold,
+                            ),
+                          ),
+                          TextSpan(
+                            text: '/month',
+                            style: TextStyle(
+                              color: Colors.white,
+                              fontSize: 16,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                    const SizedBox(height: 16),
+                    _buildFeatureItem('✓ All free features', Colors.white),
+                    _buildFeatureItem(
+                      '✓ Personalized fitness plans',
+                      Colors.white,
+                    ),
+                    _buildFeatureItem(
+                      '✓ Unlimited program subscription',
+                      Colors.white,
+                    ),
+                    _buildFeatureItem('✓ Unlimited team member', Colors.white),
+                    _buildFeatureItem('✓ Analytics', Colors.white),
+                    const SizedBox(height: 20),
+                    SizedBox(
+                      width: double.infinity,
+                      height: 50,
+                      child: ElevatedButton(
+                        onPressed: disablePremiumAction
+                            ? null
+                            : () {
+                                _handleSubscription('premium');
+                              },
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: disablePremiumAction
+                              ? Colors.grey
+                              : Colors.orange,
+                          side: disablePremiumAction
+                              ? const BorderSide(
+                                  color: Colors.orange,
+                                  width: 2,
+                                )
+                              : null,
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(8),
                           ),
                         ),
-                      ],
-                    ),
-                  ),
-                  const SizedBox(height: 16),
-                  _buildFeatureItem('✓ Access to basic workouts', Colors.white),
-                  _buildFeatureItem('✓ Limited exercise tracking', Colors.white),
-                  _buildFeatureItem('✓ Daily reminders', Colors.white),
-                  const SizedBox(height: 20),
-                  SizedBox(
-                    width: double.infinity,
-                    height: 50,
-                    child: ElevatedButton(
-                      onPressed: isIos || currentUserType == 'normal' ? null : () {
-                        _handleSubscription('free');
-                      },
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: isIos || currentUserType == 'normal' ? Colors.grey : Colors.orange,
-                        side: isIos || currentUserType == 'normal' ? const BorderSide(color: Colors.orange, width: 2) : null,
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(8),
-                        ),
-                      ),
-                      child: Text(
-                        isLoadingSubscription
-                            ? 'Loading...'
-                            : isIos
-                                ? (currentUserType == 'normal' ? 'In Use' : 'Manage on iOS')
-                                : (currentUserType == 'normal' ? 'In Use' : 'Select'),
-                        style: TextStyle(
-                          color: isIos || currentUserType == 'normal' ? Colors.orange : Colors.black,
-                          fontSize: 16,
-                          fontWeight: FontWeight.bold,
-                        ),
-                      ),
-                    ),
-                  ),
-                ],
-              ),
-            ),
-            
-            // Premium Plan Container
-            Container(
-              width: double.infinity,
-              padding: const EdgeInsets.all(24),
-              decoration: BoxDecoration(
-                color: Colors.black87,
-                borderRadius: BorderRadius.circular(16),
-                border: Border.all(color: Colors.orange, width: 2),
-              ),
-              child: Column(
-                children: [
-                  const Text(
-                    'Premium',
-                    style: TextStyle(
-                      color: Colors.white,
-                      fontSize: 28,
-                      fontWeight: FontWeight.bold,
-                    ),
-                  ),
-                  const SizedBox(height: 8),
-                  RichText(
-                    text: const TextSpan(
-                      children: [
-                        TextSpan(
-                          text: '\$3.90',
+                        child: Text(
+                          premiumButtonLabel,
                           style: TextStyle(
-                            color: Colors.orange,
-                            fontSize: 24,
+                            color: disablePremiumAction
+                                ? Colors.orange
+                                : Colors.black,
+                            fontSize: 16,
                             fontWeight: FontWeight.bold,
                           ),
                         ),
-                        TextSpan(
-                          text: '/month',
-                          style: TextStyle(
-                            color: Colors.white,
-                            fontSize: 16,
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
-                  const SizedBox(height: 16),
-                  _buildFeatureItem('✓ All free features', Colors.white),
-                  _buildFeatureItem('✓ Personalized fitness plans', Colors.white),
-                  _buildFeatureItem('✓ Unlimited program subscription', Colors.white),
-                  _buildFeatureItem('✓ Unlimited team member', Colors.white),
-                  _buildFeatureItem('✓ Analytics', Colors.white),
-                  const SizedBox(height: 20),
-                  SizedBox(
-                    width: double.infinity,
-                    height: 50,
-                    child: ElevatedButton(
-                      onPressed: isIos || currentUserType == 'premium' ? null : () {
-                        _handleSubscription('premium');
-                      },
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: isIos || currentUserType == 'premium' ? Colors.grey : Colors.orange,
-                        side: isIos || currentUserType == 'premium' ? const BorderSide(color: Colors.orange, width: 2) : null,
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(8),
-                        ),
-                      ),
-                      child: Text(
-                        isLoadingSubscription
-                            ? 'Loading...'
-                            : isIos
-                                ? (currentUserType == 'premium' ? 'In Use' : 'Unavailable on iOS')
-                                : (currentUserType == 'premium' ? 'In Use' : 'Get Premium'),
-                        style: TextStyle(
-                          color: isIos || currentUserType == 'premium' ? Colors.orange : Colors.black,
-                          fontSize: 16,
-                          fontWeight: FontWeight.bold,
-                        ),
                       ),
                     ),
-                  ),
-                ],
+                  ],
+                ),
               ),
-            ),
-          ],
-        ),
+            ],
+          ),
         ),
       ),
     );
@@ -273,11 +307,13 @@ class _SubscriptionPageState extends State<SubscriptionPage> {
       context: context,
       builder: (BuildContext context) {
         return AlertDialog(
-          title: Text('Subscribe to ${planType == 'free' ? 'Free' : 'Premium'} Plan'),
+          title: Text(
+            'Subscribe to ${planType == 'free' ? 'Free' : 'Premium'} Plan',
+          ),
           content: Text(
             planType == 'free'
-              ? 'You are selecting the Free plan for \$0.00/month. This includes basic workouts and limited features.'
-              : 'You are selecting the Premium plan for \$3.90/month. This includes all features and personalized fitness plans.',
+                ? 'You are selecting the Free plan for \$0.00/month. This includes basic workouts and limited features.'
+                : 'You are selecting the Premium plan for \$3.90/month. This includes all features and personalized fitness plans.',
           ),
           actions: [
             TextButton(
@@ -287,66 +323,71 @@ class _SubscriptionPageState extends State<SubscriptionPage> {
               child: const Text('Cancel'),
             ),
             ElevatedButton(
-              onPressed: _isProcessing ? null : () async {
-                // Set processing state
-                setState(() {
-                  _isProcessing = true;
-                });
+              onPressed: _isProcessing
+                  ? null
+                  : () async {
+                      setState(() {
+                        _isProcessing = true;
+                      });
 
-                Navigator.of(context).pop(); // Close dialog first
+                      Navigator.of(context).pop();
 
-                try {
-                  bool success = false;
-                  if (planType == 'free') {
-                    success = await _subscriptionService.activateFreeSubscription();
-                  } else {
-                    success = await _subscriptionService.activatePremiumSubscription();
-                  }
+                      try {
+                        bool success = false;
+                        if (planType == 'free') {
+                          success = await _subscriptionService
+                              .activateFreeSubscription();
+                        } else {
+                          success = await _subscriptionService
+                              .activatePremiumSubscription();
+                        }
 
-                  if (success) {
-                    if (mounted) {
-                      ScaffoldMessenger.of(context).showSnackBar(
-                        SnackBar(
-                          content: Text('${planType == 'free' ? 'Free' : 'Premium'} subscription activated successfully!'),
-                          backgroundColor: Colors.green,
-                          duration: const Duration(seconds: 3),
-                        ),
-                      );
-                      // Refresh the current subscription status
-                      await _loadCurrentSubscription();
-                    }
-                  } else {
-                    if (mounted) {
-                      ScaffoldMessenger.of(context).showSnackBar(
-                        const SnackBar(
-                          content: Text('Failed to activate subscription. Please try again.'),
-                          backgroundColor: Colors.red,
-                          duration: Duration(seconds: 3),
-                        ),
-                      );
-                    }
-                  }
-                } catch (e) {
-                  if (mounted) {
-                    ScaffoldMessenger.of(context).showSnackBar(
-                      SnackBar(
-                        content: Text('Error: ${e.toString()}'),
-                        backgroundColor: Colors.red,
-                        duration: const Duration(seconds: 3),
-                      ),
-                    );
-                  }
-                } finally {
-                  // Reset processing state
-                  if (mounted) {
-                    setState(() {
-                      _isProcessing = false;
-                    });
-                  }
-                }
-              },
+                        if (success) {
+                          if (mounted) {
+                            ScaffoldMessenger.of(context).showSnackBar(
+                              SnackBar(
+                                content: Text(
+                                  '${planType == 'free' ? 'Free' : 'Premium'} subscription activated successfully!',
+                                ),
+                                backgroundColor: Colors.green,
+                                duration: const Duration(seconds: 3),
+                              ),
+                            );
+                            await _loadCurrentSubscription();
+                          }
+                        } else {
+                          if (mounted) {
+                            ScaffoldMessenger.of(context).showSnackBar(
+                              const SnackBar(
+                                content: Text(
+                                  'Failed to activate subscription. Please try again.',
+                                ),
+                                backgroundColor: Colors.red,
+                                duration: Duration(seconds: 3),
+                              ),
+                            );
+                          }
+                        }
+                      } catch (e) {
+                        if (mounted) {
+                          ScaffoldMessenger.of(context).showSnackBar(
+                            SnackBar(
+                              content: Text('Error: ${e.toString()}'),
+                              backgroundColor: Colors.red,
+                              duration: const Duration(seconds: 3),
+                            ),
+                          );
+                        }
+                      } finally {
+                        if (mounted) {
+                          setState(() {
+                            _isProcessing = false;
+                          });
+                        }
+                      }
+                    },
               style: ElevatedButton.styleFrom(
-                backgroundColor: planType == 'free' ? Colors.orange : Colors.orange,
+                backgroundColor: Colors.orange,
               ),
               child: _isProcessing
                   ? const SizedBox(
